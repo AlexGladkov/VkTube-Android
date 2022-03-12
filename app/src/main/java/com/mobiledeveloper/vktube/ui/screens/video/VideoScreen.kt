@@ -23,6 +23,7 @@ import coil.compose.AsyncImage
 import com.mobiledeveloper.vktube.R
 import com.mobiledeveloper.vktube.ui.common.cell.VideoCellModel
 import com.mobiledeveloper.vktube.ui.common.views.VideoActionView
+import com.mobiledeveloper.vktube.ui.screens.comments.CommentCellModel
 import com.mobiledeveloper.vktube.ui.screens.comments.CommentsScreen
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoAction
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoEvent
@@ -30,6 +31,7 @@ import com.mobiledeveloper.vktube.ui.screens.video.models.VideoViewState
 import com.mobiledeveloper.vktube.ui.theme.Fronton
 import com.vk.sdk.api.wall.dto.WallWallComment
 import kotlinx.coroutines.launch
+import org.w3c.dom.Comment
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable
@@ -55,7 +57,12 @@ fun VideoScreen(
     BottomSheetScaffold(
         scaffoldState = bottomSheetScaffoldState,
         sheetContent = {
-            CommentsScreen(viewState = viewState)
+            CommentsScreen(viewState = viewState,
+                onSendClick = {
+                    videoViewModel.obtainEvent(VideoEvent.SendComment(it))
+                }, onCloseClick = {
+
+                })
         },
         sheetPeekHeight = bottomSheetHeight
     ) {
@@ -158,7 +165,7 @@ fun VideoScreenView(
         }
 
         item {
-            VideoCommentsView(viewState.comments, video, onCommentsClick)
+            VideoCommentsView(viewState.comments, viewState, onCommentsClick)
         }
     }
 }
@@ -219,7 +226,8 @@ private fun VideoUserRow(video: VideoCellModel) {
 
 @Composable
 private fun VideoCommentsView(
-    comments: List<WallWallComment>, video: VideoCellModel,
+    comments: List<CommentCellModel>,
+    viewState: VideoViewState,
     onCommentsClick: () -> Unit
 ) {
     val hasComments = comments.count() > 0
@@ -274,7 +282,7 @@ private fun VideoCommentsView(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape),
-                    model = "https://sun1-30.userapi.com/s/v1/if1/HWVwYg9TvGZA1YCuBgOtSz3rb68518tAc8rH0SSdAdoGtsfF-YJ41XhlPJN0tmXhtryAjhGG.jpg?size=100x100&quality=96&crop=389,241,1069,1069&ava=1",
+                    model = viewState.currentUser?.avatar.orEmpty(),
                     contentDescription = "comment user image preview",
                     contentScale = ContentScale.Crop
                 )

@@ -3,6 +3,7 @@ package com.mobiledeveloper.vktube.ui.screens.splash
 import androidx.lifecycle.viewModelScope
 import com.mobiledeveloper.vktube.base.BaseViewModel
 import com.mobiledeveloper.vktube.data.login.LoginRepository
+import com.mobiledeveloper.vktube.data.user.UserRepository
 import com.mobiledeveloper.vktube.ui.screens.splash.models.SplashAction
 import com.mobiledeveloper.vktube.ui.screens.splash.models.SplashEvent
 import com.mobiledeveloper.vktube.ui.screens.splash.models.SplashViewState
@@ -12,7 +13,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SplashViewModel @Inject constructor(
-    private val loginRepository: LoginRepository
+    private val loginRepository: LoginRepository,
+    private val userRepository: UserRepository
 ) : BaseViewModel<SplashViewState, SplashAction, SplashEvent>(initialState = SplashViewState()) {
 
     override fun obtainEvent(viewEvent: SplashEvent) {
@@ -22,9 +24,10 @@ class SplashViewModel @Inject constructor(
     }
 
     private fun checkLogin() {
-        val isLogged = loginRepository.checkLogin()
-
         viewModelScope.launch {
+            val isLogged = loginRepository.checkLogin()
+            val isSaved = userRepository.fetchAndSaveUser()
+
             if (isLogged) {
                 callAction(SplashAction.OpenMain)
             } else {
