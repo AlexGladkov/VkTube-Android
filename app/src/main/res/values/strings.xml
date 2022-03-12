@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">VkTube</string>
+    <integer name="com_vk_sdk_AppId">8097985</integer>
+</resources>
