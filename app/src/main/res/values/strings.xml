@@ -1,4 +1,15 @@
 <resources>
     <string name="app_name">VkTube</string>
     <integer name="com_vk_sdk_AppId">8097985</integer>
+
+    <string name="video_preview">Предпросмотр видео</string>
+    <string name="user_image_preview">Предпросмотр аватарки человека</string>
+    <string name="comment_user_image_preview">Предпросмотр аватарки человека в комментарии</string>
+
+    <string name="video_action_icon">Иконка действия под видео</string>
+    <string name="send_comment_icon">Иконка отправки комментария</string>
+
+    <string name="comments">Комментарии</string>
+    <string name="enter_comment_text">Введите текст комментария</string>
+    <string name="login_to_vk">Вход через ВК</string>
 </resources>

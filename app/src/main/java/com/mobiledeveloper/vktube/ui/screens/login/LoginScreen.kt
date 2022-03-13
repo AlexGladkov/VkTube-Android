@@ -28,6 +28,8 @@ import com.mobiledeveloper.vktube.ui.screens.login.models.LoginEvent
 import com.mobiledeveloper.vktube.ui.theme.Fronton
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.mobiledeveloper.vktube.R
 
 @Composable
 fun LoginScreen(
@@ -53,7 +55,7 @@ fun LoginScreen(
                 loginViewModel.obtainEvent(LoginEvent.LoginClicked(activity))
             }
         ) {
-            Text(text = "Login to VK", color = Fronton.color.textInvert)
+            Text(text = stringResource(id = R.string.login_to_vk), color = Fronton.color.textInvert)
         }
     }
 }

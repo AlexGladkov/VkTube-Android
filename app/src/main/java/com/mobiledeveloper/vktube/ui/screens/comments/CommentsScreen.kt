@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.mobiledeveloper.vktube.R
@@ -48,7 +49,7 @@ private fun CommentsHeaderView(count: String) {
             verticalAlignment = Alignment.Bottom
         ) {
             Text(
-                text = "Комментарии",
+                text = stringResource(id = R.string.comments),
                 style = Fronton.typography.headings.h3,
                 color = Fronton.color.textPrimary
             )
@@ -80,7 +81,7 @@ private fun CommentsAddView(viewState: VideoViewState, onSendClick: (String) -> 
                 .size(40.dp)
                 .clip(CircleShape),
             model = viewState.currentUser?.avatar.orEmpty(),
-            contentDescription = "comment user image preview",
+            contentDescription = stringResource(id = R.string.comment_user_image_preview),
             contentScale = ContentScale.Crop
         )
 
@@ -96,7 +97,7 @@ private fun CommentsAddView(viewState: VideoViewState, onSendClick: (String) -> 
                 unfocusedIndicatorColor = Fronton.color.backgroundPrimary,
                 focusedIndicatorColor = Fronton.color.backgroundPrimary
             ),
-            placeholder = { Text("Введите текст комментария") }
+            placeholder = { Text(stringResource(id = R.string.enter_comment_text)) }
         )
 
         Icon(
@@ -108,7 +109,7 @@ private fun CommentsAddView(viewState: VideoViewState, onSendClick: (String) -> 
                 .padding(16.dp)
                 .size(24.dp),
             painter = painterResource(id = R.drawable.ic_baseline_send_24),
-            contentDescription = "Send",
+            contentDescription = stringResource(id = R.string.send_comment_icon),
             tint = Fronton.color.controlPrimary
         )
     }
