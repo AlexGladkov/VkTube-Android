@@ -1,5 +1,6 @@
 package com.mobiledeveloper.vktube
 
+import com.mobiledeveloper.vktube.utils.DateUtil
 import org.junit.Test
 
 import org.junit.Assert.*
@@ -12,6 +13,6 @@ import org.junit.Assert.*
 class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+        assertEquals(true,true)
     }
 }

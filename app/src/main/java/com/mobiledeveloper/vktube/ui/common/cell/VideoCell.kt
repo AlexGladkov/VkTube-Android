@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -16,12 +17,13 @@ import androidx.compose.ui.unit.max
 import coil.compose.AsyncImage
 import com.mobiledeveloper.vktube.R
 import com.mobiledeveloper.vktube.ui.theme.Fronton
+import com.mobiledeveloper.vktube.utils.DateUtil
 import com.vk.sdk.api.video.dto.VideoVideoFull
 
 data class VideoCellModel(
     val videoId: Long, val subscribers: String,
     val title: String, val previewUrl: String, val userImage: String, val userName: String,
-    val viewsCount: String, val dateAdded: String,
+    val viewsCount: String, val dateAdded: Int,
     val likes: Int, val likesByMe: Boolean, val videoUrl: String
 )
 
@@ -30,6 +32,7 @@ fun VideoVideoFull.mapToVideoCellModel(userImage: String, userName: String): Vid
 
     val maxQualityImage = image?.reversed()?.firstOrNull()
 
+
     return VideoCellModel(
         videoId = videoId.toLong(),
         title = title.orEmpty(),
@@ -37,7 +40,7 @@ fun VideoVideoFull.mapToVideoCellModel(userImage: String, userName: String): Vid
         userImage = userImage,
         userName = userName,
         viewsCount = "${views ?: 0} просмотров",
-        dateAdded = "1 час назад",
+        dateAdded = addingDate?:0,
         subscribers = "1.2 тыс подписчиков",
         likes = likes?.count ?: 0,
         likesByMe = likes?.userLikes?.value == 1,
@@ -52,6 +55,8 @@ fun VideoCell(model: VideoCellModel, onVideoClick: () -> Unit) {
 
         val screenWidth = configuration.screenWidthDp.dp
         val imageHeight = (screenWidth / 16) * 9
+
+        val context = LocalContext.current
 
         AsyncImage(
             modifier = Modifier
@@ -84,7 +89,7 @@ fun VideoCell(model: VideoCellModel, onVideoClick: () -> Unit) {
                 )
                 Text(
                     modifier = Modifier.padding(top = 2.dp),
-                    text = "${model.userName} • ${model.viewsCount} • ${model.dateAdded}",
+                    text = "${model.userName} • ${model.viewsCount} • ${DateUtil.getTimeAgo(model.dateAdded,context)}",
                     color = Fronton.color.textSecondary,
                     style = Fronton.typography.body.small.short
                 )

@@ -12,4 +12,14 @@
     <string name="comments">Комментарии</string>
     <string name="enter_comment_text">Введите текст комментария</string>
     <string name="login_to_vk">Вход через ВК</string>
+
+    <string name="ru_10_seconds_ago">секунд назад</string>
+    <string name="ru_1_second_ago">секунду назад</string>
+    <string name="ru_2_seconds_ago">секунды назад</string>
+    <string name="ru_2_minutes_ago">минуты назад</string>
+    <string name="ru_1_minute_ago">минуту назад</string>
+    <string name="ru_10_minute_ago">минут назад</string>
+    <string name="hours_ago">часов назад</string>
+    <string name="hours_ago_2_3_4">часа назад</string>
+    <string name="hour_ago">час назад</string>
 </resources>
