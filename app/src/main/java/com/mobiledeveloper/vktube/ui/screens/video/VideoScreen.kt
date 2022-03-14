@@ -1,5 +1,8 @@
 package com.mobiledeveloper.vktube.ui.screens.video
 
+import android.graphics.Bitmap
+import android.os.Build
+import android.webkit.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,13 +17,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import coil.compose.AsyncImage
 import com.mobiledeveloper.vktube.R
+import com.mobiledeveloper.vktube.extensions.VideoType
+import com.mobiledeveloper.vktube.extensions.extractVideoType
 import com.mobiledeveloper.vktube.ui.common.cell.VideoCellModel
 import com.mobiledeveloper.vktube.ui.common.views.VideoActionView
 import com.mobiledeveloper.vktube.ui.screens.comments.CommentCellModel
@@ -29,9 +36,8 @@ import com.mobiledeveloper.vktube.ui.screens.video.models.VideoAction
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoEvent
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoViewState
 import com.mobiledeveloper.vktube.ui.theme.Fronton
-import com.vk.sdk.api.wall.dto.WallWallComment
 import kotlinx.coroutines.launch
-import org.w3c.dom.Comment
+
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable
@@ -102,18 +108,9 @@ fun VideoScreenView(
 ) {
     val video = viewState.video ?: return
 
-    val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp.dp
-    val videoHeight = (screenWidth / 16) * 9
-
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         stickyHeader {
-            Box(
-                modifier = Modifier
-                    .background(Fronton.color.backgroundAccent)
-                    .fillMaxWidth()
-                    .height(videoHeight)
-            )
+            VideoPlayerView(video)
         }
 
         item {
@@ -306,5 +303,71 @@ private fun VideoCommentsView(
             }
         }
     }
+}
+
+@Composable
+private fun VideoPlayerView(video: VideoCellModel) {
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+    val videoHeight = (screenWidth / 16) * 9
+
+    when (video.videoUrl.extractVideoType()) {
+        VideoType.Vk -> VkVideoPlayer(url = video.videoUrl, height = videoHeight, width = screenWidth)
+        VideoType.Youtube -> YoutubePlayer(url = video.videoUrl, height = videoHeight, width = screenWidth)
+    }
+}
+
+@Composable
+private fun VkVideoPlayer(url: String, width: Dp, height: Dp) {
+    val widthPx = with(LocalDensity.current) { width.toPx() }
+    val heightPx = with(LocalDensity.current) { height.toPx() }
+
+    AndroidView(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(height),
+        factory = {
+            val dataUrl = "<html>" +
+                    "<body>" +
+                    "<iframe width=\"$widthPx\" height=\"$heightPx\" src=\"" + url + "\" frameborder=\"0\" allowfullscreen/>" +
+                    "</body>" +
+                    "</html>"
+
+            WebView(it).apply {
+                settings.javaScriptEnabled = true
+                settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.SINGLE_COLUMN
+                settings.loadWithOverviewMode = true
+                settings.useWideViewPort = true
+
+                loadData(dataUrl, "text/html", "utf-8")
+            }
+        })
+}
+
+@Composable
+private fun YoutubePlayer(url: String, width: Dp, height: Dp) {
+    val widthPx = with(LocalDensity.current) { width.toPx() }
+    val heightPx = with(LocalDensity.current) { height.toPx() }
+
+    AndroidView(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(height),
+        factory = {
+            val dataUrl = "<html>" +
+                    "<body>" +
+                    "<iframe width=\"$widthPx\" height=\"$heightPx\" src=\"" + url + "\" frameborder=\"0\" allowfullscreen/>" +
+                    "</body>" +
+                    "</html>"
+
+            WebView(it).apply {
+                settings.javaScriptEnabled = true
+                settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.SINGLE_COLUMN
+                settings.loadWithOverviewMode = true
+                settings.useWideViewPort = true
+
+                loadData(dataUrl, "text/html", "utf-8")
+            }
+        })
 }
 

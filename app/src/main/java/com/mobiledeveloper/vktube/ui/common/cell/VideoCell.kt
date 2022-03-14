@@ -20,7 +20,7 @@ data class VideoCellModel(
     val videoId: Long, val subscribers: String,
     val title: String, val previewUrl: String, val userImage: String, val userName: String,
     val viewsCount: String, val dateAdded: String,
-    val likes: Int, val likesByMe: Boolean
+    val likes: Int, val likesByMe: Boolean, val videoUrl: String
 )
 
 fun VideoVideoFull.mapToVideoCellModel(userImage: String, userName: String): VideoCellModel? {
@@ -38,7 +38,8 @@ fun VideoVideoFull.mapToVideoCellModel(userImage: String, userName: String): Vid
         dateAdded = "1 час назад",
         subscribers = "1.2 тыс подписчиков",
         likes = likes?.count ?: 0,
-        likesByMe = likes?.userLikes?.value == 1
+        likesByMe = likes?.userLikes?.value == 1,
+        videoUrl = player.orEmpty()
     )
 }
 

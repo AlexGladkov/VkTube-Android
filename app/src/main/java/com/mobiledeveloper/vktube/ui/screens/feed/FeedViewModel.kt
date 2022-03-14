@@ -17,7 +17,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FeedViewModel @Inject constructor(
-    private val clubsRepository: ClubsRepository
+    private val clubsRepository: ClubsRepository,
+    private val userRepository: UserRepository
 ) : BaseViewModel<FeedState, FeedAction, FeedEvent>(initialState = FeedState()) {
     override fun obtainEvent(viewEvent: FeedEvent) {
         when (viewEvent) {
@@ -42,12 +43,14 @@ class FeedViewModel @Inject constructor(
 
     private fun fetchVideos() {
         viewModelScope.launch(Dispatchers.IO) {
-            val response = clubsRepository.fetchVideos(count = 20)
+            val userId = userRepository.fetchLocalUser().userId
+            val clubs = clubsRepository.fetchClubs(userId)
+            val videos = clubsRepository.fetchVideos(clubs = clubs.items, count = 20)
             updateState(viewState.copy(
-                items = response.items.mapNotNull {
-                    it.mapToVideoCellModel(
-                        userImage = response.groups?.get(0)?.photo200.orEmpty(),
-                        userName = response.groups?.get(0)?.screenName.orEmpty()
+                items = videos.mapNotNull { model ->
+                    model.item.mapToVideoCellModel(
+                        userImage = model.userImage,
+                        userName = model.userName
                     )
                 }
             ))
