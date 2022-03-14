@@ -8,8 +8,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.mobiledeveloper.vktube.R
 import com.mobiledeveloper.vktube.ui.theme.Fronton
 import com.vk.sdk.api.wall.dto.WallWallComment
 
@@ -46,7 +48,7 @@ fun CommentCell(model: CommentCellModel) {
                     .size(32.dp)
                     .clip(CircleShape),
                 model = model.avatar,
-                contentDescription = "video preview",
+                contentDescription = stringResource(id = R.string.video_preview),
                 contentScale = ContentScale.Crop
             )
 

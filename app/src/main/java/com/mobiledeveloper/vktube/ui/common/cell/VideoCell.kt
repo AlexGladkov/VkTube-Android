@@ -9,10 +9,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import coil.compose.AsyncImage
+import com.mobiledeveloper.vktube.R
 import com.mobiledeveloper.vktube.ui.theme.Fronton
 import com.vk.sdk.api.video.dto.VideoVideoFull
 
@@ -56,7 +58,7 @@ fun VideoCell(model: VideoCellModel, onVideoClick: () -> Unit) {
                 .fillMaxWidth()
                 .height(imageHeight),
             model = model.previewUrl,
-            contentDescription = "video preview",
+            contentDescription = stringResource(id = R.string.video_preview),
             contentScale = ContentScale.Crop
         )
 
@@ -69,7 +71,7 @@ fun VideoCell(model: VideoCellModel, onVideoClick: () -> Unit) {
             AsyncImage(
                 modifier = Modifier.size(40.dp).clip(CircleShape),
                 model = model.userImage,
-                contentDescription = "user image preview",
+                contentDescription = stringResource(id = R.string.user_image_preview),
                 contentScale = ContentScale.Crop
             )
 

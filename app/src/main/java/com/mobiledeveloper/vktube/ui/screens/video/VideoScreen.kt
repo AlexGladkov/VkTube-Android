@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
@@ -202,7 +203,7 @@ private fun VideoUserRow(video: VideoCellModel) {
                 .size(40.dp)
                 .clip(CircleShape),
             model = video.userImage,
-            contentDescription = "user image preview",
+            contentDescription = stringResource(id = R.string.comment_user_image_preview),
             contentScale = ContentScale.Crop
         )
 
@@ -237,7 +238,7 @@ private fun VideoCommentsView(
     ) {
         Row {
             Text(
-                text = "Комментарии",
+                text = stringResource(id = R.string.comments),
                 color = Fronton.color.textPrimary,
                 style = Fronton.typography.body.small.short
             )
@@ -259,7 +260,7 @@ private fun VideoCommentsView(
                         .size(40.dp)
                         .clip(CircleShape),
                     model = "https://sun1-30.userapi.com/s/v1/if1/HWVwYg9TvGZA1YCuBgOtSz3rb68518tAc8rH0SSdAdoGtsfF-YJ41XhlPJN0tmXhtryAjhGG.jpg?size=100x100&quality=96&crop=389,241,1069,1069&ava=1",
-                    contentDescription = "comment user image preview",
+                    contentDescription = stringResource(id = R.string.comment_user_image_preview),
                     contentScale = ContentScale.Crop
                 )
 
@@ -280,7 +281,7 @@ private fun VideoCommentsView(
                         .size(40.dp)
                         .clip(CircleShape),
                     model = viewState.currentUser?.avatar.orEmpty(),
-                    contentDescription = "comment user image preview",
+                    contentDescription = stringResource(id = R.string.comment_user_image_preview),
                     contentScale = ContentScale.Crop
                 )
 
@@ -289,7 +290,7 @@ private fun VideoCommentsView(
                         .padding(start = 12.dp)
                         .weight(1f)
                         .height(48.dp),
-                    value = "Введите текст комментария",
+                    value = stringResource(id = R.string.enter_comment_text),
                     onValueChange = { },
                     colors = TextFieldDefaults.textFieldColors(
                         backgroundColor = Fronton.color.backgroundSecondary,
