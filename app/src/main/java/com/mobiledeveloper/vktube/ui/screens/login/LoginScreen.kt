@@ -32,6 +32,7 @@ fun LoginScreen(
                 Log.e("TAG", "exception ${result.exception}")
             }
             is VKAuthenticationResult.Success -> {
+                println("Token ${result.token.accessToken}")
                 navController.navigate(NavigationTree.Root.Main.name)
             }
         }

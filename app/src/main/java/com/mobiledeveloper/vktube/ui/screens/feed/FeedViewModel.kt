@@ -13,6 +13,7 @@ import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.lang.Exception
 import javax.inject.Inject
 
 @HiltViewModel
@@ -43,7 +44,13 @@ class FeedViewModel @Inject constructor(
 
     private fun fetchVideos() {
         viewModelScope.launch(Dispatchers.IO) {
-            val userId = userRepository.fetchLocalUser().userId
+            val userId = try {
+                userRepository.fetchLocalUser().userId
+            } catch (e: Exception) {
+                userRepository.fetchAndSaveUser()
+                userRepository.fetchLocalUser().userId
+            }
+
             val clubs = clubsRepository.fetchClubs(userId)
             val videos = clubsRepository.fetchVideos(clubs = clubs.items, count = 20)
             updateState(viewState.copy(

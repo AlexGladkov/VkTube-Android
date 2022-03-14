@@ -5,6 +5,7 @@ import com.vk.api.sdk.VK
 import com.vk.api.sdk.VKApiCallback
 import com.vk.api.sdk.requests.VKRequest
 import com.vk.dto.common.id.UserId
+import com.vk.dto.common.id.unaryMinus
 import com.vk.sdk.api.groups.GroupsService
 import com.vk.sdk.api.groups.dto.GroupsGetResponse
 import com.vk.sdk.api.video.VideoService
@@ -34,8 +35,8 @@ class ClubsRepository @Inject constructor() {
 
     suspend fun fetchVideos(clubs: List<UserId>, count: Int): List<VideoDataModel> {
         val requests = clubs.map {
-            println("Video get ${it.value}")
-            VideoService().videoGet(count = count, ownerId = it)
+            println("Video get ${-it.value}")
+            VideoService().videoGet(count = count, ownerId = -it)
         }
 
         val listResponse = mutableListOf<VideoGetResponse>()

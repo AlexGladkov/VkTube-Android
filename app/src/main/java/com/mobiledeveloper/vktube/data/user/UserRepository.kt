@@ -35,6 +35,7 @@ class UserRepository @Inject constructor(
 
                     override fun success(result: List<UsersUserFull>) {
                         try {
+                            println("User ${result.first()}")
                             localDataSource.saveUser(result.first())
                             continuation.resume(true)
                         } catch (e: java.lang.Exception) {
