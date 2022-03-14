@@ -52,7 +52,7 @@ class FeedViewModel @Inject constructor(
             }
 
             val clubs = clubsRepository.fetchClubs(userId)
-            val videos = clubsRepository.fetchVideos(clubs = clubs.items, count = 20)
+            val videos = clubsRepository.fetchVideos(clubs = clubs, count = 20)
             updateState(viewState.copy(
                 items = videos.mapNotNull { model ->
                     model.item.mapToVideoCellModel(

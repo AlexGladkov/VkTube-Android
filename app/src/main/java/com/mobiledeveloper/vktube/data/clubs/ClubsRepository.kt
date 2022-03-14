@@ -7,6 +7,7 @@ import com.vk.api.sdk.requests.VKRequest
 import com.vk.dto.common.id.UserId
 import com.vk.dto.common.id.unaryMinus
 import com.vk.sdk.api.groups.GroupsService
+import com.vk.sdk.api.groups.dto.GroupsGetObjectExtendedResponse
 import com.vk.sdk.api.groups.dto.GroupsGetResponse
 import com.vk.sdk.api.video.VideoService
 import com.vk.sdk.api.video.dto.VideoGetResponse
@@ -33,10 +34,9 @@ fun VideoVideoFull.mapToVideoDataModel(
 
 class ClubsRepository @Inject constructor() {
 
-    suspend fun fetchVideos(clubs: List<UserId>, count: Int): List<VideoDataModel> {
-        val requests = clubs.map {
-            println("Video get ${-it.value}")
-            VideoService().videoGet(count = count, ownerId = -it)
+    suspend fun fetchVideos(clubs: GroupsGetObjectExtendedResponse, count: Int): List<VideoDataModel> {
+        val requests = clubs.items.map {
+            VideoService().videoGet(count = count, ownerId = -it.id)
         }
 
         val listResponse = mutableListOf<VideoGetResponse>()
@@ -49,11 +49,13 @@ class ClubsRepository @Inject constructor() {
         }
 
         val videoItems = mutableListOf<VideoDataModel>()
-        listResponse.forEach {
-            videoItems.addAll(it.items.map { videoFull ->
+        listResponse.forEach { response ->
+            videoItems.addAll(response.items.map { videoFull ->
+                val group = clubs.items.firstOrNull() { it.id == videoFull.ownerId }
+
                 videoFull.mapToVideoDataModel(
-                    userName = "",
-                    userImage = ""
+                    userName = group?.screenName.orEmpty(),
+                    userImage = group?.photo100.orEmpty()
                 )
             })
         }
@@ -62,16 +64,16 @@ class ClubsRepository @Inject constructor() {
         return videoItems.reversed()
     }
 
-    suspend fun fetchClubs(userId: Long): GroupsGetResponse {
+    suspend fun fetchClubs(userId: Long): GroupsGetObjectExtendedResponse {
         return suspendCoroutine { continuation ->
             VK.execute(
-                GroupsService().groupsGet(userId = UserId(userId), count = 100),
-                object : VKApiCallback<GroupsGetResponse> {
+                GroupsService().groupsGetExtended(userId = UserId(userId), count = 100),
+                object : VKApiCallback<GroupsGetObjectExtendedResponse> {
                     override fun fail(error: Exception) {
                         continuation.resumeWithException(error)
                     }
 
-                    override fun success(result: GroupsGetResponse) {
+                    override fun success(result: GroupsGetObjectExtendedResponse) {
                         continuation.resume(result)
                     }
                 })

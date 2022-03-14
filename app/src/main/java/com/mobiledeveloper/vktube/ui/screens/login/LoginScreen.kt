@@ -56,7 +56,7 @@ fun LoginScreen(
                 backgroundColor = Fronton.color.controlPrimary
             ),
             onClick = {
-                launcher.launch(setOf(VKScope.WALL, VKScope.VIDEO))
+                launcher.launch(setOf(VKScope.WALL, VKScope.VIDEO, VKScope.GROUPS))
             }
         ) {
             Text(text = stringResource(id = R.string.login_to_vk), color = Fronton.color.textInvert)
