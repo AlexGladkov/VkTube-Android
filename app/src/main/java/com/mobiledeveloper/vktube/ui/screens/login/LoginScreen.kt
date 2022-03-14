@@ -1,12 +1,7 @@
 package com.mobiledeveloper.vktube.ui.screens.login
 
-import android.app.Activity
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContract
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,24 +12,30 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.mobiledeveloper.vktube.ui.screens.login.models.LoginEvent
+import androidx.navigation.NavController
+import com.mobiledeveloper.vktube.navigation.NavigationTree
 import com.mobiledeveloper.vktube.ui.theme.Fronton
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import com.vk.api.sdk.VK.getVKAuthActivityResultContract
+import com.vk.api.sdk.auth.VKAuthenticationResult
+import com.vk.api.sdk.auth.VKScope
 
 @Composable
 fun LoginScreen(
-    loginViewModel: LoginViewModel
+    navController: NavController,
+    loginViewModel: LoginViewModel,
 ) {
-    val activity = LocalContext.current as Activity
-
+    val launcher = rememberLauncherForActivityResult(getVKAuthActivityResultContract()) { result ->
+        when (result) {
+            is VKAuthenticationResult.Failed -> {
+                Log.e("TAG", "exception ${result.exception}")
+            }
+            is VKAuthenticationResult.Success -> {
+                navController.navigate(NavigationTree.Root.Main.name)
+            }
+        }
+    }
     Surface(
         modifier = Modifier
             .background(Fronton.color.backgroundPrimary)
@@ -50,7 +51,7 @@ fun LoginScreen(
                 backgroundColor = Fronton.color.controlPrimary
             ),
             onClick = {
-                loginViewModel.obtainEvent(LoginEvent.LoginClicked(activity))
+                launcher.launch(setOf(VKScope.WALL, VKScope.VIDEO))
             }
         ) {
             Text(text = "Login to VK", color = Fronton.color.textInvert)

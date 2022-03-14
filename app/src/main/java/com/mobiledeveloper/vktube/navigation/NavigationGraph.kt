@@ -26,7 +26,7 @@ fun NavigationGraph() {
         }
         composable(NavigationTree.Root.Auth.name) {
             val loginViewModel = hiltViewModel<LoginViewModel>()
-            LoginScreen(loginViewModel)
+            LoginScreen(navController, loginViewModel)
         }
         composable(NavigationTree.Root.Main.name) {
             val feedViewModel = hiltViewModel<FeedViewModel>()
