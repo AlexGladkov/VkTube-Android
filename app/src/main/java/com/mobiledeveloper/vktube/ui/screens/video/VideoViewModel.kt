@@ -14,6 +14,7 @@ import com.vk.dto.common.id.UserId
 import com.vk.sdk.api.wall.dto.WallWallComment
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import java.lang.Exception
 import java.lang.IllegalStateException
 import javax.inject.Inject
 
@@ -51,11 +52,15 @@ class VideoViewModel @Inject constructor(
                 )
             )
 
-            val comments =
-                commentsRepository.fetchCommentsForVideo(videoId = video.videoId, count = 20)
-            updateState(viewState.copy(
-                comments = comments.items.map { it.mapToCommentCellModel() }
-            ))
+            try {
+                val comments =
+                    commentsRepository.fetchCommentsForVideo(videoId = video.videoId, count = 20)
+                updateState(viewState.copy(
+                    comments = comments.items.map { it.mapToCommentCellModel() }
+                ))
+            } catch (e: Exception) {
+                println(e.localizedMessage)
+            }
         }
     }
 
