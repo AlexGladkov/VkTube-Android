@@ -1,8 +1,7 @@
 package com.mobiledeveloper.vktube.ui.screens.video
 
-import android.graphics.Bitmap
-import android.os.Build
-import android.webkit.*
+import android.webkit.WebSettings
+import android.webkit.WebView
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,14 +10,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -46,8 +44,8 @@ fun VideoScreen(
     videoId: Long?,
     videoViewModel: VideoViewModel
 ) {
-    val viewState by videoViewModel.viewStates().observeAsState(VideoViewState())
-    val viewAction by videoViewModel.viewEffects().observeAsState()
+    val viewState by videoViewModel.viewStates().collectAsState()
+    val viewAction by videoViewModel.viewActions().collectAsState(initial = null)
 
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp

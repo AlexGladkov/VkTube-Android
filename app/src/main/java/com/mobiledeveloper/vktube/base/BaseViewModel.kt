@@ -1,10 +1,10 @@
 package com.mobiledeveloper.vktube.base
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -12,33 +12,27 @@ abstract class BaseViewModel<State, Action, Event>(
     initialState: State
 ) : ViewModel() {
 
-    private val _viewStates: MutableLiveData<State> = MutableLiveData()
-    fun viewStates(): LiveData<State> = _viewStates
+    private val _viewStates: MutableStateFlow<State> = MutableStateFlow(initialState)
+    fun viewStates(): StateFlow<State> = _viewStates
 
-    private var _viewState: State? = null
-    protected val viewState: State
-        @Synchronized get() = _viewState
-            ?: throw UninitializedPropertyAccessException("\"viewState\" was queried before being initialized")
-    private val _viewActions: SingleLiveAction<Action?> = SingleLiveAction()
-    fun viewEffects(): SingleLiveAction<Action?> = _viewActions
+    private var _viewState: State = initialState
+    protected val viewState: State = _viewState
 
-    init {
-        _viewState = initialState
-        _viewStates.value = initialState!!
-    }
+    private val _viewActions: Channel<Action?> = Channel()
+    fun viewActions(): Flow<Action?> = _viewActions.receiveAsFlow()
 
     abstract fun obtainEvent(viewEvent: Event)
 
     protected suspend fun updateState(state: State) {
         _viewState = state
         withContext(viewModelScope.coroutineContext) {
-            _viewStates.value = state!!
+            _viewStates.emit(state)
         }
     }
 
     protected suspend fun callAction(action: Action?) =
         withContext(viewModelScope.coroutineContext) {
-            _viewActions.value = action
+            _viewActions.send(action)
         }
 
     /**
