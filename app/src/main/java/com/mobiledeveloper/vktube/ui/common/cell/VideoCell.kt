@@ -18,12 +18,13 @@ import coil.compose.AsyncImage
 import com.mobiledeveloper.vktube.R
 import com.mobiledeveloper.vktube.ui.theme.Fronton
 import com.mobiledeveloper.vktube.utils.DateUtil
+import com.mobiledeveloper.vktube.utils.NumberUtil
 import com.vk.sdk.api.video.dto.VideoVideoFull
 
 data class VideoCellModel(
     val videoId: Long, val subscribers: String,
     val title: String, val previewUrl: String, val userImage: String, val userName: String,
-    val viewsCount: String, val dateAdded: Int,
+    val viewsCount: Int, val dateAdded: Int,
     val likes: Int, val likesByMe: Boolean, val videoUrl: String
 )
 
@@ -39,7 +40,7 @@ fun VideoVideoFull.mapToVideoCellModel(userImage: String, userName: String): Vid
         previewUrl = maxQualityImage?.url.orEmpty(),
         userImage = userImage,
         userName = userName,
-        viewsCount = "${views ?: 0} просмотров",
+        viewsCount = views ?: 0,
         dateAdded = addingDate?:0,
         subscribers = "1.2 тыс подписчиков",
         likes = likes?.count ?: 0,
@@ -74,13 +75,17 @@ fun VideoCell(model: VideoCellModel, onVideoClick: () -> Unit) {
         ) {
 
             AsyncImage(
-                modifier = Modifier.size(40.dp).clip(CircleShape),
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape),
                 model = model.userImage,
                 contentDescription = stringResource(id = R.string.user_image_preview),
                 contentScale = ContentScale.Crop
             )
 
-            Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp).weight(1f)) {
+            Column(modifier = Modifier
+                .padding(start = 16.dp, end = 16.dp)
+                .weight(1f)) {
                 Text(
                     text = model.title,
                     color = Fronton.color.textPrimary,
@@ -89,7 +94,9 @@ fun VideoCell(model: VideoCellModel, onVideoClick: () -> Unit) {
                 )
                 Text(
                     modifier = Modifier.padding(top = 2.dp),
-                    text = "${model.userName} • ${model.viewsCount} • ${DateUtil.getTimeAgo(model.dateAdded,context)}",
+                    text = "${model.userName} • " +
+                            "${NumberUtil.formatNumber(model.viewsCount, context)} • " +
+                            DateUtil.getTimeAgo(model.dateAdded, context),
                     color = Fronton.color.textSecondary,
                     style = Fronton.typography.body.small.short
                 )

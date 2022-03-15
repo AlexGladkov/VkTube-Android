@@ -41,6 +41,7 @@ import com.mobiledeveloper.vktube.ui.screens.video.models.VideoEvent
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoViewState
 import com.mobiledeveloper.vktube.ui.theme.Fronton
 import com.mobiledeveloper.vktube.utils.DateUtil
+import com.mobiledeveloper.vktube.utils.NumberUtil
 import kotlinx.coroutines.launch
 
 
@@ -133,7 +134,7 @@ fun VideoScreenView(
         item {
             Text(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                text = "${video.viewsCount} • ${DateUtil.getTimeAgo(video.dateAdded,context)}",
+                text = "${NumberUtil.formatNumber(video.viewsCount, context)} • ${DateUtil.getTimeAgo(video.dateAdded,context)}",
                 color = Fronton.color.textSecondary,
                 style = Fronton.typography.body.medium.short,
                 overflow = TextOverflow.Ellipsis,

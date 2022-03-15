@@ -22,4 +22,9 @@
     <string name="hours_ago">часов назад</string>
     <string name="hours_ago_2_3_4">часа назад</string>
     <string name="hour_ago">час назад</string>
+
+    <string name="views">просмотров</string>
+    <string name="thousand">тыс.</string>
+    <string name="million">мил.</string>
+
 </resources>

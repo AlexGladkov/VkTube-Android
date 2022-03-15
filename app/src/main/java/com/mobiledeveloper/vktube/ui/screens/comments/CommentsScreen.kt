@@ -26,7 +26,7 @@ fun CommentsScreen(
     onSendClick: (String) -> Unit
 ) {
     Column {
-        CommentsHeaderView(count = viewState.video?.viewsCount.orEmpty())
+        CommentsHeaderView(count = viewState.video?.viewsCount.toString())
         CommentsAddView(viewState, onSendClick)
         Divider(thickness = 1.dp, color = Fronton.color.controlMinor)
         CommentsList(viewState)
