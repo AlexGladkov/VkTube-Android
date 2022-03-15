@@ -8,12 +8,16 @@ import java.util.concurrent.TimeUnit
 
 object DateUtil {
 
-    private const val UI_DATE_FORMAT = "dd MMM yyyy"
 
-    fun getTimeAgo(unixTime:Int,context:Context?=null):String{
+    private const val UI_DATE_FORMAT = "dd MMM yyyy"
+    private const val ONE=1
+    private const val FEW=2
+    private const val MANY=99
+
+    fun getTimeAgo(unixTime: Int, context: Context? = null): String {
         try {
-            val nowTime=System.currentTimeMillis()
-            val time=unixTime*1000L
+            val nowTime = System.currentTimeMillis()
+            val time = unixTime * 1000L
 
             val seconds = TimeUnit.MILLISECONDS.toSeconds(nowTime - time).toInt()
             val minutes = TimeUnit.MILLISECONDS.toMinutes(nowTime - time).toInt()
@@ -23,31 +27,31 @@ object DateUtil {
             return when {
                 days > 0 -> getDate(time, UI_DATE_FORMAT)
                 hours > 0 -> when(hours){
-                    1->hours.toString()+" "+context?.resources?.getString(R.string.hour_ago)
-                    21->hours.toString()+" "+context?.resources?.getString(R.string.hour_ago)
-                    in 2..5->hours.toString()+" "+context?.resources?.getString(R.string.hours_ago_2_3_4)
-                    in 22..23->hours.toString()+" "+context?.resources?.getString(R.string.hours_ago_2_3_4)
-                    else -> hours.toString()+" "+context?.resources?.getString(R.string.hours_ago)
+                    1 -> context?.resources?.getQuantityString(R.plurals.hours, ONE, hours) ?: hours.toString()
+                    21 -> context?.resources?.getQuantityString(R.plurals.hours, ONE, hours) ?: hours.toString()
+                    in 2..4 -> context?.resources?.getQuantityString(R.plurals.hours, FEW, hours) ?: hours.toString()
+                    in 22..23 -> context?.resources?.getQuantityString(R.plurals.hours, FEW, hours) ?: hours.toString()
+                    else -> context?.resources?.getQuantityString(R.plurals.hours, MANY, hours) ?: hours.toString()
                 }
                 minutes > 0 -> with(minutes) {
                     when {
-                        equals(1) -> minutes.toString() + " " + context?.resources?.getString(R.string.ru_1_minute_ago)
-                        toInt() in 5..19 -> minutes.toString() + " " + context?.resources?.getString(R.string.ru_10_minute_ago)
-                        mod(10) == 0 -> minutes.toString() + " " + context?.resources?.getString(R.string.ru_10_minute_ago)
-                        mod(10) == 1 -> minutes.toString() + " " + context?.resources?.getString(R.string.ru_1_minute_ago)
-                        mod(10) in 2..4 -> minutes.toString() + " " + context?.resources?.getString(R.string.ru_2_minutes_ago)
-                        mod(10) in 5..9 -> minutes.toString() + " " + context?.resources?.getString(R.string.ru_10_minute_ago)
+                        equals(1) -> context?.resources?.getQuantityString(R.plurals.minutes, ONE, minutes) ?: minutes.toString()
+                        toInt() in 5..19 -> context?.resources?.getQuantityString(R.plurals.minutes, MANY, minutes) ?: minutes.toString()
+                        mod(10) == 0 -> context?.resources?.getQuantityString(R.plurals.minutes, MANY, minutes) ?: minutes.toString()
+                        mod(10) == 1 -> context?.resources?.getQuantityString(R.plurals.minutes, ONE, minutes) ?: minutes.toString()
+                        mod(10) in 2..4 -> context?.resources?.getQuantityString(R.plurals.minutes, FEW, minutes) ?: minutes.toString()
+                        mod(10) in 5..9 -> context?.resources?.getQuantityString(R.plurals.minutes, MANY, minutes) ?: minutes.toString()
                         else -> ""
                     }
                 }
                 else -> with(seconds) {
                     when {
-                        equals(1) -> seconds.toString() + " " + context?.resources?.getString(R.string.ru_1_second_ago)
-                        toInt() in 5..19 -> seconds.toString() + " " + context?.resources?.getString(R.string.ru_10_seconds_ago)
-                        mod(10) == 0 -> seconds.toString() + " " + context?.resources?.getString(R.string.ru_10_seconds_ago)
-                        mod(10) == 1 -> seconds.toString() + " " + context?.resources?.getString(R.string.ru_1_second_ago)
-                        mod(10) in 2..4 -> seconds.toString() + " " + context?.resources?.getString(R.string.ru_2_seconds_ago)
-                        mod(10) in 5..9 -> seconds.toString() + " " + context?.resources?.getString(R.string.ru_10_seconds_ago)
+                        equals(1) -> context?.resources?.getQuantityString(R.plurals.seconds, ONE, seconds) ?: seconds.toString()
+                        toInt() in 5..19 -> context?.resources?.getQuantityString(R.plurals.seconds, MANY, seconds) ?: seconds.toString()
+                        mod(10) == 0 -> context?.resources?.getQuantityString(R.plurals.seconds, MANY, seconds) ?: seconds.toString()
+                        mod(10) == 1 -> context?.resources?.getQuantityString(R.plurals.seconds, ONE, seconds) ?: seconds.toString()
+                        mod(10) in 2..4 -> context?.resources?.getQuantityString(R.plurals.seconds, FEW, seconds) ?: seconds.toString()
+                        mod(10) in 5..9 -> context?.resources?.getQuantityString(R.plurals.seconds, MANY, seconds) ?: seconds.toString()
                         else -> ""
                     }
                 }

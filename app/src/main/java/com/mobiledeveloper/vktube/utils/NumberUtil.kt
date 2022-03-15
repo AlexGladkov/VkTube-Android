@@ -5,21 +5,24 @@ import com.mobiledeveloper.vktube.R
 
 object NumberUtil {
 
-    fun formatNumber(number:Int,context: Context): String {
-        var i=0
+    private const val ONE=1
+    private const val FEW=2
+    private const val MANY=99
 
-        var resultNumber=number
+    fun formatViewsNumber(number: Int, context: Context): String {
+        var i = 0
+        var resultNumber = number
 
-        while(resultNumber>=1000){
+        while (resultNumber >= 1000) {
             resultNumber /= 1000
             i++
         }
 
-        return when (i){
-            0-> "$resultNumber ${context.resources.getString(R.string.views)}"
-            1-> "$resultNumber ${context.resources.getString(R.string.thousand)} ${context.resources.getString(R.string.views)}"
-            2-> "$resultNumber ${context.resources.getString(R.string.million)} ${context.resources.getString(R.string.views)}"
-            else-> resultNumber.toString()
+        return when (i) {
+            0 -> context?.resources?.getQuantityString(R.plurals.views, ONE, resultNumber) ?: resultNumber.toString()
+            1 -> context?.resources?.getQuantityString(R.plurals.views, FEW, resultNumber) ?: resultNumber.toString()
+            2 -> context?.resources?.getQuantityString(R.plurals.views, MANY, resultNumber) ?: resultNumber.toString()
+            else -> resultNumber.toString()
         }
     }
 }

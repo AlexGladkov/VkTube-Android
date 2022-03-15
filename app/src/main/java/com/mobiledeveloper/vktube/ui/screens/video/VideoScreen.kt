@@ -1,7 +1,5 @@
 package com.mobiledeveloper.vktube.ui.screens.video
 
-import android.graphics.Bitmap
-import android.os.Build
 import android.webkit.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -22,8 +20,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -134,7 +130,7 @@ fun VideoScreenView(
         item {
             Text(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                text = "${NumberUtil.formatNumber(video.viewsCount, context)} • ${DateUtil.getTimeAgo(video.dateAdded,context)}",
+                text = "${NumberUtil.formatViewsNumber(video.viewsCount, context)} • ${DateUtil.getTimeAgo(video.dateAdded,context)}",
                 color = Fronton.color.textSecondary,
                 style = Fronton.typography.body.medium.short,
                 overflow = TextOverflow.Ellipsis,
