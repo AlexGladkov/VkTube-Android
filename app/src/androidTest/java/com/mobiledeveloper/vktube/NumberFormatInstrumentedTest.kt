@@ -18,15 +18,15 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class NumberFormatInstrumentedTest {
 
-    var currentTime=0L
-    val TEST_TAG="Test_tag"
+    var currentTime = 0L
+    val TEST_TAG = "Test_tag"
 
-    private lateinit var appContext:Context
+    private lateinit var appContext: Context
 
     @Before
-    fun setup(){
+    fun setup() {
         appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        currentTime=System.currentTimeMillis()
+        currentTime = System.currentTimeMillis()
     }
 
     @Test

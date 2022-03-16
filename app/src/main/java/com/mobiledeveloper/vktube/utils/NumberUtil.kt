@@ -21,7 +21,6 @@ object NumberUtil {
         }
 
         return res?.getQuantityString(idFormat, i, resultNumber) +" "+formatDescriptorNumber(i, resultNumber, res, idDescriptor)
-
     }
 
     private fun formatDescriptorNumber(count:Int, number: Int, res: Resources?, idDescriptor:Int): String? {

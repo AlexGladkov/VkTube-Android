@@ -2,15 +2,13 @@ package com.mobiledeveloper.vktube
 
 import android.content.Context
 import android.util.Log
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import com.mobiledeveloper.vktube.utils.DateUtil
-
+import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-
-import org.junit.Assert.*
-import org.junit.Before
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -20,56 +18,93 @@ import org.junit.Before
 @RunWith(AndroidJUnit4::class)
 class DateInstrumentedTest {
 
-    var currentTime=0L
-    val TEST_TAG="Test_tag"
+    var currentTime = 0L
+    val TEST_TAG = "Test_tag"
 
-    private lateinit var appContext:Context
+    private lateinit var appContext: Context
 
     @Before
-    fun setup(){
+    fun setup() {
         appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        currentTime=System.currentTimeMillis()
+        currentTime = System.currentTimeMillis()
     }
 
     @Test
-    fun showDateTest() {
+    fun showSecondsTest1() {
 
-        val date=DateUtil.getTimeAgo((currentTime/1000).toInt()-2*24*60*60,appContext)
+        val secondsAgo = 1
 
-        Log.d(TEST_TAG,date)
-        assertEquals(true, true)
+        val timeAgoString =
+            DateUtil.getTimeAgo((currentTime / 1000).toInt() - secondsAgo, appContext)
+
+        Log.d(TEST_TAG, timeAgoString)
+
+        assertEquals("$secondsAgo секунду назад", timeAgoString)
     }
 
     @Test
-    fun showSecondsTest() {
+    fun showSecondsTest2() {
 
-        for (i in 1..60){
-            val v=DateUtil.getTimeAgo((currentTime/1000).toInt()-i,appContext)
-            Log.d(TEST_TAG,v)
-        }
+        val secondsAgo = 2
 
-        assertEquals(true, true)
+        val timeAgoString =
+            DateUtil.getTimeAgo((currentTime / 1000).toInt() - secondsAgo, appContext)
+
+        Log.d(TEST_TAG, timeAgoString)
+
+        assertEquals("$secondsAgo секунды назад", timeAgoString)
     }
 
     @Test
-    fun showMinutesTest() {
+    fun showSecondsTest5() {
 
-        for (i in 1..60){
-            val v=DateUtil.getTimeAgo((currentTime/1000).toInt()-i*60,appContext)
-            Log.d(TEST_TAG,v)
-        }
+        val secondsAgo = 5
 
-        assertEquals(true, true)
+        val timeAgoString =
+            DateUtil.getTimeAgo((currentTime / 1000).toInt() - secondsAgo, appContext)
+
+        Log.d(TEST_TAG, timeAgoString)
+
+        assertEquals("$secondsAgo секунд назад", timeAgoString)
     }
 
     @Test
-    fun showHoursTest() {
+    fun showSecondsTest21() {
 
-        for (i in 1..24){
-            val v=DateUtil.getTimeAgo((currentTime/1000).toInt()-i*60*60,appContext)
-            Log.d(TEST_TAG,v)
-        }
+        val secondsAgo = 21
 
-        assertEquals(true, true)
+        val timeAgoString =
+            DateUtil.getTimeAgo((currentTime / 1000).toInt() - secondsAgo, appContext)
+
+        Log.d(TEST_TAG, timeAgoString)
+
+        assertEquals("$secondsAgo секунду назад", timeAgoString)
     }
+
+    @Test
+    fun showSecondsTest32() {
+
+        val secondsAgo = 32
+
+        val timeAgoString =
+            DateUtil.getTimeAgo((currentTime / 1000).toInt() - secondsAgo, appContext)
+
+        Log.d(TEST_TAG, timeAgoString)
+
+        assertEquals("$secondsAgo секунды назад", timeAgoString)
+    }
+
+    @Test
+    fun showSecondsTest49() {
+
+        val secondsAgo = 49
+
+        val timeAgoString =
+            DateUtil.getTimeAgo((currentTime / 1000).toInt() - secondsAgo, appContext)
+
+        Log.d(TEST_TAG, timeAgoString)
+
+        assertEquals("$secondsAgo секунд назад", timeAgoString)
+    }
+
 }

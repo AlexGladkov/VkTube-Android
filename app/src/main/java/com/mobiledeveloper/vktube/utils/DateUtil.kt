@@ -1,6 +1,7 @@
 package com.mobiledeveloper.vktube.utils
 
 import android.content.Context
+import android.content.res.Resources
 import com.mobiledeveloper.vktube.R
 import java.text.SimpleDateFormat
 import java.util.*
@@ -28,37 +29,25 @@ object DateUtil {
 
             return when {
                 days > 0 -> getDate(time, UI_DATE_FORMAT)
-                hours > 0 -> when(hours){
-                    1 -> res.getQuantityString(R.plurals.hours, ONE, hours) ?: hours.toString()
-                    21 -> res.getQuantityString(R.plurals.hours, ONE, hours) ?: hours.toString()
-                    in 2..4 -> res.getQuantityString(R.plurals.hours, FEW, hours) ?: hours.toString()
-                    in 22..23 -> res.getQuantityString(R.plurals.hours, FEW, hours) ?: hours.toString()
-                    else -> res.getQuantityString(R.plurals.hours, MANY, hours) ?: hours.toString()
-                }
-                minutes > 0 -> with(minutes) {
-                    when {
-                        equals(1) -> res.getQuantityString(R.plurals.minutes, ONE, minutes) ?: minutes.toString()
-                        toInt() in 5..19 -> res.getQuantityString(R.plurals.minutes, MANY, minutes) ?: minutes.toString()
-                        mod(10) == 0 -> res.getQuantityString(R.plurals.minutes, MANY, minutes) ?: minutes.toString()
-                        mod(10) == 1 -> res.getQuantityString(R.plurals.minutes, ONE, minutes) ?: minutes.toString()
-                        mod(10) in 2..4 -> res.getQuantityString(R.plurals.minutes, FEW, minutes) ?: minutes.toString()
-                        mod(10) in 5..9 -> res.getQuantityString(R.plurals.minutes, MANY, minutes) ?: minutes.toString()
-                        else -> ""
-                    }
-                }
-                else -> with(seconds) {
-                    when {
-                        equals(1) -> res.getQuantityString(R.plurals.seconds, ONE, seconds) ?: seconds.toString()
-                        toInt() in 5..19 -> res.getQuantityString(R.plurals.seconds, MANY, seconds) ?: seconds.toString()
-                        mod(10) == 0 -> res.getQuantityString(R.plurals.seconds, MANY, seconds) ?: seconds.toString()
-                        mod(10) == 1 -> res.getQuantityString(R.plurals.seconds, ONE, seconds) ?: seconds.toString()
-                        mod(10) in 2..4 -> res.getQuantityString(R.plurals.seconds, FEW, seconds) ?: seconds.toString()
-                        mod(10) in 5..9 -> res.getQuantityString(R.plurals.seconds, MANY, seconds) ?: seconds.toString()
-                        else -> ""
-                    }
-                }
+                hours > 0 -> getTimeWithDescriptor(hours, res, R.plurals.hours)
+                minutes > 0 -> getTimeWithDescriptor(minutes, res, R.plurals.minutes)
+                else -> getTimeWithDescriptor(seconds, res, R.plurals.seconds)
             }
 
+    }
+
+    private fun getTimeWithDescriptor(value: Int, res: Resources, idDescriptor: Int): String {
+        return with(value) {
+            when {
+                equals(1) -> res.getQuantityString(idDescriptor, ONE, value)
+                toInt() in 5..19 -> res.getQuantityString(idDescriptor, MANY, value)
+                mod(10) == 0 -> res.getQuantityString(idDescriptor, MANY, value)
+                mod(10) == 1 -> res.getQuantityString(idDescriptor, ONE, value)
+                mod(10) in 2..4 -> res.getQuantityString(idDescriptor, FEW, value)
+                mod(10) in 5..9 -> res.getQuantityString(idDescriptor, MANY, value)
+                else -> ""
+            }
+        }
     }
 
     private fun getDate(milliSeconds: Long, dateFormat: String): String {
