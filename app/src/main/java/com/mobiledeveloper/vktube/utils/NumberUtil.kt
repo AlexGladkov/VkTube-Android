@@ -5,9 +5,9 @@ import android.content.res.Resources
 
 object NumberUtil {
 
-    private const val ONE=1
-    private const val FEW=2
-    private const val MANY=99
+    private const val ONE = 1
+    private const val FEW = 2
+    private const val MANY = 99
 
     fun formatNumberShort(number: Int, context: Context, idFormat:Int, idDescriptor:Int): String {
 
@@ -20,16 +20,8 @@ object NumberUtil {
             i++
         }
 
-        return when (i) {
-            0 -> res?.getQuantityString(idFormat, ONE, resultNumber) +" "+
-                    formatDescriptorNumber(i, resultNumber, res, idDescriptor)
-            1 -> res?.getQuantityString(idFormat, FEW, resultNumber) +" "+
-                    formatDescriptorNumber(i, resultNumber, res, idDescriptor)
-            2 -> res?.getQuantityString(idFormat, MANY, resultNumber) +" "+
-                    formatDescriptorNumber(i, resultNumber, res, idDescriptor)
-            else -> resultNumber.toString() +" "+
-                    formatDescriptorNumber(i, resultNumber, res, idDescriptor)
-        }
+        return res?.getQuantityString(idFormat, i, resultNumber) +" "+formatDescriptorNumber(i, resultNumber, res, idDescriptor)
+
     }
 
     private fun formatDescriptorNumber(count:Int, number: Int, res: Resources?, idDescriptor:Int): String? {
