@@ -127,15 +127,13 @@ fun VideoScreenView(
             )
         }
 
+        val views = NumberUtil.formatNumberShort(video.viewsCount, context, R.plurals.number_short_format, R.plurals.views)
+        val date = DateUtil.getTimeAgo(video.dateAdded,context)
+
         item {
             Text(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                text = "${NumberUtil.formatNumberShort(
-                        video.viewsCount, context,
-                        R.plurals.number_short_format,
-                        R.plurals.views
-                    )
-                } • ${DateUtil.getTimeAgo(video.dateAdded,context)}",
+                text = "$views • $date",
                 color = Fronton.color.textSecondary,
                 style = Fronton.typography.body.medium.short,
                 overflow = TextOverflow.Ellipsis,

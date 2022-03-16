@@ -74,17 +74,16 @@ fun VideoCell(model: VideoCellModel, onVideoClick: () -> Unit) {
         ) {
 
             AsyncImage(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape),
+                modifier = Modifier.size(40.dp).clip(CircleShape),
                 model = model.userImage,
                 contentDescription = stringResource(id = R.string.user_image_preview),
                 contentScale = ContentScale.Crop
             )
 
-            Column(modifier = Modifier
-                .padding(start = 16.dp, end = 16.dp)
-                .weight(1f)) {
+            val views = NumberUtil.formatNumberShort(model.viewsCount, context, R.plurals.number_short_format, R.plurals.views)
+            val date = DateUtil.getTimeAgo(model.dateAdded, context)
+
+            Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp).weight(1f)) {
                 Text(
                     text = model.title,
                     color = Fronton.color.textPrimary,
@@ -93,14 +92,7 @@ fun VideoCell(model: VideoCellModel, onVideoClick: () -> Unit) {
                 )
                 Text(
                     modifier = Modifier.padding(top = 2.dp),
-                    text = "${model.userName} • " +
-                            "${NumberUtil.formatNumberShort(
-                                    model.viewsCount, context,
-                                    R.plurals.number_short_format,
-                                    R.plurals.views
-                                )
-                            } • " +
-                            DateUtil.getTimeAgo(model.dateAdded, context),
+                    text = "${model.userName} • $views • $date",
                     color = Fronton.color.textSecondary,
                     style = Fronton.typography.body.small.short
                 )

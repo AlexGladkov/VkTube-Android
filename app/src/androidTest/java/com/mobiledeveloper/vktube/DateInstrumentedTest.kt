@@ -21,6 +21,8 @@ import org.junit.Before
 class DateInstrumentedTest {
 
     var currentTime=0L
+    val TEST_TAG="Test_tag"
+
     private lateinit var appContext:Context
 
     @Before
@@ -32,9 +34,9 @@ class DateInstrumentedTest {
     @Test
     fun showDateTest() {
 
-        val v=DateUtil.getTimeAgo((currentTime/1000).toInt()-2*24*60*60,appContext)
+        val date=DateUtil.getTimeAgo((currentTime/1000).toInt()-2*24*60*60,appContext)
 
-        Log.d("Test_tag",v)
+        Log.d(TEST_TAG,date)
         assertEquals(true, true)
     }
 
@@ -43,7 +45,7 @@ class DateInstrumentedTest {
 
         for (i in 1..60){
             val v=DateUtil.getTimeAgo((currentTime/1000).toInt()-i,appContext)
-            Log.d("Test_tag",v)
+            Log.d(TEST_TAG,v)
         }
 
         assertEquals(true, true)
@@ -54,7 +56,7 @@ class DateInstrumentedTest {
 
         for (i in 1..60){
             val v=DateUtil.getTimeAgo((currentTime/1000).toInt()-i*60,appContext)
-            Log.d("Test_tag",v)
+            Log.d(TEST_TAG,v)
         }
 
         assertEquals(true, true)
@@ -65,7 +67,7 @@ class DateInstrumentedTest {
 
         for (i in 1..24){
             val v=DateUtil.getTimeAgo((currentTime/1000).toInt()-i*60*60,appContext)
-            Log.d("Test_tag",v)
+            Log.d(TEST_TAG,v)
         }
 
         assertEquals(true, true)
