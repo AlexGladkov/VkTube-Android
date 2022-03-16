@@ -10,7 +10,7 @@ object NumberUtil {
 
     fun formatNumberShort(number: Int, context: Context, idFormat:Int, idDescriptor:Int): String {
 
-        val res=context.resources
+        val res = context.resources
         var i = 0
         var resultNumber = number
 
@@ -18,8 +18,7 @@ object NumberUtil {
             resultNumber /= 1000
             i++
         }
-
-        return res?.getQuantityString(idFormat, i, resultNumber) +" "+formatDescriptorNumber(i, resultNumber, res, idDescriptor)
+        return res?.getQuantityString(idFormat, i, resultNumber) + " " + formatDescriptorNumber(i, resultNumber, res, idDescriptor)
     }
 
     private fun formatDescriptorNumber(count:Int, number: Int, res: Resources?, idDescriptor:Int): String? {

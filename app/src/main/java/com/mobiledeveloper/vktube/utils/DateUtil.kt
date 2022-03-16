@@ -33,7 +33,6 @@ object DateUtil {
                 minutes > 0 -> getTimeWithDescriptor(minutes, res, R.plurals.minutes)
                 else -> getTimeWithDescriptor(seconds, res, R.plurals.seconds)
             }
-
     }
 
     private fun getTimeWithDescriptor(value: Int, res: Resources, idDescriptor: Int): String {
