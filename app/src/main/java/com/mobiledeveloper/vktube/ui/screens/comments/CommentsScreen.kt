@@ -28,7 +28,7 @@ fun CommentsScreen(
     onSendClick: (String) -> Unit
 ) {
     val context= LocalContext.current
-    val views = NumberUtil.formatNumberShort(viewState.video?.viewsCount ?:0 , context, R.plurals.number_short_format, R.plurals.views)
+    val views = NumberUtil.formatNumberShort(viewState.video?.viewsCount ?: 0 , context, R.plurals.number_short_format, R.plurals.views)
 
     Column {
         CommentsHeaderView(count = views)

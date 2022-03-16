@@ -2,12 +2,11 @@ package com.mobiledeveloper.vktube.utils
 
 import android.content.Context
 import android.content.res.Resources
+import com.mobiledeveloper.vktube.utils.Constants.FEW
+import com.mobiledeveloper.vktube.utils.Constants.MANY
+import com.mobiledeveloper.vktube.utils.Constants.ONE
 
 object NumberUtil {
-
-    private const val ONE = 1
-    private const val FEW = 2
-    private const val MANY = 99
 
     fun formatNumberShort(number: Int, context: Context, idFormat:Int, idDescriptor:Int): String {
 

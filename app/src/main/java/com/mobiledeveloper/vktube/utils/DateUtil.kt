@@ -3,6 +3,9 @@ package com.mobiledeveloper.vktube.utils
 import android.content.Context
 import android.content.res.Resources
 import com.mobiledeveloper.vktube.R
+import com.mobiledeveloper.vktube.utils.Constants.FEW
+import com.mobiledeveloper.vktube.utils.Constants.MANY
+import com.mobiledeveloper.vktube.utils.Constants.ONE
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -11,9 +14,6 @@ object DateUtil {
 
 
     private const val UI_DATE_FORMAT = "dd MMM yyyy"
-    private const val ONE = 1
-    private const val FEW = 2
-    private const val MANY = 99
 
     fun getTimeAgo(unixTime: Int, context: Context): String {
 
@@ -39,27 +39,20 @@ object DateUtil {
     private fun getTimeWithDescriptor(value: Int, res: Resources, idDescriptor: Int): String {
         return with(value) {
             when {
-                equals(1) -> res.getQuantityString(idDescriptor, ONE, value)
-                toInt() in 5..19 -> res.getQuantityString(idDescriptor, MANY, value)
-                mod(10) == 0 -> res.getQuantityString(idDescriptor, MANY, value)
                 mod(10) == 1 -> res.getQuantityString(idDescriptor, ONE, value)
                 mod(10) in 2..4 -> res.getQuantityString(idDescriptor, FEW, value)
-                mod(10) in 5..9 -> res.getQuantityString(idDescriptor, MANY, value)
+                mod(10) in 5..9 || mod(10) == 0 -> res.getQuantityString(idDescriptor, MANY, value)
                 else -> ""
             }
         }
     }
 
     private fun getDate(milliSeconds: Long, dateFormat: String): String {
-        return try {
-            val formatter = SimpleDateFormat(dateFormat,Locale.getDefault())
-            val calendar: Calendar = Calendar.getInstance()
+        val formatter = SimpleDateFormat(dateFormat,Locale.getDefault())
+        val calendar: Calendar = Calendar.getInstance()
 
-            calendar.timeInMillis = milliSeconds
-            formatter.format(calendar.time)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            ""
-        }
+        calendar.timeInMillis = milliSeconds
+
+        return  formatter.format(calendar.time)
     }
 }
