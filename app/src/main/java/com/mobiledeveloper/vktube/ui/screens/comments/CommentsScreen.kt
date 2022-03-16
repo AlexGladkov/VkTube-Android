@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -18,6 +19,7 @@ import coil.compose.AsyncImage
 import com.mobiledeveloper.vktube.R
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoViewState
 import com.mobiledeveloper.vktube.ui.theme.Fronton
+import com.mobiledeveloper.vktube.utils.NumberUtil
 
 @Composable
 fun CommentsScreen(
@@ -25,8 +27,15 @@ fun CommentsScreen(
     onCloseClick: () -> Unit,
     onSendClick: (String) -> Unit
 ) {
+    val context= LocalContext.current
+
     Column {
-        CommentsHeaderView(count = viewState.video?.viewsCount.toString())
+        CommentsHeaderView(count = NumberUtil.formatNumberShort(
+            viewState.video?.viewsCount ?:0 ,
+            context,
+            R.plurals.number_short_format,
+            R.plurals.views
+        ))
         CommentsAddView(viewState, onSendClick)
         Divider(thickness = 1.dp, color = Fronton.color.controlMinor)
         CommentsList(viewState)

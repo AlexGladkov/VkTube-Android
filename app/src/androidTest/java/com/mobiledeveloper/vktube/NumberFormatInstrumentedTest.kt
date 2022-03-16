@@ -12,6 +12,7 @@ import org.junit.runner.RunWith
 import org.junit.Assert.*
 import org.junit.Before
 
+import com.mobiledeveloper.vktube.R
 /**
  * Instrumented test, which will execute on an Android device.
  *
@@ -30,22 +31,71 @@ class NumberFormatInstrumentedTest {
     }
 
     @Test
-    fun viewsFormatTest() {
+    fun numberFormatTest() {
 
-        val v1=NumberUtil.formatViewsNumber(100,appContext)
-        Log.d("Test_tag",v1)
+        val v = NumberUtil.formatNumberShort(
+            1,
+            appContext,
+            R.plurals.number_short_format,
+            R.plurals.views
+        )
+        Log.d("Test_tag", v)
 
-        val v2=NumberUtil.formatViewsNumber(1000,appContext)
-        Log.d("Test_tag",v2)
+        val v1 = NumberUtil.formatNumberShort(
+            101,
+            appContext,
+            R.plurals.number_short_format,
+            R.plurals.views
+        )
+        Log.d("Test_tag", v1)
 
-        val v3=NumberUtil.formatViewsNumber(10000,appContext)
-        Log.d("Test_tag",v3)
+        val v2 = NumberUtil.formatNumberShort(
+            102,
+            appContext,
+            R.plurals.number_short_format,
+            R.plurals.views
+        )
+        Log.d("Test_tag", v2)
 
-        val v4=NumberUtil.formatViewsNumber(1000000,appContext)
+        val v3 = NumberUtil.formatNumberShort(
+            105,
+            appContext,
+            R.plurals.number_short_format,
+            R.plurals.views
+        )
+        Log.d("Test_tag", v3)
+
+        val v4 = NumberUtil.formatNumberShort(
+            112,
+            appContext,
+            R.plurals.number_short_format,
+            R.plurals.views
+        )
         Log.d("Test_tag",v4)
 
-        val v5=NumberUtil.formatViewsNumber(10000000,appContext)
-        Log.d("Test_tag",v5)
+        val v5 = NumberUtil.formatNumberShort(
+            122,
+            appContext,
+            R.plurals.number_short_format,
+            R.plurals.views
+        )
+        Log.d("Test_tag", v5)
+
+        val v6 = NumberUtil.formatNumberShort(
+            125,
+            appContext,
+            R.plurals.number_short_format,
+            R.plurals.views
+        )
+        Log.d("Test_tag", v6)
+
+        val v7 = NumberUtil.formatNumberShort(
+            1250,
+            appContext,
+            R.plurals.number_short_format,
+            R.plurals.views
+        )
+        Log.d("Test_tag", v7)
         assertEquals(true, true)
     }
 }

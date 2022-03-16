@@ -31,10 +31,16 @@
         <item quantity="many">%1d часов назад</item>
     </plurals>
 
+    <plurals name="number_short_format">
+        <item quantity="one">%1d</item>
+        <item quantity="few">%1d тыс.</item>
+        <item quantity="many">%1d млн.</item>
+    </plurals>
+
     <plurals name="views">
-        <item quantity="one">%1d просмотров</item>
-        <item quantity="few">%1d тыс. просмотров</item>
-        <item quantity="many">%1d млн. просмотров</item>
+        <item quantity="one">просмотр</item>
+        <item quantity="few">просмотра</item>
+        <item quantity="many">просмотров</item>
     </plurals>
 
 </resources>

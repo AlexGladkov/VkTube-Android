@@ -94,7 +94,12 @@ fun VideoCell(model: VideoCellModel, onVideoClick: () -> Unit) {
                 Text(
                     modifier = Modifier.padding(top = 2.dp),
                     text = "${model.userName} • " +
-                            "${NumberUtil.formatViewsNumber(model.viewsCount, context)} • " +
+                            "${NumberUtil.formatNumberShort(
+                                    model.viewsCount, context,
+                                    R.plurals.number_short_format,
+                                    R.plurals.views
+                                )
+                            } • " +
                             DateUtil.getTimeAgo(model.dateAdded, context),
                     color = Fronton.color.textSecondary,
                     style = Fronton.typography.body.small.short

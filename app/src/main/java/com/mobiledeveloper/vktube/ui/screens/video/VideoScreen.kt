@@ -130,7 +130,12 @@ fun VideoScreenView(
         item {
             Text(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                text = "${NumberUtil.formatViewsNumber(video.viewsCount, context)} • ${DateUtil.getTimeAgo(video.dateAdded,context)}",
+                text = "${NumberUtil.formatNumberShort(
+                        video.viewsCount, context,
+                        R.plurals.number_short_format,
+                        R.plurals.views
+                    )
+                } • ${DateUtil.getTimeAgo(video.dateAdded,context)}",
                 color = Fronton.color.textSecondary,
                 style = Fronton.typography.body.medium.short,
                 overflow = TextOverflow.Ellipsis,

@@ -1,7 +1,7 @@
 package com.mobiledeveloper.vktube.utils
 
 import android.content.Context
-import com.mobiledeveloper.vktube.R
+import android.content.res.Resources
 
 object NumberUtil {
 
@@ -9,7 +9,9 @@ object NumberUtil {
     private const val FEW=2
     private const val MANY=99
 
-    fun formatViewsNumber(number: Int, context: Context): String {
+    fun formatNumberShort(number: Int, context: Context, idFormat:Int, idDescriptor:Int): String {
+
+        val res=context.resources
         var i = 0
         var resultNumber = number
 
@@ -19,10 +21,29 @@ object NumberUtil {
         }
 
         return when (i) {
-            0 -> context?.resources?.getQuantityString(R.plurals.views, ONE, resultNumber) ?: resultNumber.toString()
-            1 -> context?.resources?.getQuantityString(R.plurals.views, FEW, resultNumber) ?: resultNumber.toString()
-            2 -> context?.resources?.getQuantityString(R.plurals.views, MANY, resultNumber) ?: resultNumber.toString()
-            else -> resultNumber.toString()
+            0 -> res?.getQuantityString(idFormat, ONE, resultNumber) +" "+
+                    formatDescriptorNumber(i, resultNumber, res, idDescriptor)
+            1 -> res?.getQuantityString(idFormat, FEW, resultNumber) +" "+
+                    formatDescriptorNumber(i, resultNumber, res, idDescriptor)
+            2 -> res?.getQuantityString(idFormat, MANY, resultNumber) +" "+
+                    formatDescriptorNumber(i, resultNumber, res, idDescriptor)
+            else -> resultNumber.toString() +" "+
+                    formatDescriptorNumber(i, resultNumber, res, idDescriptor)
+        }
+    }
+
+    private fun formatDescriptorNumber(count:Int, number: Int, res: Resources?, idDescriptor:Int): String? {
+
+        return when (count) {
+            0 -> return with(number) {
+                when {
+                    mod(10) == 1 -> res?.getQuantityString(idDescriptor, ONE)
+                    mod(10) in 5..9 -> res?.getQuantityString(idDescriptor, MANY)
+                    mod(10) in 2..4 && mod(100) !in 11..19 -> res?.getQuantityString(idDescriptor, FEW)
+                    else -> res?.getQuantityString(idDescriptor, MANY)
+                }
+            }
+            else -> res?.getQuantityString(idDescriptor, MANY)
         }
     }
 }
