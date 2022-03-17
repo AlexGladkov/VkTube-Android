@@ -12,4 +12,35 @@
     <string name="comments">Комментарии</string>
     <string name="enter_comment_text">Введите текст комментария</string>
     <string name="login_to_vk">Вход через ВК</string>
+
+    <plurals name="seconds">
+        <item quantity="one">%1d секунду назад</item>
+        <item quantity="few">%1d секунды назад</item>
+        <item quantity="many">%1d секунд назад</item>
+    </plurals>
+
+    <plurals name="minutes">
+        <item quantity="one">%1d минуту назад</item>
+        <item quantity="few">%1d минуты назад</item>
+        <item quantity="many">%1d минут назад</item>
+    </plurals>
+
+    <plurals name="hours">
+        <item quantity="one">%1d час назад</item>
+        <item quantity="few">%1d часа назад</item>
+        <item quantity="many">%1d часов назад</item>
+    </plurals>
+
+    <plurals name="number_short_format">
+        <item quantity="other">%1d</item>
+        <item quantity="one">%1d тыс.</item>
+        <item quantity="few">%1d млн.</item>
+    </plurals>
+
+    <plurals name="views">
+        <item quantity="one">просмотр</item>
+        <item quantity="few">просмотра</item>
+        <item quantity="many">просмотров</item>
+    </plurals>
+
 </resources>
