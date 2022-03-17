@@ -14,6 +14,7 @@ import androidx.navigation.NavController
 import com.mobiledeveloper.vktube.navigation.NavigationTree
 import com.mobiledeveloper.vktube.ui.common.cell.VideoCell
 import com.mobiledeveloper.vktube.ui.common.cell.VideoCellModel
+import com.mobiledeveloper.vktube.ui.common.cell.VideoGrayCell
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedAction
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedEvent
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedState
@@ -50,12 +51,14 @@ fun FeedScreen(
 
 @Composable
 private fun FeedView(viewState: FeedState, onVideoClick: (VideoCellModel) -> Unit) {
-    if (viewState.items.isEmpty()) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-        }
-    } else {
-        LazyColumn {
+    LazyColumn {
+        if (viewState.items.isEmpty()) {
+            repeat(10) {
+                item {
+                    VideoGrayCell()
+                }
+            }
+        } else {
             viewState.items.forEach {
                 item {
                     VideoCell(it) {

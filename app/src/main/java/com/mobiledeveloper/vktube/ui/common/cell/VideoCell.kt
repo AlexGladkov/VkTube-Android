@@ -1,8 +1,11 @@
 package com.mobiledeveloper.vktube.ui.common.cell
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -74,16 +77,25 @@ fun VideoCell(model: VideoCellModel, onVideoClick: () -> Unit) {
         ) {
 
             AsyncImage(
-                modifier = Modifier.size(40.dp).clip(CircleShape),
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape),
                 model = model.userImage,
                 contentDescription = stringResource(id = R.string.user_image_preview),
                 contentScale = ContentScale.Crop
             )
 
-            val views = NumberUtil.formatNumberShort(model.viewsCount, context, R.plurals.number_short_format, R.plurals.views)
+            val views = NumberUtil.formatNumberShort(
+                model.viewsCount,
+                context,
+                R.plurals.number_short_format,
+                R.plurals.views
+            )
             val date = DateUtil.getTimeAgo(model.dateAdded, context)
 
-            Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp).weight(1f)) {
+            Column(modifier = Modifier
+                .padding(start = 16.dp, end = 16.dp)
+                .weight(1f)) {
                 Text(
                     text = model.title,
                     color = Fronton.color.textPrimary,
@@ -95,6 +107,65 @@ fun VideoCell(model: VideoCellModel, onVideoClick: () -> Unit) {
                     text = "${model.userName} • $views • $date",
                     color = Fronton.color.textSecondary,
                     style = Fronton.typography.body.small.short
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun VideoGrayCell() {
+    Column {
+        val configuration = LocalConfiguration.current
+
+        val screenWidth = configuration.screenWidthDp.dp
+        val imageHeight = (screenWidth / 16) * 9
+
+        val context = LocalContext.current
+
+        Box(
+            modifier = Modifier
+                .background(Fronton.color.backgroundSecondary)
+                .fillMaxWidth()
+                .height(imageHeight)
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 24.dp)
+        ) {
+
+            Card(
+                modifier = Modifier
+                    .size(40.dp),
+                elevation = 0.dp,
+                shape = RoundedCornerShape(20.dp),
+                backgroundColor = Fronton.color.backgroundSecondary,
+                content = {}
+            )
+
+            Column(modifier = Modifier
+                .padding(start = 16.dp, end = 16.dp)
+                .weight(1f)) {
+                Card(
+                    Modifier
+                        .width(240.dp)
+                        .height(24.dp),
+                    elevation = 0.dp,
+                    shape = RoundedCornerShape(4.dp),
+                    backgroundColor = Fronton.color.backgroundSecondary,
+                    content = {}
+                )
+                Card(
+                    Modifier
+                        .padding(top = 4.dp)
+                        .width(140.dp)
+                        .height(20.dp),
+                    elevation = 0.dp,
+                    shape = RoundedCornerShape(4.dp),
+                    backgroundColor = Fronton.color.backgroundSecondary,
+                    content = {}
                 )
             }
         }
