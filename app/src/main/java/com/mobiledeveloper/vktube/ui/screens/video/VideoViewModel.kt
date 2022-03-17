@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.mobiledeveloper.vktube.base.BaseViewModel
 import com.mobiledeveloper.vktube.data.cache.InMemoryCache
 import com.mobiledeveloper.vktube.data.comments.CommentsRepository
+import com.mobiledeveloper.vktube.data.like.LikeRepository
 import com.mobiledeveloper.vktube.data.user.UserRepository
 import com.mobiledeveloper.vktube.ui.screens.comments.CommentCellModel
 import com.mobiledeveloper.vktube.ui.screens.comments.mapToCommentCellModel
@@ -21,7 +22,8 @@ import javax.inject.Inject
 @HiltViewModel
 class VideoViewModel @Inject constructor(
     private val commentsRepository: CommentsRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val likeRepository: LikeRepository,
 ) : BaseViewModel<VideoViewState, VideoAction, VideoEvent>(
     VideoViewState()
 ) {
@@ -32,8 +34,22 @@ class VideoViewModel @Inject constructor(
         when (viewEvent) {
             is VideoEvent.LaunchVideo -> performVideoLaunch(viewEvent.videoId)
             is VideoEvent.SendComment -> performSendComment(viewEvent.comment)
+            is VideoEvent.LikeClick -> performLike()
             is VideoEvent.CommentsClick -> showComments()
             is VideoEvent.ClearAction -> clearAction()
+        }
+    }
+
+    private fun performLike() {
+        viewModelScope.launch{
+            val video = viewState.video ?: return@launch
+
+            if (video.likesByMe) likeRepository.unlike(video.videoId, video.ownerId)
+            else likeRepository.like(video.videoId, video.ownerId)
+
+            viewState = viewState.copy(
+                video = video.copy(likesByMe = !video.likesByMe),
+            )
         }
     }
 

@@ -76,9 +76,15 @@ fun VideoScreen(
         },
         sheetPeekHeight = bottomSheetHeight
     ) {
-        VideoScreenView(viewState = viewState, onCommentsClick = {
-            videoViewModel.obtainEvent(VideoEvent.CommentsClick)
-        })
+        VideoScreenView(
+            viewState = viewState,
+            onCommentsClick = {
+                videoViewModel.obtainEvent(VideoEvent.CommentsClick)
+            },
+            onLikeClick = {
+                videoViewModel.obtainEvent(VideoEvent.LikeClick)
+            }
+        )
     }
 
     LaunchedEffect(key1 = viewAction, block = {
@@ -108,7 +114,8 @@ fun VideoScreen(
 @Composable
 fun VideoScreenView(
     viewState: VideoViewState,
-    onCommentsClick: () -> Unit
+    onCommentsClick: () -> Unit,
+    onLikeClick: () -> Unit
 ) {
     val context = LocalContext.current
 
@@ -146,9 +153,7 @@ fun VideoScreenView(
         item {
             VideoActionsRow(
                 video = video,
-                onLikeClick = {
-
-                },
+                onLikeClick = onLikeClick
             )
         }
 

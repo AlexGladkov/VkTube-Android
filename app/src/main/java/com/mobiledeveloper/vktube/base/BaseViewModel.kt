@@ -9,15 +9,15 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-public abstract class BaseViewModel<State : Any, Action, Event>(initialState: State) : ViewModel() {
+abstract class BaseViewModel<State : Any, Action, Event>(initialState: State) : ViewModel() {
 
     private val _viewStates = MutableStateFlow(initialState)
 
     private val _viewActions = MutableSharedFlow<Action?>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
-    public fun viewStates(): WrappedStateFlow<State> = WrappedStateFlow(_viewStates.asStateFlow())
+    fun viewStates(): WrappedStateFlow<State> = WrappedStateFlow(_viewStates.asStateFlow())
 
-    public fun viewActions(): WrappedSharedFlow<Action?> = WrappedSharedFlow(_viewActions.asSharedFlow())
+    fun viewActions(): WrappedSharedFlow<Action?> = WrappedSharedFlow(_viewActions.asSharedFlow())
 
     protected var viewState: State
         get() = _viewStates.value
@@ -31,5 +31,5 @@ public abstract class BaseViewModel<State : Any, Action, Event>(initialState: St
             _viewActions.tryEmit(value)
         }
 
-    public abstract fun obtainEvent(viewEvent: Event)
+    abstract fun obtainEvent(viewEvent: Event)
 }
