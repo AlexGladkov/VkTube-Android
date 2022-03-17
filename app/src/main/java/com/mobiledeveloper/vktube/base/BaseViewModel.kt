@@ -3,52 +3,33 @@ package com.mobiledeveloper.vktube.base
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-abstract class BaseViewModel<State, Action, Event>(
-    initialState: State
-) : ViewModel() {
+public abstract class BaseViewModel<State : Any, Action, Event>(initialState: State) : ViewModel() {
 
-    private val _viewStates: MutableStateFlow<State> = MutableStateFlow(initialState)
-    fun viewStates(): StateFlow<State> = _viewStates
+    private val _viewStates = MutableStateFlow(initialState)
 
-    private var _viewState: State = initialState
-    protected val viewState: State = _viewState
+    private val _viewActions = MutableSharedFlow<Action?>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
-    private val _viewActions: Channel<Action?> = Channel()
-    fun viewActions(): Flow<Action?> = _viewActions.receiveAsFlow()
+    public fun viewStates(): WrappedStateFlow<State> = WrappedStateFlow(_viewStates.asStateFlow())
 
-    abstract fun obtainEvent(viewEvent: Event)
+    public fun viewActions(): WrappedSharedFlow<Action?> = WrappedSharedFlow(_viewActions.asSharedFlow())
 
-    protected suspend fun updateState(state: State) {
-        _viewState = state
-        withContext(viewModelScope.coroutineContext) {
-            _viewStates.emit(state)
-        }
-    }
-
-    protected suspend fun callAction(action: Action?) =
-        withContext(viewModelScope.coroutineContext) {
-            _viewActions.send(action)
+    protected var viewState: State
+        get() = _viewStates.value
+        set(value) {
+            _viewStates.value = value
         }
 
-    /**
-     * Вспомогательная обертка над [viewModelScope], которая возвращает [Unit], а не [Job], чтобы
-     * можно было использовать данный метод, для методов, где возвращаемый тип определен как [Unit].
-     *
-     * Пример:
-     * ```
-     * override fun obtainEvent(viewEvent: StoreDetailEvent) = withViewModelScope {
-     *      ..
-     * }
-     * ```
-     */
-    protected fun withViewModelScope(block: suspend CoroutineScope.() -> Unit) {
-        viewModelScope.launch {
-            block.invoke(this)
+    protected var viewAction: Action?
+        get() = _viewActions.replayCache.last()
+        set(value) {
+            _viewActions.tryEmit(value)
         }
-    }
+
+    public abstract fun obtainEvent(viewEvent: Event)
 }

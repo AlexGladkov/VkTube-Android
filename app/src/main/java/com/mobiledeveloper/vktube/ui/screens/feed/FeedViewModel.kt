@@ -32,13 +32,13 @@ class FeedViewModel @Inject constructor(
     private fun obtainVideoClick(videoCellModel: VideoCellModel) {
         viewModelScope.launch {
             InMemoryCache.clickedVideos.add(videoCellModel)
-            callAction(FeedAction.OpenVideoDetail(videoCellModel.videoId))
+            viewAction = FeedAction.OpenVideoDetail(videoCellModel.videoId)
         }
     }
 
     private fun clearAction() {
         viewModelScope.launch {
-            callAction(null)
+            viewAction = null
         }
     }
 
@@ -53,14 +53,14 @@ class FeedViewModel @Inject constructor(
 
             val clubs = clubsRepository.fetchClubs(userId)
             val videos = clubsRepository.fetchVideos(clubs = clubs, count = 20)
-            updateState(viewState.copy(
+            viewState = viewState.copy(
                 items = videos.mapNotNull { model ->
                     model.item.mapToVideoCellModel(
                         userImage = model.userImage,
                         userName = model.userName
                     )
                 }
-            ))
+            )
         }
     }
 }

@@ -45,19 +45,18 @@ class VideoViewModel @Inject constructor(
             val video = InMemoryCache.clickedVideos.first { it.videoId == videoId }
             val currentUser = userRepository.fetchLocalUser()
 
-            updateState(
-                viewState.copy(
-                    video = video,
-                    currentUser = currentUser
-                )
+            viewState = viewState.copy(
+                video = video,
+                currentUser = currentUser
             )
+
 
             try {
                 val comments =
                     commentsRepository.fetchCommentsForVideo(videoId = video.videoId, count = 20)
-                updateState(viewState.copy(
+                viewState = viewState.copy(
                     comments = comments.items.map { it.mapToCommentCellModel() }
-                ))
+                )
             } catch (e: Exception) {
                 println(e.localizedMessage)
             }
@@ -80,11 +79,10 @@ class VideoViewModel @Inject constructor(
                 )
             )
 
-            updateState(
-                viewState.copy(
-                    comments = currentComments
-                )
+            viewState = viewState.copy(
+                comments = currentComments
             )
+
 
             videoId?.let {
                 commentsRepository.addCommentForVideo(
@@ -98,13 +96,13 @@ class VideoViewModel @Inject constructor(
 
     private fun showComments() {
         viewModelScope.launch {
-            callAction(VideoAction.OpenComments)
+            viewAction = VideoAction.OpenComments
         }
     }
 
     private fun clearAction() {
         viewModelScope.launch {
-            callAction(null)
+            viewAction = null
         }
     }
 }

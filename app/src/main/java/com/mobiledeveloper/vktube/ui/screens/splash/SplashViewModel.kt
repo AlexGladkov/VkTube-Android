@@ -28,10 +28,10 @@ class SplashViewModel @Inject constructor(
             val isLogged = loginRepository.checkLogin()
             val isSaved = userRepository.fetchAndSaveUser()
 
-            if (isLogged) {
-                callAction(SplashAction.OpenMain)
+            viewAction = if (isLogged) {
+                SplashAction.OpenMain
             } else {
-                callAction(SplashAction.OpenLogin)
+                SplashAction.OpenLogin
             }
         }
     }
