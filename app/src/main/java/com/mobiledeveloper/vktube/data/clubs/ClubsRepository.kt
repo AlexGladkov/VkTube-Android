@@ -1,14 +1,13 @@
 package com.mobiledeveloper.vktube.data.clubs
 
-import com.mobiledeveloper.vktube.ui.common.cell.mapToVideoCellModel
 import com.vk.api.sdk.VK
 import com.vk.api.sdk.VKApiCallback
 import com.vk.api.sdk.requests.VKRequest
 import com.vk.dto.common.id.UserId
+import com.vk.dto.common.id.abs
 import com.vk.dto.common.id.unaryMinus
 import com.vk.sdk.api.groups.GroupsService
 import com.vk.sdk.api.groups.dto.GroupsGetObjectExtendedResponse
-import com.vk.sdk.api.groups.dto.GroupsGetResponse
 import com.vk.sdk.api.video.VideoService
 import com.vk.sdk.api.video.dto.VideoGetResponse
 import com.vk.sdk.api.video.dto.VideoVideoFull
@@ -51,10 +50,9 @@ class ClubsRepository @Inject constructor() {
         val videoItems = mutableListOf<VideoDataModel>()
         listResponse.forEach { response ->
             videoItems.addAll(response.items.map { videoFull ->
-                val group = clubs.items.firstOrNull() { it.id == videoFull.ownerId }
-
+                val group = clubs.items.firstOrNull { it.id.abs() == videoFull.ownerId?.abs() }
                 videoFull.mapToVideoDataModel(
-                    userName = group?.screenName.orEmpty(),
+                    userName = group?.name.orEmpty(),
                     userImage = group?.photo100.orEmpty()
                 )
             })
