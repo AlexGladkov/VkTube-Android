@@ -1,7 +1,5 @@
 package com.mobiledeveloper.vktube.ui.screens.video
 
-import android.graphics.Bitmap
-import android.os.Build
 import android.webkit.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -17,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
@@ -37,6 +36,8 @@ import com.mobiledeveloper.vktube.ui.screens.video.models.VideoAction
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoEvent
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoViewState
 import com.mobiledeveloper.vktube.ui.theme.Fronton
+import com.mobiledeveloper.vktube.utils.DateUtil
+import com.mobiledeveloper.vktube.utils.NumberUtil
 import kotlinx.coroutines.launch
 
 
@@ -107,6 +108,8 @@ fun VideoScreenView(
     viewState: VideoViewState,
     onCommentsClick: () -> Unit
 ) {
+    val context = LocalContext.current
+
     val video = viewState.video ?: return
 
     LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -124,10 +127,13 @@ fun VideoScreenView(
             )
         }
 
+        val views = NumberUtil.formatNumberShort(video.viewsCount, context, R.plurals.number_short_format, R.plurals.views)
+        val date = DateUtil.getTimeAgo(video.dateAdded,context)
+
         item {
             Text(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                text = "${video.viewsCount} • ${video.dateAdded}",
+                text = "$views • $date",
                 color = Fronton.color.textSecondary,
                 style = Fronton.typography.body.medium.short,
                 overflow = TextOverflow.Ellipsis,
