@@ -3,9 +3,8 @@ package com.mobiledeveloper.vktube.ui.screens.feed
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.mobiledeveloper.vktube.navigation.NavigationTree
 import com.mobiledeveloper.vktube.ui.common.cell.VideoCell
@@ -19,8 +18,8 @@ fun FeedScreen(
     navController: NavController,
     feedViewModel: FeedViewModel
 ) {
-    val viewState by feedViewModel.viewStates().observeAsState(FeedState())
-    val viewAction by feedViewModel.viewEffects().observeAsState()
+    val viewState by feedViewModel.viewStates().collectAsState()
+    val viewAction by feedViewModel.viewActions().collectAsState(initial = null)
 
     FeedView(
         viewState = viewState,

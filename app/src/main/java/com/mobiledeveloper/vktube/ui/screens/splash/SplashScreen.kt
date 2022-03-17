@@ -1,11 +1,9 @@
 package com.mobiledeveloper.vktube.ui.screens.splash
 
-import android.window.SplashScreen
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.mobiledeveloper.vktube.navigation.NavigationTree
 import com.mobiledeveloper.vktube.ui.screens.splash.models.SplashAction
@@ -16,7 +14,7 @@ fun SplashScreen(
     navController: NavController,
     splashViewModel: SplashViewModel
 ) {
-    val viewAction by splashViewModel.viewEffects().observeAsState()
+    val viewAction by splashViewModel.viewActions().collectAsState(initial = null)
 
     LaunchedEffect(key1 = viewAction, block = {
         when (viewAction) {
