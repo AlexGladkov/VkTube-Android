@@ -36,15 +36,14 @@ object DateUtil {
     }
 
     private fun getTimeWithDescriptor(value: Int, res: Resources, idDescriptor: Int): String {
-        return "$value"
-//        return with(value) {
-//            when {
-//                mod(10) == 1 -> res.getQuantityString(idDescriptor, ONE, value)
-//                mod(10) in 2..4 -> res.getQuantityString(idDescriptor, FEW, value)
-//                mod(10) in 5..9 || mod(10) == 0 -> res.getQuantityString(idDescriptor, MANY, value)
-//                else -> ""
-//            }
-//        }
+        return with(value) {
+            when {
+                mod(10) == 1 -> res.getQuantityString(idDescriptor, ONE, value)
+                mod(10) in 2..4 -> res.getQuantityString(idDescriptor, FEW, value)
+                mod(10) in 5..9 || mod(10) == 0 -> res.getQuantityString(idDescriptor, MANY, value)
+                else -> ""
+            }
+        }
     }
 
     private fun getDate(milliSeconds: Long, dateFormat: String): String {

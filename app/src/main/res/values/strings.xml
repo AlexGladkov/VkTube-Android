@@ -42,7 +42,7 @@
     </plurals>
 
     <plurals name="views">
-        <item quantity="one">views</item>
+        <item quantity="one">view</item>
         <item quantity="few">views</item>
         <item quantity="many">views</item>
         <item quantity="other">views</item>

@@ -32,17 +32,16 @@ object NumberUtil {
         res: Resources?,
         idDescriptor: Int
     ): String? {
-        return "$count"
-//        return when (count) {
-//            0 -> return with(number) {
-//                when {
-//                    mod(10) == 1 -> res?.getQuantityString(idDescriptor, ONE)
-//                    mod(10) in 5..9 -> res?.getQuantityString(idDescriptor, MANY)
-//                    mod(10) in 2..4 && mod(100) !in 11..19 -> res?.getQuantityString(idDescriptor, FEW)
-//                    else -> res?.getQuantityString(idDescriptor, MANY)
-//                }
-//            }
-//            else -> res?.getQuantityString(idDescriptor, MANY)
-//        }
+        return when (count) {
+            0 -> return with(number) {
+                when {
+                    mod(10) == 1 -> res?.getQuantityString(idDescriptor, ONE)
+                    mod(10) in 5..9 -> res?.getQuantityString(idDescriptor, MANY)
+                    mod(10) in 2..4 && mod(100) !in 11..19 -> res?.getQuantityString(idDescriptor, FEW)
+                    else -> res?.getQuantityString(idDescriptor, MANY)
+                }
+            }
+            else -> res?.getQuantityString(idDescriptor, MANY)
+        }
     }
 }

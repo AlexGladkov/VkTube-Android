@@ -44,22 +44,22 @@ class VideoViewModel @Inject constructor(
             val video: VideoCellModel = viewState.video ?: return@launch
 
             if (video.likesByMe) {
-                likeRepository.unlike(video.videoId, video.ownerId)
                 viewState = viewState.copy(
                     video = video.copy(
                         likesByMe = false,
                         likes = video.likes - 1
                     ),
                 )
+                likeRepository.unlike(video.videoId, video.ownerId)
             }
             else {
-                likeRepository.like(video.videoId, video.ownerId)
                 viewState = viewState.copy(
                     video = video.copy(
                         likesByMe = true,
                         likes = video.likes + 1
                     ),
                 )
+                likeRepository.like(video.videoId, video.ownerId)
             }
             val indexVideoInCache = InMemoryCache.clickedVideos.indexOf(video)
             InMemoryCache.clickedVideos.add(indexVideoInCache, viewState.video!!)
