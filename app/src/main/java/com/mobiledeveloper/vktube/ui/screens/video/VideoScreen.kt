@@ -37,6 +37,7 @@ import com.mobiledeveloper.vktube.ui.screens.video.models.VideoViewState
 import com.mobiledeveloper.vktube.ui.theme.Fronton
 import com.mobiledeveloper.vktube.utils.DateUtil
 import com.mobiledeveloper.vktube.utils.NumberUtil
+import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.launch
 
 
@@ -141,8 +142,13 @@ fun VideoScreenView(
             )
         }
 
-        val views = NumberUtil.formatNumberShort(video.viewsCount, context, R.plurals.number_short_format, R.plurals.views)
-        val date = DateUtil.getTimeAgo(video.dateAdded,context)
+        val views = NumberUtil.formatNumberShort(
+            video.viewsCount,
+            context,
+            R.plurals.number_short_format,
+            R.plurals.views
+        )
+        val date = DateUtil.getTimeAgo(video.dateAdded, context)
 
         item {
             Text(
@@ -372,10 +378,10 @@ private fun VideoPlayerView(
     } else {
         Box(
             modifier = Modifier
+                .background(Fronton.color.backgroundSecondary)
                 .fillMaxWidth()
                 .height(videoHeight)
-        ) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-        }
+                .shimmer()
+        )
     }
 }
