@@ -6,4 +6,5 @@ sealed class VideoEvent {
     object LikeClick : VideoEvent()
     object CommentsClick : VideoEvent()
     object ClearAction : VideoEvent()
+    object VideoLoading : VideoEvent()
 }

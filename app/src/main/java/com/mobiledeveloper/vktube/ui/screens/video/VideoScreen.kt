@@ -1,8 +1,9 @@
 package com.mobiledeveloper.vktube.ui.screens.video
 
+import android.graphics.Bitmap
 import android.webkit.WebSettings
 import android.webkit.WebView
-import android.webkit.*
+import android.webkit.WebViewClient
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,19 +18,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import coil.compose.AsyncImage
 import com.mobiledeveloper.vktube.R
-import com.mobiledeveloper.vktube.extensions.VideoType
-import com.mobiledeveloper.vktube.extensions.extractVideoType
 import com.mobiledeveloper.vktube.ui.common.cell.VideoCellModel
 import com.mobiledeveloper.vktube.ui.common.views.VideoActionView
 import com.mobiledeveloper.vktube.ui.screens.comments.CommentCellModel
@@ -83,6 +80,9 @@ fun VideoScreen(
             },
             onLikeClick = {
                 videoViewModel.obtainEvent(VideoEvent.LikeClick)
+            },
+            onVideoLoading = {
+                videoViewModel.obtainEvent(VideoEvent.VideoLoading)
             }
         )
     }
@@ -115,7 +115,8 @@ fun VideoScreen(
 fun VideoScreenView(
     viewState: VideoViewState,
     onCommentsClick: () -> Unit,
-    onLikeClick: () -> Unit
+    onLikeClick: () -> Unit,
+    onVideoLoading: () -> Unit
 ) {
     val context = LocalContext.current
 
@@ -123,7 +124,11 @@ fun VideoScreenView(
 
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         stickyHeader {
-            VideoPlayerView(video)
+            VideoPlayerView(
+                video = video,
+                isLoadingVideo = viewState.isLoadingVideo,
+                onVideoLoading = onVideoLoading,
+            )
         }
 
         item {
@@ -320,68 +325,57 @@ private fun VideoCommentsView(
 }
 
 @Composable
-private fun VideoPlayerView(video: VideoCellModel) {
+private fun VideoPlayerView(
+    video: VideoCellModel,
+    onVideoLoading: () -> Unit,
+    isLoadingVideo: Boolean?
+) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val videoHeight = (screenWidth / 16) * 9
 
-    when (video.videoUrl.extractVideoType()) {
-        VideoType.Vk -> VkVideoPlayer(url = video.videoUrl, height = videoHeight, width = screenWidth)
-        VideoType.Youtube -> YoutubePlayer(url = video.videoUrl, height = videoHeight, width = screenWidth)
+    val widthPx = with(LocalDensity.current) { screenWidth.toPx() }
+    val heightPx = with(LocalDensity.current) { videoHeight.toPx() }
+
+    if (isLoadingVideo == null || !isLoadingVideo) {
+        AndroidView(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(videoHeight),
+            factory = {
+                val dataUrl = "<html>" +
+                        "<body>" +
+                        "<iframe width=\"$widthPx\" height=\"$heightPx\" src=\"" + video.videoUrl + "\" frameborder=\"0\" allowfullscreen/>" +
+                        "</body>" +
+                        "</html>"
+
+                WebView(it).apply {
+                    settings.javaScriptEnabled = true
+                    settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.SINGLE_COLUMN
+                    settings.loadWithOverviewMode = true
+                    settings.useWideViewPort = true
+                    webViewClient = object : WebViewClient() {
+                        override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                            onVideoLoading.invoke()
+                            super.onPageStarted(view, url, favicon)
+                        }
+
+                        override fun onPageFinished(view: WebView?, url: String?) {
+                            onVideoLoading.invoke()
+                            super.onPageFinished(view, url)
+                        }
+                    }
+                    loadData(dataUrl, "text/html", "utf-8")
+                }
+            }
+        )
+    } else {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(videoHeight)
+        ) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        }
     }
 }
-
-@Composable
-private fun VkVideoPlayer(url: String, width: Dp, height: Dp) {
-    val widthPx = with(LocalDensity.current) { width.toPx() }
-    val heightPx = with(LocalDensity.current) { height.toPx() }
-
-    AndroidView(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(height),
-        factory = {
-            val dataUrl = "<html>" +
-                    "<body>" +
-                    "<iframe width=\"$widthPx\" height=\"$heightPx\" src=\"" + url + "\" frameborder=\"0\" allowfullscreen/>" +
-                    "</body>" +
-                    "</html>"
-
-            WebView(it).apply {
-                settings.javaScriptEnabled = true
-                settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.SINGLE_COLUMN
-                settings.loadWithOverviewMode = true
-                settings.useWideViewPort = true
-
-                loadData(dataUrl, "text/html", "utf-8")
-            }
-        })
-}
-
-@Composable
-private fun YoutubePlayer(url: String, width: Dp, height: Dp) {
-    val widthPx = with(LocalDensity.current) { width.toPx() }
-    val heightPx = with(LocalDensity.current) { height.toPx() }
-
-    AndroidView(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(height),
-        factory = {
-            val dataUrl = "<html>" +
-                    "<body>" +
-                    "<iframe width=\"$widthPx\" height=\"$heightPx\" src=\"" + url + "\" frameborder=\"0\" allowfullscreen/>" +
-                    "</body>" +
-                    "</html>"
-
-            WebView(it).apply {
-                settings.javaScriptEnabled = true
-                settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.SINGLE_COLUMN
-                settings.loadWithOverviewMode = true
-                settings.useWideViewPort = true
-
-                loadData(dataUrl, "text/html", "utf-8")
-            }
-        })
-}
-

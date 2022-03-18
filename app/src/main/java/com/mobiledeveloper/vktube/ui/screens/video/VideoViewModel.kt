@@ -13,6 +13,7 @@ import com.mobiledeveloper.vktube.ui.screens.video.models.VideoAction
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoEvent
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoViewState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.lang.Exception
 import java.lang.IllegalStateException
@@ -36,6 +37,22 @@ class VideoViewModel @Inject constructor(
             is VideoEvent.LikeClick -> performLike()
             is VideoEvent.CommentsClick -> showComments()
             is VideoEvent.ClearAction -> clearAction()
+            is VideoEvent.VideoLoading -> performVideoLoading()
+        }
+    }
+
+    private fun performVideoLoading() {
+        viewModelScope.launch {
+            delay(500)
+            when(viewState.isLoadingVideo){
+                true -> viewState = viewState.copy(
+                    isLoadingVideo = false
+                )
+                false -> {}
+                null -> viewState = viewState.copy(
+                    isLoadingVideo = true
+                )
+            }
         }
     }
 
