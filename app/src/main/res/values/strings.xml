@@ -2,45 +2,50 @@
     <string name="app_name">VkTube</string>
     <integer name="com_vk_sdk_AppId">8097985</integer>
 
-    <string name="video_preview">Предпросмотр видео</string>
-    <string name="user_image_preview">Предпросмотр аватарки человека</string>
-    <string name="comment_user_image_preview">Предпросмотр аватарки человека в комментарии</string>
+    <string name="video_preview">Video preview</string>
+    <string name="user_image_preview">User avatar preview</string>
+    <string name="comment_user_image_preview">User avatar preview in comment</string>
 
-    <string name="video_action_icon">Иконка действия под видео</string>
-    <string name="send_comment_icon">Иконка отправки комментария</string>
+    <string name="video_action_icon">Video action icon</string>
+    <string name="send_comment_icon">Send comment icon</string>
 
-    <string name="comments">Комментарии</string>
-    <string name="enter_comment_text">Введите текст комментария</string>
-    <string name="login_to_vk">Вход через ВК</string>
+    <string name="comments">Comments</string>
+    <string name="enter_comment_text">Enter comment text</string>
+    <string name="login_to_vk">Sign up VK</string>
 
     <plurals name="seconds">
-        <item quantity="one">%1d секунду назад</item>
-        <item quantity="few">%1d секунды назад</item>
-        <item quantity="many">%1d секунд назад</item>
+        <item quantity="one">%1d second ago</item>
+        <item quantity="few">%1d seconds ago</item>
+        <item quantity="many">%1d seconds ago</item>
+        <item quantity="other">%1d seconds ago</item>
     </plurals>
 
     <plurals name="minutes">
-        <item quantity="one">%1d минуту назад</item>
-        <item quantity="few">%1d минуты назад</item>
-        <item quantity="many">%1d минут назад</item>
+        <item quantity="one">%1d minute ago</item>
+        <item quantity="few">%1d minutes ago</item>
+        <item quantity="many">%1d minutes ago</item>
+        <item quantity="other">%1d minutes ago</item>
     </plurals>
 
     <plurals name="hours">
-        <item quantity="one">%1d час назад</item>
-        <item quantity="few">%1d часа назад</item>
-        <item quantity="many">%1d часов назад</item>
+        <item quantity="one">%1d hour ago</item>
+        <item quantity="few">%1d hours ago</item>
+        <item quantity="many">%1d hours ago</item>
+        <item quantity="other">%1d hours ago</item>
     </plurals>
 
     <plurals name="number_short_format">
+        <item quantity="many">%1d</item>
         <item quantity="other">%1d</item>
-        <item quantity="one">%1d тыс.</item>
-        <item quantity="few">%1d млн.</item>
+        <item quantity="one">%1d K</item>
+        <item quantity="few">%1d M</item>
     </plurals>
 
     <plurals name="views">
-        <item quantity="one">просмотр</item>
-        <item quantity="few">просмотра</item>
-        <item quantity="many">просмотров</item>
+        <item quantity="one">views</item>
+        <item quantity="few">views</item>
+        <item quantity="many">views</item>
+        <item quantity="other">views</item>
     </plurals>
 
 </resources>
