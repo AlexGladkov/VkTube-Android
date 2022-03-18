@@ -3,6 +3,8 @@ package com.mobiledeveloper.vktube.data.comments
 import com.vk.api.sdk.VK
 import com.vk.api.sdk.VKApiCallback
 import com.vk.dto.common.id.UserId
+import com.vk.dto.common.id.abs
+import com.vk.dto.common.id.unaryMinus
 import com.vk.sdk.api.video.VideoService
 import com.vk.sdk.api.video.dto.VideoGetCommentsResponse
 import javax.inject.Inject
@@ -12,13 +14,13 @@ import kotlin.coroutines.suspendCoroutine
 
 class CommentsRepository @Inject constructor() {
 
-    suspend fun fetchCommentsForVideo(videoId: Long, count: Int): VideoGetCommentsResponse {
+    suspend fun fetchCommentsForVideo(ownerId: Long, videoId: Long, count: Int): VideoGetCommentsResponse {
         return suspendCoroutine { continuation ->
             VK.execute(
                 VideoService().videoGetComments(
                     videoId = videoId.toInt(),
                     count = count,
-                    ownerId = UserId(-113499203)
+                    ownerId = UserId(ownerId).abs().unaryMinus()
                 ),
                 object : VKApiCallback<VideoGetCommentsResponse> {
                     override fun fail(error: Exception) {
@@ -32,17 +34,24 @@ class CommentsRepository @Inject constructor() {
         }
     }
 
-    suspend fun addCommentForVideo(userId: Long, videoId: Long, comment: String) {
+    suspend fun addCommentForVideo(ownerId: Long, videoId: Long, comment: String) {
         return suspendCoroutine {
             VK.execute(
                 VideoService().videoCreateComment(
                     videoId = videoId.toInt(),
-                    ownerId = UserId(userId),
+                    ownerId = UserId(ownerId).abs().unaryMinus(),
                     message = comment
-                )
+                ),
+                object : VKApiCallback<Int>{
+                    override fun fail(error: Exception) {
+                        println("Error Comment $error")
+                        it.resumeWithException(error)
+                    }
+                    override fun success(result: Int) {
+                        it.resume(Unit)
+                    }
+                }
             )
-
-            it.resume(Unit)
         }
     }
 }

@@ -15,8 +15,6 @@ import com.mobiledeveloper.vktube.ui.screens.video.models.VideoViewState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.lang.Exception
-import java.lang.IllegalStateException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -44,7 +42,7 @@ class VideoViewModel @Inject constructor(
     private fun performVideoLoading() {
         viewModelScope.launch {
             delay(500)
-            when(viewState.isLoadingVideo){
+            when (viewState.isLoadingVideo) {
                 true -> viewState = viewState.copy(
                     isLoadingVideo = false
                 )
@@ -57,7 +55,7 @@ class VideoViewModel @Inject constructor(
     }
 
     private fun performLike() {
-        viewModelScope.launch{
+        viewModelScope.launch {
             val video: VideoCellModel = viewState.video ?: return@launch
 
             if (video.likesByMe) {
@@ -68,8 +66,7 @@ class VideoViewModel @Inject constructor(
                     ),
                 )
                 likeRepository.unlike(video.videoId, video.ownerId)
-            }
-            else {
+            } else {
                 viewState = viewState.copy(
                     video = video.copy(
                         likesByMe = true,
@@ -90,22 +87,23 @@ class VideoViewModel @Inject constructor(
         viewModelScope.launch {
             val video = InMemoryCache.clickedVideos.first { it.videoId == videoId }
             val currentUser = userRepository.fetchLocalUser()
+            val ownerId = video.ownerId
 
             viewState = viewState.copy(
                 video = video,
                 currentUser = currentUser
             )
 
-
-            try {
-                val comments =
-                    commentsRepository.fetchCommentsForVideo(videoId = video.videoId, count = 20)
-                viewState = viewState.copy(
-                    comments = comments.items.map { it.mapToCommentCellModel() }
+            val comments =
+                commentsRepository.fetchCommentsForVideo(
+                    ownerId = ownerId,
+                    videoId = video.videoId,
+                    count = 20
                 )
-            } catch (e: Exception) {
-                println(e.localizedMessage)
-            }
+            viewState = viewState.copy(
+                comments = comments.items.map { it.mapToCommentCellModel() }
+            )
+            InMemoryCache.comments[videoId!!] = comments.items.map { it.mapToCommentCellModel() }
         }
     }
 
@@ -113,7 +111,17 @@ class VideoViewModel @Inject constructor(
         viewModelScope.launch {
             val storedUser = userRepository.fetchLocalUser()
             val userId = storedUser.userId
+            val ownerId = viewState.video?.ownerId ?: return@launch
             val currentComments = viewState.comments.toMutableList()
+
+            videoId?.let {
+                commentsRepository.addCommentForVideo(
+                    ownerId = ownerId,
+                    videoId = it,
+                    comment = comment
+                )
+            }
+
             currentComments.add(
                 CommentCellModel(
                     messageId = -1,
@@ -124,19 +132,11 @@ class VideoViewModel @Inject constructor(
                     avatar = storedUser.avatar
                 )
             )
+            InMemoryCache.comments[videoId!!] = currentComments
 
             viewState = viewState.copy(
                 comments = currentComments
             )
-
-
-            videoId?.let {
-                commentsRepository.addCommentForVideo(
-                    userId = userId,
-                    videoId = it,
-                    comment = comment
-                )
-            }
         }
     }
 
