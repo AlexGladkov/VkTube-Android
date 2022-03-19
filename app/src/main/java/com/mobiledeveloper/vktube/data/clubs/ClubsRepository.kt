@@ -7,6 +7,7 @@ import com.vk.dto.common.id.UserId
 import com.vk.dto.common.id.abs
 import com.vk.dto.common.id.unaryMinus
 import com.vk.sdk.api.groups.GroupsService
+import com.vk.sdk.api.groups.dto.GroupsFields
 import com.vk.sdk.api.groups.dto.GroupsGetObjectExtendedResponse
 import com.vk.sdk.api.video.VideoService
 import com.vk.sdk.api.video.dto.VideoGetResponse
@@ -19,16 +20,19 @@ import kotlin.coroutines.suspendCoroutine
 data class VideoDataModel(
     val item: VideoVideoFull,
     val userImage: String,
-    val userName: String
+    val userName: String,
+    val subscribers: Int
 )
 
 fun VideoVideoFull.mapToVideoDataModel(
     userImage: String,
-    userName: String
+    userName: String,
+    subscribers: Int
 ) = VideoDataModel(
     item = this,
     userImage = userImage,
-    userName = userName
+    userName = userName,
+    subscribers = subscribers
 )
 
 class ClubsRepository @Inject constructor() {
@@ -53,7 +57,8 @@ class ClubsRepository @Inject constructor() {
                 val group = clubs.items.firstOrNull { it.id.abs() == videoFull.ownerId?.abs() }
                 videoFull.mapToVideoDataModel(
                     userName = group?.name.orEmpty(),
-                    userImage = group?.photo100.orEmpty()
+                    userImage = group?.photo100.orEmpty(),
+                    subscribers = group?.membersCount ?: 0
                 )
             })
         }
@@ -65,7 +70,7 @@ class ClubsRepository @Inject constructor() {
     suspend fun fetchClubs(userId: Long): GroupsGetObjectExtendedResponse {
         return suspendCoroutine { continuation ->
             VK.execute(
-                GroupsService().groupsGetExtended(userId = UserId(userId), count = 100),
+                GroupsService().groupsGetExtended(userId = UserId(userId), count = 100, fields = listOf(GroupsFields.MEMBERS_COUNT)),
                 object : VKApiCallback<GroupsGetObjectExtendedResponse> {
                     override fun fail(error: Exception) {
                         continuation.resumeWithException(error)

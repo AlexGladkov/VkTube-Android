@@ -48,4 +48,11 @@
         <item quantity="other">views</item>
     </plurals>
 
+    <plurals name="subscribers">
+        <item quantity="one">subscriber</item>
+        <item quantity="few">subscribers</item>
+        <item quantity="many">subscribers</item>
+        <item quantity="other">subscribers</item>
+    </plurals>
+
 </resources>

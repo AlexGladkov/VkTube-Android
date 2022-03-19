@@ -206,6 +206,9 @@ private fun VideoActionsRow(
 
 @Composable
 private fun VideoUserRow(video: VideoCellModel) {
+
+    val context = LocalContext.current
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -220,6 +223,8 @@ private fun VideoUserRow(video: VideoCellModel) {
             contentScale = ContentScale.Crop
         )
 
+        val subscribers = NumberUtil.formatNumberShort(video.subscribers, context, R.plurals.number_short_format, R.plurals.subscribers)
+
         Column(modifier = Modifier.padding(start = 16.dp)) {
             Text(
                 text = video.userName,
@@ -227,7 +232,7 @@ private fun VideoUserRow(video: VideoCellModel) {
                 style = Fronton.typography.body.medium.long
             )
             Text(
-                text = video.subscribers,
+                text = subscribers,
                 color = Fronton.color.textSecondary,
                 style = Fronton.typography.body.small.short
             )
