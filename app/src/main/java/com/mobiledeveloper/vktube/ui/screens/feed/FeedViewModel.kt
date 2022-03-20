@@ -57,7 +57,8 @@ class FeedViewModel @Inject constructor(
                 items = videos.mapNotNull { model ->
                     model.item.mapToVideoCellModel(
                         userImage = model.userImage,
-                        userName = model.userName
+                        userName = model.userName,
+                        subscribers = model.subscribers
                     )
                 }
             )
