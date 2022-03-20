@@ -21,6 +21,7 @@ import com.mobiledeveloper.vktube.R
 import com.mobiledeveloper.vktube.ui.theme.Fronton
 import com.mobiledeveloper.vktube.utils.DateUtil
 import com.mobiledeveloper.vktube.utils.NumberUtil
+import com.valentinilk.shimmer.shimmer
 import com.vk.sdk.api.video.dto.VideoVideoFull
 
 data class VideoCellModel(
@@ -123,13 +124,12 @@ fun VideoGrayCell() {
         val screenWidth = configuration.screenWidthDp.dp
         val imageHeight = (screenWidth / 16) * 9
 
-        val context = LocalContext.current
-
         Box(
             modifier = Modifier
                 .background(Fronton.color.backgroundSecondary)
                 .fillMaxWidth()
                 .height(imageHeight)
+                .shimmer()
         )
 
         Row(
@@ -140,7 +140,8 @@ fun VideoGrayCell() {
 
             Card(
                 modifier = Modifier
-                    .size(40.dp),
+                    .size(40.dp)
+                    .shimmer(),
                 elevation = 0.dp,
                 shape = RoundedCornerShape(20.dp),
                 backgroundColor = Fronton.color.backgroundSecondary,
@@ -153,7 +154,8 @@ fun VideoGrayCell() {
                 Card(
                     Modifier
                         .width(240.dp)
-                        .height(24.dp),
+                        .height(24.dp)
+                        .shimmer(),
                     elevation = 0.dp,
                     shape = RoundedCornerShape(4.dp),
                     backgroundColor = Fronton.color.backgroundSecondary,
@@ -163,7 +165,8 @@ fun VideoGrayCell() {
                     Modifier
                         .padding(top = 4.dp)
                         .width(140.dp)
-                        .height(20.dp),
+                        .height(20.dp)
+                        .shimmer(),
                     elevation = 0.dp,
                     shape = RoundedCornerShape(4.dp),
                     backgroundColor = Fronton.color.backgroundSecondary,
