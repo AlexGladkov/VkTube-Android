@@ -47,5 +47,6 @@
         <item quantity="many">просмотров</item>
         <item quantity="other">просмотра</item>
     </plurals>
+    <string name="logout_from_vk">Выйти из ВК</string>
 
 </resources>

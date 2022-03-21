@@ -36,12 +36,6 @@ class FeedViewModel @Inject constructor(
         }
     }
 
-    private fun clearAction() {
-        viewModelScope.launch {
-            viewAction = null
-        }
-    }
-
     private fun fetchVideos() {
         viewModelScope.launch(Dispatchers.IO) {
             val userId = try {

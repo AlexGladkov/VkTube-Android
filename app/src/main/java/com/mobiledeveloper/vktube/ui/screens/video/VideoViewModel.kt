@@ -129,9 +129,4 @@ class VideoViewModel @Inject constructor(
         }
     }
 
-    private fun clearAction() {
-        viewModelScope.launch {
-            viewAction = null
-        }
-    }
 }
