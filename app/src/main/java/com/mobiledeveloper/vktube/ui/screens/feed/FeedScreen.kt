@@ -1,8 +1,11 @@
 package com.mobiledeveloper.vktube.ui.screens.feed
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -14,6 +17,7 @@ import com.mobiledeveloper.vktube.ui.common.cell.VideoGrayCell
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedAction
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedEvent
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedState
+import com.mobiledeveloper.vktube.ui.theme.Fronton
 
 @Composable
 fun FeedScreen(
@@ -23,12 +27,15 @@ fun FeedScreen(
     val viewState by feedViewModel.viewStates().collectAsState()
     val viewAction by feedViewModel.viewActions().collectAsState(initial = null)
 
-    FeedView(
-        viewState = viewState,
-        onVideoClick = {
-            feedViewModel.obtainEvent(FeedEvent.VideoClicked(it))
-        }
-    )
+    Box(modifier = Modifier.background(color = Fronton.color.backgroundPrimary)) {
+        FeedView(
+            viewState = viewState,
+            onVideoClick = {
+                feedViewModel.obtainEvent(FeedEvent.VideoClicked(it))
+            }
+        )
+    }
+
 
     LaunchedEffect(key1 = viewAction, block = {
         when (viewAction) {
