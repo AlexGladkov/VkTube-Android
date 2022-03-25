@@ -12,7 +12,9 @@ import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedEvent
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.Exception
 import javax.inject.Inject
 
@@ -43,7 +45,7 @@ class FeedViewModel @Inject constructor(
     }
 
     private fun fetchVideos() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             val userId = try {
                 userRepository.fetchLocalUser().userId
             } catch (e: Exception) {
@@ -52,15 +54,18 @@ class FeedViewModel @Inject constructor(
             }
 
             val clubs = clubsRepository.fetchClubs(userId)
-            val videos = clubsRepository.fetchVideos(clubs = clubs, count = 20)
-            viewState = viewState.copy(
-                items = videos.mapNotNull { model ->
+            val rawVideos = clubsRepository.fetchVideos(clubs = clubs, count = 20)
+            val videos = withContext(Dispatchers.Default) {
+                rawVideos.mapNotNull { model ->
                     model.item.mapToVideoCellModel(
                         userImage = model.userImage,
                         userName = model.userName,
                         subscribers = model.subscribers
                     )
                 }
+            }
+            viewState = viewState.copy(
+                items = videos
             )
         }
     }
