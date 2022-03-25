@@ -61,13 +61,8 @@ fun VideoVideoFull.mapToVideoCellModel(
 }
 
 @Composable
-fun VideoCell(model: VideoCellModel, onVideoClick: () -> Unit) {
+fun VideoCell(model: VideoCellModel, imageHeight: Dp, onVideoClick: () -> Unit) {
     Column(modifier = Modifier.clickable { onVideoClick.invoke() }) {
-        val configuration = LocalConfiguration.current
-
-        val screenWidth = configuration.screenWidthDp.dp
-        val imageHeight = (screenWidth / 16) * 9
-
         val context = LocalContext.current
 
         AsyncImage(

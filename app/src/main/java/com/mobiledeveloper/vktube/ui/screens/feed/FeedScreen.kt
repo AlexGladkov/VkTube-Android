@@ -4,6 +4,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mobiledeveloper.vktube.navigation.NavigationTree
@@ -49,32 +50,36 @@ fun FeedScreen(
 
 @Composable
 private fun FeedView(viewState: FeedState, onVideoClick: (VideoCellModel) -> Unit) {
+    val configuration = LocalConfiguration.current
+
+    val imageHeight = remember {
+        val screenWidth = configuration.screenWidthDp.dp
+        ((screenWidth / 16) * 9)
+    }
     if (viewState.items.isEmpty()) {
-        LoadingView()
+        LoadingView(imageHeight)
     } else {
-        DataView(viewState, onVideoClick)
+        DataView(viewState, imageHeight, onVideoClick)
     }
 }
 
 @Composable
-private fun DataView(viewState: FeedState, onVideoClick: (VideoCellModel) -> Unit) {
+private fun DataView(
+    viewState: FeedState,
+    imageHeight: Dp,
+    onVideoClick: (VideoCellModel) -> Unit
+) {
     LazyColumn {
-        items(viewState.items) {
-            VideoCell(it) {
-                onVideoClick.invoke(it)
+        items(viewState.items) { viewModel ->
+            VideoCell(viewModel, imageHeight) {
+                onVideoClick.invoke(viewModel)
             }
         }
     }
 }
 
 @Composable
-private fun LoadingView() {
-    val configuration = LocalConfiguration.current
-
-    val imageHeight = remember {
-        val screenWidth = configuration.screenWidthDp.dp
-        (screenWidth / 16) * 9
-    }
+private fun LoadingView(imageHeight: Dp) {
     LazyColumn {
         repeat(10) {
             item {
