@@ -50,29 +50,17 @@ class ClubsRepository @Inject constructor() {
 
     suspend fun fetchClubs(userId: Long): GroupsGetObjectExtendedResponse =
         withContext(Dispatchers.IO) {
-            suspendCoroutine { continuation ->
-                try {
-                    val request = GroupsService().groupsGetExtended(
-                        userId = UserId(userId),
-                        count = 100,
-                        fields = listOf(GroupsFields.MEMBERS_COUNT)
-                    )
+            val request = GroupsService().groupsGetExtended(
+                userId = UserId(userId),
+                count = 100,
+                fields = listOf(GroupsFields.MEMBERS_COUNT)
+            )
 
-                    continuation.resume(VK.executeSync(request))
-                } catch (ex: Throwable) {
-                    continuation.resumeWithException(ex)
-                }
-            }
+            VK.executeSync(request)
         }
 
     private suspend fun fetchVideo(videoGetRequest: VKRequest<VideoGetResponse>): VideoGetResponse =
         withContext(Dispatchers.IO) {
-            suspendCoroutine { continuation ->
-                try {
-                    continuation.resume(VK.executeSync(videoGetRequest))
-                } catch (ex: Throwable) {
-                    continuation.resumeWithException(ex)
-                }
-            }
+            VK.executeSync(videoGetRequest)
         }
 }
