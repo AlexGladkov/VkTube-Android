@@ -1,7 +1,9 @@
 package com.mobiledeveloper.vktube.ui.screens.feed
 
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.Dp
@@ -27,6 +29,9 @@ fun FeedScreen(
         viewState = viewState,
         onVideoClick = {
             feedViewModel.obtainEvent(FeedEvent.VideoClicked(it))
+        },
+        onScroll = {
+            feedViewModel.obtainEvent(FeedEvent.OnScroll(it))
         }
     )
 
@@ -49,7 +54,10 @@ fun FeedScreen(
 }
 
 @Composable
-private fun FeedView(viewState: FeedState, onVideoClick: (VideoCellModel) -> Unit) {
+private fun FeedView(
+    viewState: FeedState, onVideoClick: (VideoCellModel) -> Unit,
+    onScroll: (lastVisibleItemIndex: Int) -> Unit
+) {
     val configuration = LocalConfiguration.current
 
     val imageHeight = remember {
@@ -59,7 +67,7 @@ private fun FeedView(viewState: FeedState, onVideoClick: (VideoCellModel) -> Uni
     if (viewState.loading) {
         LoadingView(imageHeight)
     } else {
-        DataView(viewState, imageHeight, onVideoClick)
+        DataView(viewState, imageHeight, onVideoClick, onScroll)
     }
 }
 
@@ -67,9 +75,17 @@ private fun FeedView(viewState: FeedState, onVideoClick: (VideoCellModel) -> Uni
 private fun DataView(
     viewState: FeedState,
     imageHeight: Dp,
-    onVideoClick: (VideoCellModel) -> Unit
+    onVideoClick: (VideoCellModel) -> Unit,
+    onScroll: (lastVisibleItemIndex: Int) -> Unit
 ) {
-    LazyColumn {
+    val state: LazyListState = rememberLazyListState()
+    val lastVisibleItemIndex = state.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+    LaunchedEffect(lastVisibleItemIndex) {
+        onScroll(lastVisibleItemIndex)
+    }
+    LazyColumn(
+        state = state
+    ) {
         items(viewState.items) { viewModel ->
             VideoCell(viewModel, imageHeight) {
                 onVideoClick.invoke(viewModel)

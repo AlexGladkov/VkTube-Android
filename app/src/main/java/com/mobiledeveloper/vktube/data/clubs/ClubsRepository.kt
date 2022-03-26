@@ -17,17 +17,15 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 class ClubsRepository @Inject constructor() {
     suspend fun fetchVideos(
         groupIds: List<UserId>,
-        count: Int
+        count: Int,
+        offset: Int = 0
     ): List<VideoVideoFull> = withContext(Dispatchers.IO) {
         val requests = groupIds.map {
-            VideoService().videoGet(count = count, ownerId = -it)
+            VideoService().videoGet(count = count, ownerId = -it, offset = offset)
         }
 
         val listResponse = requests.map {
@@ -44,7 +42,7 @@ class ClubsRepository @Inject constructor() {
         withContext(Dispatchers.Default) {
             listResponse.map { response ->
                 response.items
-            }.flatten().sortedByDescending { it.addingDate }
+            }.flatten()
         }
     }
 
