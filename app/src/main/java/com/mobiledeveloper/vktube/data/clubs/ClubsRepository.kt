@@ -5,7 +5,6 @@ package com.mobiledeveloper.vktube.data.clubs
 import com.vk.api.sdk.VK
 import com.vk.api.sdk.requests.VKRequest
 import com.vk.dto.common.id.UserId
-import com.vk.dto.common.id.abs
 import com.vk.dto.common.id.unaryMinus
 import com.vk.sdk.api.groups.GroupsService
 import com.vk.sdk.api.groups.dto.GroupsFields
@@ -21,24 +20,6 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
-
-data class VideoDataModel(
-    val item: VideoVideoFull,
-    val userImage: String,
-    val userName: String,
-    val subscribers: Int
-)
-
-fun VideoVideoFull.mapToVideoDataModel(
-    userImage: String,
-    userName: String,
-    subscribers: Int
-) = VideoDataModel(
-    item = this,
-    userImage = userImage,
-    userName = userName,
-    subscribers = subscribers
-)
 
 class ClubsRepository @Inject constructor() {
     suspend fun fetchVideos(
