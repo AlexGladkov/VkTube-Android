@@ -1,7 +1,8 @@
+@file:Suppress("BlockingMethodInNonBlockingContext")
+
 package com.mobiledeveloper.vktube.data.clubs
 
 import com.vk.api.sdk.VK
-import com.vk.api.sdk.VKApiCallback
 import com.vk.api.sdk.requests.VKRequest
 import com.vk.dto.common.id.UserId
 import com.vk.dto.common.id.abs
@@ -76,37 +77,28 @@ class ClubsRepository @Inject constructor() {
     suspend fun fetchClubs(userId: Long): GroupsGetObjectExtendedResponse =
         withContext(Dispatchers.IO) {
             suspendCoroutine { continuation ->
-                VK.execute(
-                    GroupsService().groupsGetExtended(
+                try {
+                    val request = GroupsService().groupsGetExtended(
                         userId = UserId(userId),
                         count = 100,
                         fields = listOf(GroupsFields.MEMBERS_COUNT)
-                    ),
-                    object : VKApiCallback<GroupsGetObjectExtendedResponse> {
-                        override fun fail(error: Exception) {
-                            continuation.resumeWithException(error)
-                        }
+                    )
 
-                        override fun success(result: GroupsGetObjectExtendedResponse) {
-                            continuation.resume(result)
-                        }
-                    })
+                    continuation.resume(VK.executeSync(request))
+                } catch (ex: Throwable) {
+                    continuation.resumeWithException(ex)
+                }
             }
         }
 
     private suspend fun fetchVideo(videoGetRequest: VKRequest<VideoGetResponse>): VideoGetResponse =
         withContext(Dispatchers.IO) {
             suspendCoroutine { continuation ->
-                VK.execute(request = videoGetRequest,
-                    object : VKApiCallback<VideoGetResponse> {
-                        override fun fail(error: Exception) {
-                            continuation.resumeWithException(error)
-                        }
-
-                        override fun success(result: VideoGetResponse) {
-                            continuation.resume(result)
-                        }
-                    })
+                try {
+                    continuation.resume(VK.executeSync(videoGetRequest))
+                } catch (ex: Throwable) {
+                    continuation.resumeWithException(ex)
+                }
             }
         }
 }
