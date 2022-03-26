@@ -10,13 +10,8 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/**
- * Instrumented test, which will execute on an Android device.
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
 @RunWith(AndroidJUnit4::class)
-class DateTestRuLocale {
+class DateSecondsTestRuLocale {
 
     var currentTime = 0L
     val TEST_TAG = "Test_tag"
@@ -69,6 +64,32 @@ class DateTestRuLocale {
     }
 
     @Test
+    fun showSecondsTest11() {
+
+        val secondsAgo = 11
+
+        val timeAgoString =
+            DateUtil.getTimeAgo((currentTime / 1000).toInt() - secondsAgo, appContext)
+
+        Log.d(TEST_TAG, timeAgoString)
+
+        assertEquals("$secondsAgo секунд назад", timeAgoString)
+    }
+
+    @Test
+    fun showSecondsTest12() {
+
+        val secondsAgo = 12
+
+        val timeAgoString =
+            DateUtil.getTimeAgo((currentTime / 1000).toInt() - secondsAgo, appContext)
+
+        Log.d(TEST_TAG, timeAgoString)
+
+        assertEquals("$secondsAgo секунд назад", timeAgoString)
+    }
+
+    @Test
     fun showSecondsTest21() {
 
         val secondsAgo = 21
@@ -106,5 +127,4 @@ class DateTestRuLocale {
 
         assertEquals("$secondsAgo секунд назад", timeAgoString)
     }
-
 }
