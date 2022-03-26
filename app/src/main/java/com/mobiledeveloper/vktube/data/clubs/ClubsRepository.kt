@@ -42,11 +42,11 @@ fun VideoVideoFull.mapToVideoDataModel(
 
 class ClubsRepository @Inject constructor() {
     suspend fun fetchVideos(
-        clubs: GroupsGetObjectExtendedResponse,
+        groupIds: List<UserId>,
         count: Int
-    ): List<VideoDataModel> = withContext(Dispatchers.IO) {
-        val requests = clubs.items.map {
-            VideoService().videoGet(count = count, ownerId = -it.id)
+    ): List<VideoVideoFull> = withContext(Dispatchers.IO) {
+        val requests = groupIds.map {
+            VideoService().videoGet(count = count, ownerId = -it)
         }
 
         val listResponse = requests.map {
@@ -62,15 +62,8 @@ class ClubsRepository @Inject constructor() {
 
         withContext(Dispatchers.Default) {
             listResponse.map { response ->
-                response.items.map { videoFull ->
-                    val group = clubs.items.firstOrNull { it.id.abs() == videoFull.ownerId?.abs() }
-                    videoFull.mapToVideoDataModel(
-                        userName = group?.name.orEmpty(),
-                        userImage = group?.photo100.orEmpty(),
-                        subscribers = group?.membersCount ?: 0
-                    )
-                }
-            }.flatten().sortedByDescending { it.item.addingDate }
+                response.items
+            }.flatten().sortedByDescending { it.addingDate }
         }
     }
 

@@ -10,12 +10,11 @@ import com.mobiledeveloper.vktube.ui.common.cell.mapToVideoCellModel
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedAction
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedEvent
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedState
+import com.vk.dto.common.id.abs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.lang.Exception
 import javax.inject.Inject
 
 @HiltViewModel
@@ -54,13 +53,15 @@ class FeedViewModel @Inject constructor(
             }
 
             val clubs = clubsRepository.fetchClubs(userId)
-            val rawVideos = clubsRepository.fetchVideos(clubs = clubs, count = 20)
+            val rawVideos =
+                clubsRepository.fetchVideos(groupIds = clubs.items.map { it.id }, count = 20)
             val videos = withContext(Dispatchers.Default) {
-                rawVideos.mapNotNull { model ->
-                    model.item.mapToVideoCellModel(
-                        userImage = model.userImage,
-                        userName = model.userName,
-                        subscribers = model.subscribers
+                rawVideos.mapNotNull { videoFull ->
+                    val group = clubs.items.firstOrNull { it.id.abs() == videoFull.ownerId?.abs() }
+                    videoFull.mapToVideoCellModel(
+                        userName = group?.name.orEmpty(),
+                        userImage = group?.photo100.orEmpty(),
+                        subscribers = group?.membersCount ?: 0
                     )
                 }
             }
