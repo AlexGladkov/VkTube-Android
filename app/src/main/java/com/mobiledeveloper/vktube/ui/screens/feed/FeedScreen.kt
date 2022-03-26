@@ -56,7 +56,7 @@ private fun FeedView(viewState: FeedState, onVideoClick: (VideoCellModel) -> Uni
         val screenWidth = configuration.screenWidthDp.dp
         ((screenWidth / 16) * 9)
     }
-    if (viewState.items.isEmpty()) {
+    if (viewState.loading) {
         LoadingView(imageHeight)
     } else {
         DataView(viewState, imageHeight, onVideoClick)
