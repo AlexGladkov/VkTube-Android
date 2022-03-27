@@ -12,14 +12,8 @@ import com.vk.sdk.api.groups.dto.GroupsGetObjectExtendedResponse
 import com.vk.sdk.api.video.VideoService
 import com.vk.sdk.api.video.dto.VideoGetResponse
 import com.vk.sdk.api.video.dto.VideoVideoFull
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import javax.inject.Inject
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 class ClubsRepository @Inject constructor() {
     suspend fun fetchVideos(
@@ -33,6 +27,7 @@ class ClubsRepository @Inject constructor() {
         val listResponse = requests.map {
             async {
                 try {
+                    delay(333) // max 3 requests per second: https://vk.com/dev/api_requests
                     fetchVideo(it)
                 } catch (e: java.lang.Exception) {
                     println(e.localizedMessage)
