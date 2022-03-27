@@ -23,15 +23,14 @@ class FeedViewModel @Inject constructor(
     private val clubsLocalDataSource: ClubsLocalDataSource,
     private val userRepository: UserRepository
 ) : BaseViewModel<FeedState, FeedAction, FeedEvent>(initialState = FeedState()) {
-    private val groups = mutableMapOf<Long, GroupVideos>()
-    private val loadingList = mutableMapOf<Long, List<Int>>()
-    private val loadingListLock = Any()
+    private val loadMoreController = LoadMoreController()
+
     override fun obtainEvent(viewEvent: FeedEvent) {
         when (viewEvent) {
             FeedEvent.ScreenShown -> fetchVideos()
             FeedEvent.ClearAction -> clearAction()
             is FeedEvent.VideoClicked -> obtainVideoClick(viewEvent.videoCellModel)
-            is FeedEvent.OnScroll -> handleScroll(viewEvent.lastVisibleItemIndex)
+            is FeedEvent.OnScroll -> loadMoreController.handleScroll(viewEvent.lastVisibleItemIndex)
         }
     }
 
@@ -66,7 +65,7 @@ class FeedViewModel @Inject constructor(
                     if (localClubsIds.any())
                         clubsRepository.fetchVideos(
                             groupIds = localClubsIds.map { UserId(it) },
-                            count = 20
+                            count = PAGE_SIZE
                         )
                     else
                         emptyList()
@@ -87,7 +86,7 @@ class FeedViewModel @Inject constructor(
                     if (newClubs.any())
                         clubsRepository.fetchVideos(
                             groupIds = newClubs.map { UserId(it) },
-                            count = 20
+                            count = PAGE_SIZE
                         )
                     else
                         emptyList()
@@ -113,7 +112,7 @@ class FeedViewModel @Inject constructor(
                     loading = false
                 )
 
-                fillGroups(videos)
+                loadMoreController.fillGroups(videos)
 
             } catch (ex: Exception) {
                 viewState = viewState.copy(
@@ -123,84 +122,107 @@ class FeedViewModel @Inject constructor(
         }
     }
 
-    private suspend fun fillGroups(items: List<VideoCellModel>) = withContext(Dispatchers.Default) {
-        synchronized(loadingListLock) {
-            groups.clear()
-            val size = items.size
-            items.reversed()
-                .forEachIndexed { index, item ->
-                    val ownerId = item.ownerId
-                    groups[ownerId] = groups[ownerId]?.let {
-                        it.copy(
-                            loadedCount = it.loadedCount + 1,
-                            hasMore = (it.loadedCount + 1) % 20 == 0
-                        )
-                    } ?: GroupVideos(
-                        ownerId = ownerId,
-                        lastItemIndex = size - index - 1,
-                        loadedCount = 1,
-                        hasMore = false,
-                        userName = item.userName,
-                        userImage = item.userImage,
-                        subscribers = item.subscribers
-                    )
-                }
-        }
-    }
+    private inner class LoadMoreController {
+        private val groups = mutableMapOf<Long, LoadedGroupInfo>()
 
-    private fun handleScroll(lastVisibleItemIndex: Int) {
-        viewModelScope.launch {
-            withContext(Dispatchers.Default) {
-                val groupInfo = synchronized(loadingListLock) {
+        /**
+         * [groupId,[offset1, offset2..]
+         */
+        private val loadedGroupsList = mutableMapOf<Long, List<Int>>()
+        private val loadingListLock = Any()
+
+        fun handleScroll(lastVisibleItemIndex: Int) {
+            fun getGroupForLoad(): LoadedGroupInfo? {
+                synchronized(loadingListLock) {
+                    val itemsSize = viewState.items.size
                     val groupId =
-                        viewState.items.getOrNull(lastVisibleItemIndex + 20)?.ownerId
-                            ?: return@synchronized null
+                        viewState.items.getOrNull(
+                            (lastVisibleItemIndex + PAGE_SIZE).coerceAtMost(itemsSize - 1)
+                        )?.ownerId
+                            ?: return null
 
-                    val groupInfo = groups[groupId] ?: return@synchronized null
-                    if (!groupInfo.hasMore) return@synchronized null
-                    if (groupInfo.lastItemIndex > lastVisibleItemIndex + 20) return@synchronized null
+                    val groupInfo = groups[groupId] ?: return null
+                    if (!groupInfo.hasMore) return null
+                    if (groupInfo.lastItemIndex > lastVisibleItemIndex + PAGE_SIZE) return null
                     val offset = groupInfo.loadedCount
 
-                    val loadingOffsets = loadingList[groupId] ?: emptyList()
-                    val maxLoadingOffset = (loadingList[groupId] ?: emptyList()).maxOrNull() ?: 0
+                    val loadingOffsets = loadedGroupsList[groupId] ?: emptyList()
+                    val maxLoadingOffset =
+                        (loadedGroupsList[groupId] ?: emptyList()).maxOrNull() ?: 0
 
-                    if (maxLoadingOffset >= offset) return@synchronized null
+                    if (maxLoadingOffset >= offset) return null
 
-                    loadingList[groupId] = loadingOffsets + listOf(groupInfo.loadedCount)
-                    groupInfo
-                } ?: return@withContext
+                    loadedGroupsList[groupId] = loadingOffsets + listOf(groupInfo.loadedCount)
+                    return groupInfo
+                }
+            }
 
-                val rawVideos = clubsRepository.fetchVideos(
-                    groupIds = listOf(UserId(-groupInfo.ownerId)),
-                    count = 20,
-                    offset = groupInfo.loadedCount
-                )
-                if (rawVideos.any()) {
-                    val videos = rawVideos.mapNotNull { videoFull ->
-                        videoFull.mapToVideoCellModel(
-                            userName = groupInfo.userName,
-                            userImage = groupInfo.userImage,
-                            subscribers = groupInfo.subscribers
-                        )
-                    }
+            viewModelScope.launch {
+                withContext(Dispatchers.Default) {
+                    val groupInfo = getGroupForLoad() ?: return@withContext
 
-                    viewState = viewState.copy(
-                        items = (viewState.items + videos).sortedByDescending { it.dateAdded },
-                        loading = false
+                    val rawVideos = clubsRepository.fetchVideos(
+                        groupIds = listOf(UserId(-groupInfo.ownerId)),
+                        count = PAGE_SIZE,
+                        offset = groupInfo.loadedCount
                     )
-                    fillGroups(viewState.items)
+                    if (rawVideos.any()) {
+                        val videos = rawVideos.mapNotNull { videoFull ->
+                            videoFull.mapToVideoCellModel(
+                                userName = groupInfo.userName,
+                                userImage = groupInfo.userImage,
+                                subscribers = groupInfo.subscribers
+                            )
+                        }
+
+                        viewState = viewState.copy(
+                            items = (viewState.items + videos).sortedByDescending { it.dateAdded },
+                            loading = false
+                        )
+                        fillGroups(viewState.items)
+                    }
                 }
             }
         }
+
+        suspend fun fillGroups(items: List<VideoCellModel>) =
+            withContext(Dispatchers.Default) {
+                synchronized(loadingListLock) {
+                    groups.clear()
+                    val size = items.size
+                    items.reversed()
+                        .forEachIndexed { index, item ->
+                            val ownerId = item.ownerId
+                            groups[ownerId] = groups[ownerId]?.let {
+                                it.copy(
+                                    loadedCount = it.loadedCount + 1,
+                                    hasMore = (it.loadedCount + 1) % PAGE_SIZE == 0
+                                )
+                            } ?: LoadedGroupInfo(
+                                ownerId = ownerId,
+                                lastItemIndex = size - index - 1,
+                                loadedCount = 1,
+                                hasMore = false,
+                                userName = item.userName,
+                                userImage = item.userImage,
+                                subscribers = item.subscribers
+                            )
+                        }
+                }
+            }
+    }
+
+    private data class LoadedGroupInfo(
+        val ownerId: Long,
+        val lastItemIndex: Int,
+        val loadedCount: Int,
+        val hasMore: Boolean,
+        val userImage: String,
+        val userName: String,
+        val subscribers: Int
+    )
+
+    companion object {
+        private const val PAGE_SIZE = 20
     }
 }
-
-private data class GroupVideos(
-    val ownerId: Long,
-    val lastItemIndex: Int,
-    val loadedCount: Int,
-    val hasMore: Boolean,
-    val userImage: String,
-    val userName: String,
-    val subscribers: Int
-)
