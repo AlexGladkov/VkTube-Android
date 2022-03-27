@@ -27,7 +27,6 @@ class ClubsRepository @Inject constructor() {
         val listResponse = requests.map {
             async {
                 try {
-                    delay(333) // max 3 requests per second: https://vk.com/dev/api_requests
                     fetchVideo(it)
                 } catch (e: java.lang.Exception) {
                     println(e.localizedMessage)
