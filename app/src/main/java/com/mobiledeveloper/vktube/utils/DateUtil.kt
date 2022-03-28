@@ -13,6 +13,10 @@ import java.util.concurrent.TimeUnit
 object DateUtil {
     private const val UI_DATE_FORMAT = "dd MMM yyyy"
 
+    private val dateFormat by lazy {
+        SimpleDateFormat(UI_DATE_FORMAT, Locale.getDefault())
+    }
+
     fun getTimeAgo(unixTime: Int, context: Context): String {
         val res = context.resources
 
@@ -20,7 +24,7 @@ object DateUtil {
         val passedTime = System.currentTimeMillis() - time
 
         val days = TimeUnit.MILLISECONDS.toDays(passedTime).toInt()
-        if (days > 0) return getDate(time, UI_DATE_FORMAT)
+        if (days > 0) return getDate(time)
 
         val hours = TimeUnit.MILLISECONDS.toHours(passedTime).toInt()
         if (hours > 0) return getTimeWithDescriptor(hours, res, R.plurals.hours)
@@ -43,12 +47,11 @@ object DateUtil {
         }
     }
 
-    private fun getDate(milliSeconds: Long, dateFormat: String): String {
-        val formatter = SimpleDateFormat(dateFormat, Locale.getDefault())
+    private fun getDate(milliSeconds: Long): String {
         val calendar: Calendar = Calendar.getInstance()
 
         calendar.timeInMillis = milliSeconds
 
-        return formatter.format(calendar.time)
+        return dateFormat.format(calendar.time)
     }
 }
