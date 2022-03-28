@@ -2,6 +2,7 @@
 
 package com.mobiledeveloper.vktube.data.clubs
 
+import com.google.gson.*
 import com.vk.api.sdk.VK
 import com.vk.api.sdk.VKApiManager
 import com.vk.api.sdk.VKApiResponseParser
@@ -20,7 +21,9 @@ import com.vk.sdk.api.video.dto.VideoGetResponse
 import com.vk.sdk.api.video.dto.VideoVideoFull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.lang.reflect.Type
 import javax.inject.Inject
+
 
 class ClubsRepository @Inject constructor() {
     suspend fun fetchVideos(
@@ -71,21 +74,22 @@ class ClubsRepository @Inject constructor() {
     ) : ApiCommand<List<VideoGetResponse>>() {
         override fun onExecute(manager: VKApiManager): List<VideoGetResponse> {
             return ownerIds.toList().chunked(CHUNK_LIMIT).map { chunk ->
-                val chunkIds = chunk.joinToString(separator = ",")
+                val code = chunk
+                    .map { id ->
+                        "API.video.get({\"owner_id\":$id,\"count\":$count,\"offset\":$offset})"
+                    }.toString()
 
                 val call = VKMethodCall.Builder()
-                    .method("execute.groupsVideos")
-                    .args("groupIds", chunkIds)
-                    .args("count", count)
-                    .args("offset", offset)
+                    .method("execute")
+                    .args("code", "return $code;")
                     .version(manager.config.version)
                     .build()
                 try {
                     GroupIdsMethodChainCall(
                         manager,
                         call
-                    ).call(ChainArgs())?.filterNotNull()?: emptyList()
-                } catch (ex: Exception) {
+                    ).call(ChainArgs())?.filterNotNull() ?: emptyList()
+                } catch (ex: Throwable) {
                     ex.printStackTrace()
                     emptyList()
                 }
@@ -95,7 +99,7 @@ class ClubsRepository @Inject constructor() {
         /**
          * response without check execute_errors
          */
-        class GroupIdsMethodChainCall(manager: VKApiManager, call: VKMethodCall) :
+        private class GroupIdsMethodChainCall(manager: VKApiManager, call: VKMethodCall) :
             MethodChainCall<List<VideoGetResponse?>>(
                 manager,
                 manager.executor,
@@ -109,22 +113,52 @@ class ClubsRepository @Inject constructor() {
              */
             override fun runRequest(mc: OkHttpMethodCall): List<VideoGetResponse?> {
                 val response = okHttpExecutor.execute(mc).response
-                return parser?.parse(response)?: emptyList()
+                return parser?.parse(response) ?: emptyList()
             }
         }
 
         private class ResponseApiParser : VKApiResponseParser<List<VideoGetResponse?>> {
             override fun parse(response: String): List<VideoGetResponse?> {
                 return try {
-                    GsonHolder.gson.fromJson(response, ApiVideoGetResponse::class.java).response
+                    gson.fromJson(response, ApiVideoGetResponse::class.java).response
                 } catch (ex: Exception) {
                     ex.printStackTrace()
                     emptyList()
                 }
             }
+
+            companion object {
+                private val gson = GsonBuilder()
+                    .registerTypeAdapter(ApiVideoGetResponse::class.java, ResponseDeserializer())
+                    .create()
+            }
         }
 
         private data class ApiVideoGetResponse(val response: List<VideoGetResponse?>)
+
+        private class ResponseDeserializer : JsonDeserializer<ApiVideoGetResponse> {
+            override fun deserialize(
+                json: JsonElement?,
+                typeOfT: Type?,
+                context: JsonDeserializationContext?
+            ): ApiVideoGetResponse {
+                val result = mutableListOf<VideoGetResponse?>()
+                if (json == null) return ApiVideoGetResponse(result)
+
+                val jsonObject: JsonObject = json.asJsonObject
+                if (jsonObject.has("response")) {
+                    jsonObject.getAsJsonArray("response").forEach {
+                        if (it == null || it.isJsonPrimitive)
+                            result.add(null)
+                        else {
+                            result.add(GsonHolder.gson.fromJson(it, VideoGetResponse::class.java))
+                        }
+                    }
+                }
+
+                return ApiVideoGetResponse(result)
+            }
+        }
 
         companion object {
             private const val CHUNK_LIMIT = 25
