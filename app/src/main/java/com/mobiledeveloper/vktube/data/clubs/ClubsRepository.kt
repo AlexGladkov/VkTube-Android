@@ -27,11 +27,11 @@ import javax.inject.Inject
 
 class ClubsRepository @Inject constructor() {
     suspend fun fetchVideos(
-        groupIds: List<UserId>,
+        groupIds: List<Long>,
         count: Int
     ): List<VideoVideoFull> = withContext(Dispatchers.IO) {
         val result = try {
-            fetchBatchVideos(groupIds.map { -it.value }, count)
+            fetchBatchVideos(groupIds.map { -it }, count)
         } catch (ex: Throwable) {
             ex.printStackTrace()
             emptyList()
