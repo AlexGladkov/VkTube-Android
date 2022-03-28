@@ -88,4 +88,6 @@ dependencies {
     implementation "com.vk:android-sdk-api:3.5.0"
 
     implementation 'com.valentinilk.shimmer:compose-shimmer:1.0.2'
+
+    implementation 'com.google.code.gson:gson:2.9.0'
 }
