@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -15,6 +16,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.mobiledeveloper.vktube.R
@@ -31,7 +33,11 @@ data class VideoCellModel(
     val likes: Int, val likesByMe: Boolean, val videoUrl: String, val ownerId: Long
 )
 
-fun VideoVideoFull.mapToVideoCellModel(userImage: String, userName: String, subscribers: Int): VideoCellModel? {
+fun VideoVideoFull.mapToVideoCellModel(
+    userImage: String,
+    userName: String,
+    subscribers: Int
+): VideoCellModel? {
     val videoId = id ?: return null
     val ownerId = ownerId ?: return null
 
@@ -55,13 +61,8 @@ fun VideoVideoFull.mapToVideoCellModel(userImage: String, userName: String, subs
 }
 
 @Composable
-fun VideoCell(model: VideoCellModel, onVideoClick: () -> Unit) {
+fun VideoCell(model: VideoCellModel, imageHeight: Dp, onVideoClick: () -> Unit) {
     Column(modifier = Modifier.clickable { onVideoClick.invoke() }) {
-        val configuration = LocalConfiguration.current
-
-        val screenWidth = configuration.screenWidthDp.dp
-        val imageHeight = (screenWidth / 16) * 9
-
         val context = LocalContext.current
 
         AsyncImage(
@@ -88,17 +89,24 @@ fun VideoCell(model: VideoCellModel, onVideoClick: () -> Unit) {
                 contentScale = ContentScale.Crop
             )
 
-            val views = NumberUtil.formatNumberShort(
-                model.viewsCount,
-                context,
-                R.plurals.number_short_format,
-                R.plurals.views
-            )
-            val date = DateUtil.getTimeAgo(model.dateAdded, context)
+            val text = remember(model.userName, model.dateAdded, model.viewsCount) {
+                val views =
+                    NumberUtil.formatNumberShort(
+                        model.viewsCount,
+                        context,
+                        R.plurals.number_short_format,
+                        R.plurals.views
+                    )
 
-            Column(modifier = Modifier
-                .padding(start = 16.dp, end = 16.dp)
-                .weight(1f)) {
+                val date = DateUtil.getTimeAgo(model.dateAdded, context)
+                "${model.userName} • $views • $date"
+            }
+
+            Column(
+                modifier = Modifier
+                    .padding(start = 16.dp, end = 16.dp)
+                    .weight(1f)
+            ) {
                 Text(
                     text = model.title,
                     color = Fronton.color.textPrimary,
@@ -107,7 +115,7 @@ fun VideoCell(model: VideoCellModel, onVideoClick: () -> Unit) {
                 )
                 Text(
                     modifier = Modifier.padding(top = 2.dp),
-                    text = "${model.userName} • $views • $date",
+                    text = text,
                     color = Fronton.color.textSecondary,
                     style = Fronton.typography.body.small.short
                 )
@@ -117,13 +125,8 @@ fun VideoCell(model: VideoCellModel, onVideoClick: () -> Unit) {
 }
 
 @Composable
-fun VideoGrayCell() {
+fun VideoGrayCell(imageHeight: Dp) {
     Column {
-        val configuration = LocalConfiguration.current
-
-        val screenWidth = configuration.screenWidthDp.dp
-        val imageHeight = (screenWidth / 16) * 9
-
         Box(
             modifier = Modifier
                 .background(Fronton.color.backgroundSecondary)
@@ -148,9 +151,11 @@ fun VideoGrayCell() {
                 content = {}
             )
 
-            Column(modifier = Modifier
-                .padding(start = 16.dp, end = 16.dp)
-                .weight(1f)) {
+            Column(
+                modifier = Modifier
+                    .padding(start = 16.dp, end = 16.dp)
+                    .weight(1f)
+            ) {
                 Card(
                     Modifier
                         .width(240.dp)

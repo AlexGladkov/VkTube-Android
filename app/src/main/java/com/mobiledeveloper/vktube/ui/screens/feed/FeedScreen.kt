@@ -1,15 +1,11 @@
 package com.mobiledeveloper.vktube.ui.screens.feed
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mobiledeveloper.vktube.navigation.NavigationTree
 import com.mobiledeveloper.vktube.ui.common.cell.VideoCell
@@ -39,6 +35,9 @@ fun FeedScreen(
             is FeedAction.OpenVideoDetail -> {
                 navController.navigate("${NavigationTree.Root.Detail.name}/${(viewAction as FeedAction.OpenVideoDetail).videoId}")
             }
+            null -> {
+                // ignore
+            }
         }
 
         feedViewModel.obtainEvent(FeedEvent.ClearAction)
@@ -51,20 +50,40 @@ fun FeedScreen(
 
 @Composable
 private fun FeedView(viewState: FeedState, onVideoClick: (VideoCellModel) -> Unit) {
+    val configuration = LocalConfiguration.current
+
+    val imageHeight = remember {
+        val screenWidth = configuration.screenWidthDp.dp
+        ((screenWidth / 16) * 9)
+    }
+    if (viewState.loading) {
+        LoadingView(imageHeight)
+    } else {
+        DataView(viewState, imageHeight, onVideoClick)
+    }
+}
+
+@Composable
+private fun DataView(
+    viewState: FeedState,
+    imageHeight: Dp,
+    onVideoClick: (VideoCellModel) -> Unit
+) {
     LazyColumn {
-        if (viewState.items.isEmpty()) {
-            repeat(10) {
-                item {
-                    VideoGrayCell()
-                }
+        items(viewState.items) { viewModel ->
+            VideoCell(viewModel, imageHeight) {
+                onVideoClick.invoke(viewModel)
             }
-        } else {
-            viewState.items.forEach {
-                item {
-                    VideoCell(it) {
-                        onVideoClick.invoke(it)
-                    }
-                }
+        }
+    }
+}
+
+@Composable
+private fun LoadingView(imageHeight: Dp) {
+    LazyColumn {
+        repeat(10) {
+            item {
+                VideoGrayCell(imageHeight)
             }
         }
     }
