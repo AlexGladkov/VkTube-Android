@@ -29,20 +29,9 @@ object DateUtil {
 
         return when {
             days > 0 -> getDate(time, UI_DATE_FORMAT)
-            hours > 0 -> getTimeWithDescriptor(hours, res, R.plurals.hours)
-            minutes > 0 -> getTimeWithDescriptor(minutes, res, R.plurals.minutes)
-            else -> getTimeWithDescriptor(seconds, res, R.plurals.seconds)
-        }
-    }
-
-    private fun getTimeWithDescriptor(value: Int, res: Resources, idDescriptor: Int): String {
-        return with(value) {
-            when {
-                mod(10) == 1 -> res.getQuantityString(idDescriptor, ONE, value)
-                mod(10) in 2..4 -> res.getQuantityString(idDescriptor, FEW, value)
-                mod(10) in 5..9 || mod(10) == 0 -> res.getQuantityString(idDescriptor, MANY, value)
-                else -> ""
-            }
+            hours > 0 -> res.getQuantityString(R.plurals.hours, hours, hours)
+            minutes > 0 -> res.getQuantityString(R.plurals.minutes, minutes, minutes)
+            else -> res.getQuantityString(R.plurals.seconds, seconds, seconds)
         }
     }
 
