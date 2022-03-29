@@ -161,7 +161,7 @@ class FeedViewModel @Inject constructor(
                     val groupInfo = getGroupForLoad() ?: return@withContext
 
                     val rawVideos = clubsRepository.fetchVideos(
-                        groupIds = listOf(UserId(-groupInfo.ownerId)),
+                        groupId = -groupInfo.ownerId,
                         count = PAGE_SIZE,
                         offset = groupInfo.loadedCount
                     )
