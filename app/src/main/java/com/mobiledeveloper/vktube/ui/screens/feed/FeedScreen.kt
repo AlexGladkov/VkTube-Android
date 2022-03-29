@@ -69,7 +69,7 @@ private fun FeedView(viewState: FeedState, onVideoClick: (VideoCellModel) -> Uni
             Size(configuration.screenWidthDp.dp + 1.dp, configuration.screenWidthDp.dp / 16 * 9)
         }
     }
-    if (viewState.items.isEmpty()) {
+    if (viewState.loading) {
         LoadingView(previewSize)
     } else {
         DataView(viewState, previewSize, onVideoClick)
