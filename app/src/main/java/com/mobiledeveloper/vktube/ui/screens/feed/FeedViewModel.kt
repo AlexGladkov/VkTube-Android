@@ -11,7 +11,6 @@ import com.mobiledeveloper.vktube.ui.common.cell.mapToVideoCellModel
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedAction
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedEvent
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedState
-import com.vk.dto.common.id.UserId
 import com.vk.dto.common.id.abs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
@@ -64,7 +63,7 @@ class FeedViewModel @Inject constructor(
                 val rawVideosJob = async {
                     if (localClubsIds.any())
                         clubsRepository.fetchVideos(
-                            groupIds = localClubsIds.map { UserId(it) },
+                            groupIds = localClubsIds.map { it },
                             count = PAGE_SIZE
                         )
                     else
@@ -85,7 +84,7 @@ class FeedViewModel @Inject constructor(
                 val newVideosJob = async {
                     if (newClubs.any())
                         clubsRepository.fetchVideos(
-                            groupIds = newClubs.map { UserId(it) },
+                            groupIds = newClubs.map { it },
                             count = PAGE_SIZE
                         )
                     else
