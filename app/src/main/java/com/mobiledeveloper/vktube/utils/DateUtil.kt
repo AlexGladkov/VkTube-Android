@@ -27,25 +27,15 @@ object DateUtil {
         if (days > 0) return getDate(time)
 
         val hours = TimeUnit.MILLISECONDS.toHours(passedTime).toInt()
-        if (hours > 0) return getTimeWithDescriptor(hours, res, R.plurals.hours)
+        if (hours > 0) return res.getQuantityString(R.plurals.hours, hours, hours)
 
         val minutes = TimeUnit.MILLISECONDS.toMinutes(passedTime).toInt()
-        if (minutes > 0) return getTimeWithDescriptor(minutes, res, R.plurals.minutes)
+        if (minutes > 0) return res.getQuantityString(R.plurals.minutes, minutes, minutes)
 
         val seconds = TimeUnit.MILLISECONDS.toSeconds(passedTime).toInt()
-        return getTimeWithDescriptor(seconds, res, R.plurals.seconds)
+        return res.getQuantityString(R.plurals.seconds, seconds, seconds)
     }
 
-    private fun getTimeWithDescriptor(value: Int, res: Resources, idDescriptor: Int): String {
-        return with(value) {
-            when {
-                mod(10) == 1 -> res.getQuantityString(idDescriptor, ONE, value)
-                mod(10) in 2..4 -> res.getQuantityString(idDescriptor, FEW, value)
-                mod(10) in 5..9 || mod(10) == 0 -> res.getQuantityString(idDescriptor, MANY, value)
-                else -> ""
-            }
-        }
-    }
 
     private fun getDate(milliSeconds: Long): String {
         val calendar: Calendar = Calendar.getInstance()
