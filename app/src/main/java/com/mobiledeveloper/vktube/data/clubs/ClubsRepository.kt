@@ -97,7 +97,10 @@ class ClubsRepository @Inject constructor() {
         }
 
         /**
-         * response without check execute_errors
+         * standard MethodChainCall check response field 'execute_errors' and throw exception when
+         * response contains any error.
+         * batch of group videos requests may contains execute_error for some group videos.
+         * GroupIdsMethodChainCall overrides runRequest methods for ignore that errors.
          */
         private class GroupIdsMethodChainCall(manager: VKApiManager, call: VKMethodCall) :
             MethodChainCall<List<VideoGetResponse?>>(
