@@ -158,27 +158,31 @@ class FeedViewModel @Inject constructor(
 
             viewModelScope.launch {
                 withContext(Dispatchers.Default) {
-                    val groupInfo = getGroupForLoad() ?: return@withContext
+                    try {
+                        val groupInfo = getGroupForLoad() ?: return@withContext
 
-                    val rawVideos = clubsRepository.fetchVideos(
-                        groupId = -groupInfo.ownerId,
-                        count = PAGE_SIZE,
-                        offset = groupInfo.loadedCount
-                    )
-                    if (rawVideos.any()) {
-                        val videos = rawVideos.mapNotNull { videoFull ->
-                            videoFull.mapToVideoCellModel(
-                                userName = groupInfo.userName,
-                                userImage = groupInfo.userImage,
-                                subscribers = groupInfo.subscribers
-                            )
-                        }
-
-                        viewState = viewState.copy(
-                            items = (viewState.items + videos).sortedByDescending { it.dateAdded },
-                            loading = false
+                        val rawVideos = clubsRepository.fetchVideos(
+                            groupId = -groupInfo.ownerId,
+                            count = PAGE_SIZE,
+                            offset = groupInfo.loadedCount
                         )
-                        fillGroups(viewState.items)
+                        if (rawVideos.any()) {
+                            val videos = rawVideos.mapNotNull { videoFull ->
+                                videoFull.mapToVideoCellModel(
+                                    userName = groupInfo.userName,
+                                    userImage = groupInfo.userImage,
+                                    subscribers = groupInfo.subscribers
+                                )
+                            }
+
+                            viewState = viewState.copy(
+                                items = (viewState.items + videos).sortedByDescending { it.dateAdded },
+                                loading = false
+                            )
+                            fillGroups(viewState.items)
+                        }
+                    } catch (ex: Exception) {
+                        ex.printStackTrace()
                     }
                 }
             }
