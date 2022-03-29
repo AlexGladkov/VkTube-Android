@@ -1,6 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">VkTube</string>
-    <integer name="com_vk_sdk_AppId">8097985</integer>
 
     <string name="video_preview">Предпросмотр видео</string>
     <string name="user_image_preview">Предпросмотр аватарки человека</string>
