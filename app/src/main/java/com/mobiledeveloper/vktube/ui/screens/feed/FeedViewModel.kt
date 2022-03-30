@@ -6,6 +6,7 @@ import com.mobiledeveloper.vktube.data.cache.InMemoryCache
 import com.mobiledeveloper.vktube.data.clubs.ClubsLocalDataSource
 import com.mobiledeveloper.vktube.data.clubs.ClubsRepository
 import com.mobiledeveloper.vktube.data.user.UserRepository
+import com.mobiledeveloper.vktube.data.videos.VideosRepository
 import com.mobiledeveloper.vktube.ui.common.cell.VideoCellModel
 import com.mobiledeveloper.vktube.ui.common.cell.mapToVideoCellModel
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedAction
@@ -22,6 +23,7 @@ import javax.inject.Inject
 @HiltViewModel
 class FeedViewModel @Inject constructor(
     private val clubsRepository: ClubsRepository,
+    private val videosRepository: VideosRepository,
     private val clubsLocalDataSource: ClubsLocalDataSource,
     private val userRepository: UserRepository
 ) : BaseViewModel<FeedState, FeedAction, FeedEvent>(initialState = FeedState()) {
@@ -62,7 +64,7 @@ class FeedViewModel @Inject constructor(
                 val localClubsIds = clubsLocalDataSource.loadClubsIds()
                 val rawVideosJob = async {
                     if (localClubsIds.any())
-                        clubsRepository.fetchVideos(
+                        videosRepository.fetchVideos(
                             groupIds = localClubsIds.map { it },
                             count = 20
                         )
@@ -83,7 +85,7 @@ class FeedViewModel @Inject constructor(
 
                 val newVideosJob = async {
                     if (newClubs.any())
-                        clubsRepository.fetchVideos(
+                        videosRepository.fetchVideos(
                             groupIds = newClubs.map { it },
                             count = 20
                         )
