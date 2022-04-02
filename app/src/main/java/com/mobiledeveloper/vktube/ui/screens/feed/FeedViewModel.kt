@@ -83,7 +83,7 @@ class FeedViewModel @Inject constructor(
                     listOf(deletedClubs, newClubs)
                 }
 
-                val newVideosJob = async {
+                val newClubsRawVideosJob = async {
                     if (newClubs.any())
                         videosRepository.fetchVideos(
                             groupIds = newClubs.map { it },
@@ -94,19 +94,22 @@ class FeedViewModel @Inject constructor(
                 }
 
                 val rawVideos = rawVideosJob.await().filter { it.ownerId?.value !in deletedClubs }
-                val newVideos = newVideosJob.await()
+                val newClubsRawVideos = newClubsRawVideosJob.await()
 
                 val videos = withContext(Dispatchers.Default) {
-                    (rawVideos + newVideos)
-                        .mapNotNull { videoFull ->
+                    (rawVideos + newClubsRawVideos)
+                        .groupBy { it.ownerId }
+                        .mapNotNull { (ownerId, items) ->
                             val group =
-                                clubs.firstOrNull { it.id.abs() == videoFull.ownerId?.abs() }
-                            videoFull.mapToVideoCellModel(
-                                userName = group?.name.orEmpty(),
-                                userImage = group?.photo100.orEmpty(),
-                                subscribers = group?.membersCount ?: 0
-                            )
-                        }.sortedByDescending { it.dateAdded }
+                                clubs.firstOrNull { it.id.abs() == ownerId?.abs() }
+                            items.mapNotNull {
+                                it.mapToVideoCellModel(
+                                    userName = group?.name.orEmpty(),
+                                    userImage = group?.photo100.orEmpty(),
+                                    subscribers = group?.membersCount ?: 0
+                                )
+                            }
+                        }.flatten().sortedByDescending { it.dateAdded }
                 }
                 viewState = viewState.copy(
                     items = videos,
