@@ -1,6 +1,8 @@
 package com.mobiledeveloper.vktube.ui.screens.blacklist
 
 import android.content.res.Configuration
+import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +29,10 @@ fun GroupsBlackListScreen(
 ) {
     val viewState by viewModel.viewStates().collectAsState()
     val viewAction by viewModel.viewActions().collectAsState(initial = null)
+
+    BackHandler(enabled = true){
+        viewModel.obtainEvent(BlackListEvent.Back)
+    }
 
     Box(modifier = Modifier.background(color = Fronton.color.backgroundPrimary)) {
         GroupsView(

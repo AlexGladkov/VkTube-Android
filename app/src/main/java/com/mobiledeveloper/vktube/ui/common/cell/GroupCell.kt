@@ -39,12 +39,14 @@ data class GroupCellModel(
 fun GroupsGroupFull.mapToGroupCellModel(
     imageUrl: String,
     name: String,
-    id: Long
+    id: Long,
+    isIgnored: Boolean
 ): GroupCellModel {
     return GroupCellModel(
         groupId = id,
         groupIcon = imageUrl,
-        groupName = name
+        groupName = name,
+        isIgnored = isIgnored
     )
 }
 

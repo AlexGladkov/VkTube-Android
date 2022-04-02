@@ -5,6 +5,7 @@ import com.mobiledeveloper.vktube.base.BaseViewModel
 import com.mobiledeveloper.vktube.data.clubs.ClubsLocalDataSource
 import com.mobiledeveloper.vktube.data.clubs.ClubsRepository
 import com.mobiledeveloper.vktube.data.user.UserRepository
+import com.mobiledeveloper.vktube.ui.common.cell.GroupCellModel
 import com.mobiledeveloper.vktube.ui.common.cell.mapToGroupCellModel
 import com.mobiledeveloper.vktube.ui.screens.blacklist.models.BlackListAction
 import com.mobiledeveloper.vktube.ui.screens.blacklist.models.BlackListEvent
@@ -25,6 +26,17 @@ class GroupsBlackListViewModel @Inject constructor(
         when (viewEvent) {
             BlackListEvent.ScreenShown -> onScreenShown()
             BlackListEvent.ClearAction -> clearAction()
+            is BlackListEvent.Back -> saveIgnoreListAndGoBack()
+        }
+    }
+
+    private fun saveIgnoreListAndGoBack() {
+        viewModelScope.launch {
+
+            val ignoreList = viewState.items.filter { it.isIgnored }.map { it.groupId }
+            groupsLocalDataSource.saveIgnoreList(ignoreList)
+
+            viewAction = BlackListAction.BackToFeed
         }
     }
 
@@ -52,11 +64,14 @@ class GroupsBlackListViewModel @Inject constructor(
                     userRepository.fetchLocalUser().userId
                 }
 
+                val ignoreList = groupsLocalDataSource.loadIgnoreList()
+
                 val groups = groupsRepository.fetchClubs(userId).map {
                     it.mapToGroupCellModel(
                         name = it.name ?: "",
                         imageUrl = it.photo200 ?: "",
-                        id = it.id.value
+                        id = it.id.value,
+                        isIgnored = ignoreList.contains(it.id.value)
                     )
                 }
 

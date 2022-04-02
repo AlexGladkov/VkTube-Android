@@ -66,7 +66,9 @@ class FeedViewModel @Inject constructor(
                     userRepository.fetchLocalUser().userId
                 }
 
-                val localClubsIds = clubsLocalDataSource.loadClubsIds()
+                val ignoreList = clubsLocalDataSource.loadIgnoreList()
+
+                val localClubsIds = clubsLocalDataSource.loadClubsIds().filter { it !in ignoreList }
                 val rawVideosJob = async {
                     if (localClubsIds.any())
                         videosRepository.fetchVideos(
@@ -77,7 +79,7 @@ class FeedViewModel @Inject constructor(
                         emptyList()
                 }
 
-                val clubs = clubsRepository.fetchClubs(userId)
+                val clubs = clubsRepository.fetchClubs(userId).filter { it.id.value !in ignoreList }
                 val (deletedClubs, newClubs) = withContext(Dispatchers.Default) {
                     val currentClubsIds = clubs.map { it.id.value }
                     clubsLocalDataSource.saveClubsIds(currentClubsIds)
