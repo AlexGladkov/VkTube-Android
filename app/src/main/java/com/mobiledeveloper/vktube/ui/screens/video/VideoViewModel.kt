@@ -36,6 +36,7 @@ class VideoViewModel @Inject constructor(
             is VideoEvent.CommentsClick -> showComments()
             is VideoEvent.ClearAction -> clearAction()
             is VideoEvent.VideoLoading -> performVideoLoading()
+            VideoEvent.CloseCommentsClick -> closeComments()
         }
     }
 
@@ -143,6 +144,12 @@ class VideoViewModel @Inject constructor(
     private fun showComments() {
         viewModelScope.launch {
             viewAction = VideoAction.OpenComments
+        }
+    }
+
+    private fun closeComments() {
+        viewModelScope.launch {
+            viewAction = VideoAction.CloseComments
         }
     }
 

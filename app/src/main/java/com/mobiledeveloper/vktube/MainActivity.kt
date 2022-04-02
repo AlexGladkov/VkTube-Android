@@ -20,11 +20,11 @@ class MainActivity : ComponentActivity() {
             FrontonTheme {
                 val systemUiController = rememberSystemUiController()
                 val backgroundPrimary = Fronton.color.backgroundPrimary
-
+                val isLight = Fronton.color.isLight
                 SideEffect {
                     systemUiController.setSystemBarsColor(
                         color = backgroundPrimary,
-                        darkIcons = true
+                        darkIcons = isLight
                     )
                 }
 
