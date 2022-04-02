@@ -7,6 +7,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.mobiledeveloper.vktube.ui.screens.blacklist.GroupsBlackListScreen
+import com.mobiledeveloper.vktube.ui.screens.blacklist.GroupsBlackListViewModel
 import com.mobiledeveloper.vktube.ui.screens.feed.FeedScreen
 import com.mobiledeveloper.vktube.ui.screens.feed.FeedViewModel
 import com.mobiledeveloper.vktube.ui.screens.login.LoginScreen
@@ -32,7 +34,10 @@ fun NavigationGraph() {
             val feedViewModel = hiltViewModel<FeedViewModel>()
             FeedScreen(navController, feedViewModel)
         }
-
+        composable(NavigationTree.Root.BlackListGroups.name) {
+            val blackListViewModel = hiltViewModel<GroupsBlackListViewModel>()
+            GroupsBlackListScreen(navController, blackListViewModel)
+        }
         composable(
             "${NavigationTree.Root.Detail.name}/{videoId}",
             arguments = listOf(navArgument("videoId") { type = NavType.StringType })
