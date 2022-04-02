@@ -61,7 +61,7 @@ fun FeedScreen(
 private fun FeedView(viewState: FeedState, onVideoClick: (VideoCellModel) -> Unit) {
     val configuration = LocalConfiguration.current
 
-    val previewSize = remember {
+    val previewSize = remember(configuration.orientation) {
         if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             val height = configuration.screenHeightDp.dp / 3
             Size(height * 16 / 9, height)
@@ -83,7 +83,10 @@ private fun DataView(
     onVideoClick: (VideoCellModel) -> Unit
 ) {
     LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        items(viewState.items) { viewModel ->
+        items(
+            items = viewState.items,
+            key = { item -> item.videoId }
+        ) { viewModel ->
             VideoCell(viewModel, previewSize) {
                 onVideoClick.invoke(viewModel)
             }

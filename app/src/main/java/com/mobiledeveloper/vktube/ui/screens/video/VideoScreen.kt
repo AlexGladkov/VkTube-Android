@@ -1,6 +1,8 @@
 package com.mobiledeveloper.vktube.ui.screens.video
 
+import android.content.res.Configuration
 import android.graphics.Bitmap
+import android.view.ViewGroup
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -51,15 +53,16 @@ fun VideoScreen(
     val viewAction by videoViewModel.viewActions().collectAsState(initial = null)
 
     val configuration = LocalConfiguration.current
+
     val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
     val videoHeight = (screenWidth / 16) * 9
-    val bottomSheetPeekHeight = screenHeight - videoHeight
+    val bottomSheetPeekHeight = (screenHeight - videoHeight).coerceAtLeast(screenHeight / 2)
 
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed)
     )
-    var bottomSheetHeight by remember { mutableStateOf(0.dp) }
+    var bottomSheetHeight by remember(configuration.orientation) { mutableStateOf(0.dp) }
     val coroutineScope = rememberCoroutineScope()
 
     BottomSheetScaffold(
@@ -69,7 +72,7 @@ fun VideoScreen(
                 onSendClick = {
                     videoViewModel.obtainEvent(VideoEvent.SendComment(it))
                 }, onCloseClick = {
-
+                    videoViewModel.obtainEvent(VideoEvent.CloseCommentsClick)
                 })
         },
         sheetPeekHeight = bottomSheetHeight
@@ -89,21 +92,25 @@ fun VideoScreen(
     }
 
     LaunchedEffect(key1 = viewAction, block = {
+        videoViewModel.obtainEvent(VideoEvent.ClearAction)
+
         when (viewAction) {
             VideoAction.OpenComments -> {
                 coroutineScope.launch {
-                    if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
-                        bottomSheetHeight = bottomSheetPeekHeight
-                        bottomSheetScaffoldState.bottomSheetState.expand()
-                    } else {
-                        bottomSheetHeight = 0.dp
-                        bottomSheetScaffoldState.bottomSheetState.collapse()
-                    }
+                    bottomSheetHeight = bottomSheetPeekHeight
+                    bottomSheetScaffoldState.bottomSheetState.expand()
                 }
             }
+            VideoAction.CloseComments -> {
+                coroutineScope.launch {
+                    bottomSheetHeight = 0.dp
+                    bottomSheetScaffoldState.bottomSheetState.collapse()
+                }
+            }
+            null -> {
+                // ignore
+            }
         }
-
-        videoViewModel.obtainEvent(VideoEvent.ClearAction)
     })
 
     LaunchedEffect(key1 = Unit, block = {
@@ -124,7 +131,7 @@ fun VideoScreenView(
     val video = viewState.video ?: return
 
     LazyColumn(modifier = Modifier.fillMaxSize()) {
-        stickyHeader {
+        item {
             VideoPlayerView(
                 video = video,
                 isLoadingVideo = viewState.isLoadingVideo,
@@ -234,7 +241,12 @@ private fun VideoUserRow(video: VideoCellModel) {
             contentScale = ContentScale.Crop
         )
 
-        val subscribers = NumberUtil.formatNumberShort(video.subscribers, context, R.plurals.number_short_format, R.plurals.subscribers)
+        val subscribers = NumberUtil.formatNumberShort(
+            video.subscribers,
+            context,
+            R.plurals.number_short_format,
+            R.plurals.subscribers
+        )
 
         Column(modifier = Modifier.padding(start = 16.dp)) {
             Text(
@@ -348,19 +360,34 @@ private fun VideoPlayerView(
     val widthPx = with(LocalDensity.current) { screenWidth.toPx() }
     val heightPx = with(LocalDensity.current) { videoHeight.toPx() }
 
-    if (isLoadingVideo == null || !isLoadingVideo) {
+    if (isLoadingVideo != true) {
         AndroidView(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(videoHeight),
             factory = {
-                val dataUrl = "<html>" +
-                        "<body>" +
-                        "<iframe width=\"$widthPx\" height=\"$heightPx\" src=\"" + video.videoUrl + "\" frameborder=\"0\" allowfullscreen/>" +
-                        "</body>" +
-                        "</html>"
+                val data = """
+                        <html>
+                            <head>
+                            <style>
+                                .frame {
+                                    width: 100%;
+                                    height: 100vh;
+                                    overflow: auto;
+                                }
+                            </style>
+                            </head>
+                            <body>
+                                <iframe class="frame" src="${video.videoUrl}" frameborder="0" allowfullscreen/>
+                            </body>
+                        </html>
+                        """
 
                 WebView(it).apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
                     settings.javaScriptEnabled = true
                     settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.SINGLE_COLUMN
                     settings.loadWithOverviewMode = true
@@ -376,7 +403,7 @@ private fun VideoPlayerView(
                             super.onPageFinished(view, url)
                         }
                     }
-                    loadData(dataUrl, "text/html", "utf-8")
+                    loadData(data, "text/html", "utf-8")
                 }
             }
         )
