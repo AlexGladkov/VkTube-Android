@@ -28,7 +28,7 @@ class FeedViewModel @Inject constructor(
 
     override fun obtainEvent(viewEvent: FeedEvent) {
         when (viewEvent) {
-            FeedEvent.ScreenShown -> fetchVideos()
+            FeedEvent.ScreenShown -> onScreenShown()
             FeedEvent.ClearAction -> clearAction()
             is FeedEvent.VideoClicked -> obtainVideoClick(viewEvent.videoCellModel)
             is FeedEvent.OnScroll -> loadMoreController.handleScroll(viewEvent.lastVisibleItemIndex)
@@ -46,6 +46,11 @@ class FeedViewModel @Inject constructor(
         viewModelScope.launch {
             viewAction = null
         }
+    }
+
+    private fun onScreenShown() {
+        if (viewState.items.any()) return
+        fetchVideos()
     }
 
     private fun fetchVideos() {

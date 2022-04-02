@@ -43,6 +43,7 @@ fun FeedScreen(
     )}
 
     LaunchedEffect(key1 = viewAction, block = {
+        feedViewModel.obtainEvent(FeedEvent.ClearAction)
         when (viewAction) {
             is FeedAction.OpenVideoDetail -> {
                 navController.navigate("${NavigationTree.Root.Detail.name}/${(viewAction as FeedAction.OpenVideoDetail).videoId}")
@@ -51,8 +52,6 @@ fun FeedScreen(
                 // ignore
             }
         }
-
-        feedViewModel.obtainEvent(FeedEvent.ClearAction)
     })
 
     LaunchedEffect(key1 = Unit, block = {
