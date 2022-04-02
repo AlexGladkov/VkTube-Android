@@ -31,7 +31,9 @@ data class VideoCellModel(
     val title: String, val previewUrl: String, val userImage: String, val userName: String,
     val viewsCount: Int, val dateAdded: Int,
     val likes: Int, val likesByMe: Boolean, val videoUrl: String, val ownerId: Long
-)
+) {
+    val id = "${ownerId}_${videoId}"
+}
 
 fun VideoVideoFull.mapToVideoCellModel(
     userImage: String,
