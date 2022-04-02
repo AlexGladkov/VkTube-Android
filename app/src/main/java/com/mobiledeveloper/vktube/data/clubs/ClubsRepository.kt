@@ -13,6 +13,12 @@ import javax.inject.Inject
 
 class ClubsRepository @Inject constructor() {
 
+    /**
+     * на тек. момент (02.04.2022) из-за бага в апи вк метод возвращает не все группы
+     * баг: при запросе групп с оффсетом метод возвращает группы из прошлых оффсетов
+     * тикет в поддержку создан
+     * проблема не в sdk, поэтому можно коммитить метод в этом виде
+     */
     suspend fun fetchClubs(userId: Long): List<GroupsGroupFull> =
         withContext(Dispatchers.IO) {
             var requestedCount = 0
