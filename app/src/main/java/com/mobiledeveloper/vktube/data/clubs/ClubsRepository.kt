@@ -16,7 +16,7 @@ class ClubsRepository @Inject constructor() {
     suspend fun fetchClubs(userId: Long): List<GroupsGroupFull> =
         withContext(Dispatchers.IO) {
             var requestedCount = 0
-            var result = listOf<GroupsGroupFull>()
+            val result = mutableListOf<GroupsGroupFull>()
             while (true) {
                 val request = GroupsService().groupsGetExtended(
                     userId = UserId(userId),
@@ -26,11 +26,11 @@ class ClubsRepository @Inject constructor() {
                 )
                 val response = VK.executeSync(request)
 
-                result = (result + response.items).distinctBy { it.id }
+                result.addAll(response.items)
                 requestedCount += PAGE_SIZE
                 if (requestedCount >= response.count) break
             }
-            result
+            result.distinctBy { it.id }
         }
 
     companion object {
