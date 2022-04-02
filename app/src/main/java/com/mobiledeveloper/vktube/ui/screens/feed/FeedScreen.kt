@@ -97,7 +97,7 @@ private fun DataView(
     LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         items(
             items = viewState.items,
-            key = { item -> item.videoId }
+            key = { item -> item.id }
         ) { viewModel ->
             VideoCell(viewModel, previewSize) {
                 onVideoClick.invoke(viewModel)
