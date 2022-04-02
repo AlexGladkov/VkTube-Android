@@ -7,9 +7,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
+import androidx.compose.material.Checkbox
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -29,6 +33,7 @@ data class GroupCellModel(
     val groupId: Long,
     val groupIcon: String,
     val groupName: String,
+    var isIgnored: Boolean = false
 )
 
 fun GroupsGroupFull.mapToGroupCellModel(
@@ -66,7 +71,9 @@ private fun GroupDataView(model: GroupCellModel) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(all = 16.dp)
+            .padding(all = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+
     ) {
 
         AsyncImage(
@@ -78,18 +85,24 @@ private fun GroupDataView(model: GroupCellModel) {
             contentScale = ContentScale.Crop
         )
 
-        Column(
-            modifier = Modifier
-                .padding(start = 16.dp, end = 16.dp)
-                .weight(1f)
-        ) {
-            Text(
+        Text(
                 text = model.groupName,
                 color = Fronton.color.textPrimary,
                 overflow = TextOverflow.Ellipsis,
                 fontSize = 20.sp
-            )
+        )
+
+        val isChecked = remember {
+            mutableStateOf(!model.isIgnored)
         }
+
+        Checkbox(
+            checked = isChecked.value,
+            onCheckedChange = {
+                model.isIgnored = !model.isIgnored
+                isChecked.value = !model.isIgnored
+            }
+        )
     }
 }
 
