@@ -163,7 +163,7 @@ class FeedViewModel @Inject constructor(
                     try {
                         val groupInfo = getGroupForLoad() ?: return@withContext
 
-                        val rawVideos = clubsRepository.fetchVideos(
+                        val rawVideos = videosRepository.fetchVideos(
                             groupId = -groupInfo.ownerId,
                             count = PAGE_SIZE,
                             offset = groupInfo.loadedCount
@@ -177,8 +177,9 @@ class FeedViewModel @Inject constructor(
                                 )
                             }
 
+                            val newItems = (viewState.items + videos).distinctBy { it.id }
                             viewState = viewState.copy(
-                                items = (viewState.items + videos).sortedByDescending { it.dateAdded },
+                                items = newItems.sortedByDescending { it.dateAdded },
                                 loading = false
                             )
                             fillGroups(viewState.items)
