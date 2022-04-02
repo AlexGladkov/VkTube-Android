@@ -1,5 +1,6 @@
 package com.mobiledeveloper.vktube.ui.common.cell
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -16,7 +17,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.mobiledeveloper.vktube.R
@@ -61,123 +61,161 @@ fun VideoVideoFull.mapToVideoCellModel(
 }
 
 @Composable
-fun VideoCell(model: VideoCellModel, imageHeight: Dp, onVideoClick: () -> Unit) {
-    Column(modifier = Modifier.clickable { onVideoClick.invoke() }) {
-        val context = LocalContext.current
+fun VideoCell(model: VideoCellModel, previewSize: Size, onVideoClick: () -> Unit) {
+    val configuration = LocalConfiguration.current
 
-        AsyncImage(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(imageHeight),
-            model = model.previewUrl,
-            contentDescription = stringResource(id = R.string.video_preview),
-            contentScale = ContentScale.Crop
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 24.dp)
-        ) {
-
-            AsyncImage(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape),
-                model = model.userImage,
-                contentDescription = stringResource(id = R.string.user_image_preview),
-                contentScale = ContentScale.Crop
-            )
-
-            val text = remember(model.userName, model.dateAdded, model.viewsCount) {
-                val views =
-                    NumberUtil.formatNumberShort(
-                        model.viewsCount,
-                        context,
-                        R.plurals.number_short_format,
-                        R.plurals.views
-                    )
-
-                val date = DateUtil.getTimeAgo(model.dateAdded, context)
-                "${model.userName} • $views • $date"
-            }
-
-            Column(
-                modifier = Modifier
-                    .padding(start = 16.dp, end = 16.dp)
-                    .weight(1f)
-            ) {
-                Text(
-                    text = model.title,
-                    color = Fronton.color.textPrimary,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 2
-                )
-                Text(
-                    modifier = Modifier.padding(top = 2.dp),
-                    text = text,
-                    color = Fronton.color.textSecondary,
-                    style = Fronton.typography.body.small.short
-                )
-            }
+    if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onVideoClick.invoke() }) {
+            VideoImageView(model.previewUrl, previewSize)
+            VideoDataView(model = model)
+        }
+    else {
+        Column(modifier = Modifier.clickable { onVideoClick.invoke() }) {
+            VideoImageView(model.previewUrl, previewSize)
+            VideoDataView(model = model)
         }
     }
 }
 
 @Composable
-fun VideoGrayCell(imageHeight: Dp) {
-    Column {
-        Box(
+private fun VideoImageView(previewUrl: String, previewSize: Size) {
+    AsyncImage(
+        modifier = Modifier
+            .width(previewSize.width)
+            .height(previewSize.height)
+           ,
+        model = previewUrl,
+        contentDescription = stringResource(id = R.string.video_preview),
+        contentScale = ContentScale.Crop
+    )
+}
+
+@Composable
+private fun VideoDataView(model: VideoCellModel) {
+    val context = LocalContext.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(all = 16.dp)
+    ) {
+
+        AsyncImage(
             modifier = Modifier
-                .background(Fronton.color.backgroundSecondary)
-                .fillMaxWidth()
-                .height(imageHeight)
-                .shimmer()
+                .size(40.dp)
+                .clip(CircleShape),
+            model = model.userImage,
+            contentDescription = stringResource(id = R.string.user_image_preview),
+            contentScale = ContentScale.Crop
         )
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 24.dp)
-        ) {
+        val text = remember(model.userName, model.dateAdded, model.viewsCount) {
+            val views =
+                NumberUtil.formatNumberShort(
+                    model.viewsCount,
+                    context,
+                    R.plurals.number_short_format,
+                    R.plurals.views
+                )
 
+            val date = DateUtil.getTimeAgo(model.dateAdded, context)
+            "${model.userName} • $views • $date"
+        }
+
+        Column(
+            modifier = Modifier
+                .padding(start = 16.dp, end = 16.dp)
+                .weight(1f)
+        ) {
+            Text(
+                text = model.title,
+                color = Fronton.color.textPrimary,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 2
+            )
+            Text(
+                modifier = Modifier.padding(top = 2.dp),
+                text = text,
+                color = Fronton.color.textSecondary,
+                style = Fronton.typography.body.small.short
+            )
+        }
+    }
+}
+
+@Composable
+fun VideoGrayCell(previewSize: Size) {
+    val configuration = LocalConfiguration.current
+
+    if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
+        Row(modifier = Modifier.fillMaxWidth()) {
+            VideoGrayImageView(previewSize)
+            VideoGrayDataView()
+        }
+    else {
+        Column {
+            VideoGrayImageView(previewSize)
+            VideoGrayDataView()
+        }
+    }
+}
+
+@Composable
+private fun VideoGrayImageView(previewSize: Size) {
+    Box(
+        modifier = Modifier
+            .background(Fronton.color.backgroundSecondary)
+            .width(previewSize.width)
+            .height(previewSize.height)
+            .shimmer()
+    )
+}
+
+@Composable
+private fun VideoGrayDataView() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(all = 16.dp)
+    ) {
+
+        Card(
+            modifier = Modifier
+                .size(40.dp)
+                .shimmer(),
+            elevation = 0.dp,
+            shape = RoundedCornerShape(20.dp),
+            backgroundColor = Fronton.color.backgroundSecondary,
+            content = {}
+        )
+
+        Column(
+            modifier = Modifier
+                .padding(start = 16.dp, end = 16.dp)
+                .weight(1f)
+        ) {
             Card(
-                modifier = Modifier
-                    .size(40.dp)
+                Modifier
+                    .width(240.dp)
+                    .height(24.dp)
                     .shimmer(),
                 elevation = 0.dp,
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedCornerShape(4.dp),
                 backgroundColor = Fronton.color.backgroundSecondary,
                 content = {}
             )
-
-            Column(
-                modifier = Modifier
-                    .padding(start = 16.dp, end = 16.dp)
-                    .weight(1f)
-            ) {
-                Card(
-                    Modifier
-                        .width(240.dp)
-                        .height(24.dp)
-                        .shimmer(),
-                    elevation = 0.dp,
-                    shape = RoundedCornerShape(4.dp),
-                    backgroundColor = Fronton.color.backgroundSecondary,
-                    content = {}
-                )
-                Card(
-                    Modifier
-                        .padding(top = 4.dp)
-                        .width(140.dp)
-                        .height(20.dp)
-                        .shimmer(),
-                    elevation = 0.dp,
-                    shape = RoundedCornerShape(4.dp),
-                    backgroundColor = Fronton.color.backgroundSecondary,
-                    content = {}
-                )
-            }
+            Card(
+                Modifier
+                    .padding(top = 4.dp)
+                    .width(140.dp)
+                    .height(20.dp)
+                    .shimmer(),
+                elevation = 0.dp,
+                shape = RoundedCornerShape(4.dp),
+                backgroundColor = Fronton.color.backgroundSecondary,
+                content = {}
+            )
         }
     }
 }
