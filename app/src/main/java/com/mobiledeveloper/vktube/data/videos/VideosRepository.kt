@@ -12,7 +12,10 @@ import com.vk.api.sdk.chain.MethodChainCall
 import com.vk.api.sdk.internal.ApiCommand
 import com.vk.api.sdk.okhttp.OkHttpMethodCall
 import com.vk.api.sdk.requests.VKRequest
+import com.vk.dto.common.id.UserId
+import com.vk.dto.common.id.unaryMinus
 import com.vk.sdk.api.GsonHolder
+import com.vk.sdk.api.video.VideoService
 import com.vk.sdk.api.video.dto.VideoGetResponse
 import com.vk.sdk.api.video.dto.VideoVideoFull
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +39,15 @@ class VideosRepository @Inject constructor() {
                 response.items
             }.flatten().sortedByDescending { it.addingDate }
         }
+    }
+
+    suspend fun fetchVideos(
+        groupId: Long,
+        count: Int,
+        offset: Int = 0
+    ): List<VideoVideoFull> = withContext(Dispatchers.IO) {
+        val request = VideoService().videoGet(count = count, ownerId = -UserId(groupId), offset = offset)
+        fetchVideo(request).items
     }
 
     private suspend fun fetchVideo(videoGetRequest: VKRequest<VideoGetResponse>): VideoGetResponse =

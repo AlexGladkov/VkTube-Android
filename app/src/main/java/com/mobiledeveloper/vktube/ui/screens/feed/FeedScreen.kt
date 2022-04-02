@@ -5,7 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -34,12 +36,14 @@ fun FeedScreen(
             viewState = viewState,
             onVideoClick = {
                 feedViewModel.obtainEvent(FeedEvent.VideoClicked(it))
-            }
-        )
-    }
-
+            },
+        onScroll = {
+            feedViewModel.obtainEvent(FeedEvent.OnScroll(it))
+        }
+    )}
 
     LaunchedEffect(key1 = viewAction, block = {
+        feedViewModel.obtainEvent(FeedEvent.ClearAction)
         when (viewAction) {
             is FeedAction.OpenVideoDetail -> {
                 navController.navigate("${NavigationTree.Root.Detail.name}/${(viewAction as FeedAction.OpenVideoDetail).videoId}")
@@ -48,8 +52,6 @@ fun FeedScreen(
                 // ignore
             }
         }
-
-        feedViewModel.obtainEvent(FeedEvent.ClearAction)
     })
 
     LaunchedEffect(key1 = Unit, block = {
@@ -58,7 +60,10 @@ fun FeedScreen(
 }
 
 @Composable
-private fun FeedView(viewState: FeedState, onVideoClick: (VideoCellModel) -> Unit) {
+private fun FeedView(
+    viewState: FeedState, onVideoClick: (VideoCellModel) -> Unit,
+    onScroll: (lastVisibleItemIndex: Int) -> Unit
+) {
     val configuration = LocalConfiguration.current
 
     val previewSize = remember(configuration.orientation) {
@@ -72,7 +77,7 @@ private fun FeedView(viewState: FeedState, onVideoClick: (VideoCellModel) -> Uni
     if (viewState.loading) {
         LoadingView(previewSize)
     } else {
-        DataView(viewState, previewSize, onVideoClick)
+        DataView(viewState, previewSize, onVideoClick, onScroll)
     }
 }
 
@@ -80,8 +85,14 @@ private fun FeedView(viewState: FeedState, onVideoClick: (VideoCellModel) -> Uni
 private fun DataView(
     viewState: FeedState,
     previewSize: Size,
-    onVideoClick: (VideoCellModel) -> Unit
+    onVideoClick: (VideoCellModel) -> Unit,
+    onScroll: (lastVisibleItemIndex: Int) -> Unit
 ) {
+    val state: LazyListState = rememberLazyListState()
+    val lastVisibleItemIndex = state.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+    LaunchedEffect(lastVisibleItemIndex) {
+        onScroll(lastVisibleItemIndex)
+    }
     LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         items(
             items = viewState.items,

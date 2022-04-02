@@ -6,21 +6,41 @@ import com.vk.api.sdk.VK
 import com.vk.dto.common.id.UserId
 import com.vk.sdk.api.groups.GroupsService
 import com.vk.sdk.api.groups.dto.GroupsFields
-import com.vk.sdk.api.groups.dto.GroupsGetObjectExtendedResponse
+import com.vk.sdk.api.groups.dto.GroupsGroupFull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class ClubsRepository @Inject constructor() {
 
-    suspend fun fetchClubs(userId: Long): GroupsGetObjectExtendedResponse =
+    /**
+     * на тек. момент (02.04.2022) из-за бага в апи вк метод возвращает не все группы
+     * баг: при запросе групп с оффсетом метод возвращает группы из прошлых оффсетов
+     * тикет в поддержку создан
+     * проблема не в sdk, поэтому можно коммитить метод в этом виде
+     */
+    suspend fun fetchClubs(userId: Long): List<GroupsGroupFull> =
         withContext(Dispatchers.IO) {
-            val request = GroupsService().groupsGetExtended(
-                userId = UserId(userId),
-                count = 100,
-                fields = listOf(GroupsFields.MEMBERS_COUNT)
-            )
+            var requestedCount = 0
+            val result = mutableListOf<GroupsGroupFull>()
+            while (true) {
+                val request = GroupsService().groupsGetExtended(
+                    userId = UserId(userId),
+                    count = PAGE_SIZE,
+                    offset = requestedCount,
+                    fields = listOf(GroupsFields.MEMBERS_COUNT)
+                )
+                val response = VK.executeSync(request)
 
-            VK.executeSync(request)
+                result.addAll(response.items)
+                requestedCount += PAGE_SIZE
+                if (requestedCount >= response.count) break
+            }
+            result.distinctBy { it.id }
         }
+
+    companion object {
+        private const val PAGE_SIZE = 100
+    }
+
 }
