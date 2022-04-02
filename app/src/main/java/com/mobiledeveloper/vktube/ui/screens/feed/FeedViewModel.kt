@@ -74,13 +74,13 @@ class FeedViewModel @Inject constructor(
 
                 val clubs = clubsRepository.fetchClubs(userId)
                 val (deletedClubs, newClubs) = withContext(Dispatchers.Default) {
-                    val currentClubsIds = clubs.items.map { it.id.value }
+                    val currentClubsIds = clubs.map { it.id.value }
                     clubsLocalDataSource.saveClubsIds(currentClubsIds)
 
                     val deletedClubs = localClubsIds.filter { it !in currentClubsIds }
                     val newClubs = currentClubsIds.filter { it !in localClubsIds }
 
-                    Pair(deletedClubs, newClubs)
+                    listOf(deletedClubs, newClubs)
                 }
 
                 val newVideosJob = async {
@@ -100,7 +100,7 @@ class FeedViewModel @Inject constructor(
                     (rawVideos + newVideos)
                         .mapNotNull { videoFull ->
                             val group =
-                                clubs.items.firstOrNull { it.id.abs() == videoFull.ownerId?.abs() }
+                                clubs.firstOrNull { it.id.abs() == videoFull.ownerId?.abs() }
                             videoFull.mapToVideoCellModel(
                                 userName = group?.name.orEmpty(),
                                 userImage = group?.photo100.orEmpty(),
