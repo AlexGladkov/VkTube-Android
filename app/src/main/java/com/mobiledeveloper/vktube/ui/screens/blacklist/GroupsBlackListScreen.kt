@@ -37,12 +37,8 @@ fun GroupsBlackListScreen(
     Box(modifier = Modifier.background(color = Fronton.color.backgroundPrimary)) {
         GroupsView(
             viewState = viewState,
-            onGroupClick = {
-
-            },
-        onScroll = {
-
-        }
+            onGroupClick = {},
+            onScroll = {}
     )}
 
     LaunchedEffect(key1 = viewAction, block = {

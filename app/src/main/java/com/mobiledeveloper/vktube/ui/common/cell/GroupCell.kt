@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -25,6 +26,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.mobiledeveloper.vktube.R
+import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.ignoredAlpha
+import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.imageSize
+import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.padding
+import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.textSize
 import com.mobiledeveloper.vktube.ui.theme.Fronton
 import com.valentinilk.shimmer.shimmer
 import com.vk.sdk.api.groups.dto.GroupsGroupFull
@@ -35,6 +40,13 @@ data class GroupCellModel(
     val groupName: String,
     var isIgnored: Boolean = false
 )
+
+object GroupCellParameters{
+    const val imageSize = 75
+    const val textSize = 20
+    const val ignoredAlpha = 0.4f
+    const val padding = 16
+}
 
 fun GroupsGroupFull.mapToGroupCellModel(
     imageUrl: String,
@@ -70,30 +82,14 @@ fun GroupCell(model: GroupCellModel, previewSize: Size, onGroupClick: () -> Unit
 
 @Composable
 private fun GroupDataView(model: GroupCellModel) {
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(all = 16.dp),
+            .padding(all = padding.dp),
         verticalAlignment = Alignment.CenterVertically
 
     ) {
-
-        AsyncImage(
-            modifier = Modifier
-                .size(75.dp)
-                .clip(CircleShape),
-            model = model.groupIcon,
-            contentDescription = stringResource(id = R.string.user_image_preview),
-            contentScale = ContentScale.Crop
-        )
-
-        Text(
-                text = model.groupName,
-                color = Fronton.color.textPrimary,
-                overflow = TextOverflow.Ellipsis,
-                fontSize = 20.sp
-        )
-
         val isChecked = remember {
             mutableStateOf(!model.isIgnored)
         }
@@ -105,6 +101,32 @@ private fun GroupDataView(model: GroupCellModel) {
                 isChecked.value = !model.isIgnored
             }
         )
+
+        val alpha = when (isChecked.value){
+            true -> 1f
+            false -> ignoredAlpha
+        }
+
+        AsyncImage(
+            modifier = Modifier
+                .size(imageSize.dp)
+                .clip(CircleShape)
+                .alpha(alpha),
+            model = model.groupIcon,
+            contentDescription = stringResource(id = R.string.user_image_preview),
+            contentScale = ContentScale.Crop
+        )
+
+        Text(
+            modifier = Modifier
+                .alpha(alpha)
+                .padding(16.dp),
+                text = model.groupName,
+                color = Fronton.color.textPrimary,
+                overflow = TextOverflow.Ellipsis,
+                fontSize = textSize.sp,
+        )
+
     }
 }
 
@@ -115,12 +137,10 @@ fun GroupGrayCell(previewSize: Size) {
     if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
         Row(modifier = Modifier.fillMaxWidth()) {
             GroupGrayImageView(previewSize)
-            GroupGrayDataView()
         }
     else {
         Column {
             GroupGrayImageView(previewSize)
-            GroupGrayDataView()
         }
     }
 }
@@ -129,57 +149,10 @@ fun GroupGrayCell(previewSize: Size) {
 private fun GroupGrayImageView(previewSize: Size) {
     Box(
         modifier = Modifier
+            .padding(all = padding.dp)
             .background(Fronton.color.backgroundSecondary)
             .width(previewSize.width)
-            .height(previewSize.height)
+            .height(imageSize.dp)
             .shimmer()
     )
-}
-
-@Composable
-private fun GroupGrayDataView() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(all = 16.dp)
-    ) {
-
-        Card(
-            modifier = Modifier
-                .size(40.dp)
-                .shimmer(),
-            elevation = 0.dp,
-            shape = RoundedCornerShape(20.dp),
-            backgroundColor = Fronton.color.backgroundSecondary,
-            content = {}
-        )
-
-        Column(
-            modifier = Modifier
-                .padding(start = 16.dp, end = 16.dp)
-                .weight(1f)
-        ) {
-            Card(
-                Modifier
-                    .width(240.dp)
-                    .height(24.dp)
-                    .shimmer(),
-                elevation = 0.dp,
-                shape = RoundedCornerShape(4.dp),
-                backgroundColor = Fronton.color.backgroundSecondary,
-                content = {}
-            )
-            Card(
-                Modifier
-                    .padding(top = 4.dp)
-                    .width(140.dp)
-                    .height(20.dp)
-                    .shimmer(),
-                elevation = 0.dp,
-                shape = RoundedCornerShape(4.dp),
-                backgroundColor = Fronton.color.backgroundSecondary,
-                content = {}
-            )
-        }
-    }
 }
