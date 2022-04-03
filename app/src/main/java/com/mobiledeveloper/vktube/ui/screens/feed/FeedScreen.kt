@@ -93,7 +93,7 @@ private fun DataView(
     LaunchedEffect(lastVisibleItemIndex) {
         onScroll(lastVisibleItemIndex)
     }
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp), state = state) {
         items(
             items = viewState.items,
             key = { item -> item.id }
