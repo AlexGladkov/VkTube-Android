@@ -37,8 +37,7 @@ fun LoginScreen(
             }
             is VKAuthenticationResult.Success -> {
                 println("Token ${result.token.accessToken}")
-                //Correct this
-                navController.navigate(NavigationTree.Root.BlackListGroups.name)
+                navController.navigate(NavigationTree.Root.Main.name)
             }
         }
     }

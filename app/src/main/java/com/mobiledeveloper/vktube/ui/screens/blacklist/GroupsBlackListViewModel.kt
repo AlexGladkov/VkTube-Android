@@ -5,7 +5,6 @@ import com.mobiledeveloper.vktube.base.BaseViewModel
 import com.mobiledeveloper.vktube.data.clubs.ClubsLocalDataSource
 import com.mobiledeveloper.vktube.data.clubs.ClubsRepository
 import com.mobiledeveloper.vktube.data.user.UserRepository
-import com.mobiledeveloper.vktube.ui.common.cell.GroupCellModel
 import com.mobiledeveloper.vktube.ui.common.cell.mapToGroupCellModel
 import com.mobiledeveloper.vktube.ui.screens.blacklist.models.BlackListAction
 import com.mobiledeveloper.vktube.ui.screens.blacklist.models.BlackListEvent

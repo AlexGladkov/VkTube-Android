@@ -1,5 +1,6 @@
 package com.mobiledeveloper.vktube.ui.screens.feed
 
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.mobiledeveloper.vktube.base.BaseViewModel
 import com.mobiledeveloper.vktube.data.cache.InMemoryCache
@@ -79,7 +80,7 @@ class FeedViewModel @Inject constructor(
                         emptyList()
                 }
 
-                val clubs = clubsRepository.fetchClubs(userId).filter { it.id.value !in ignoreList }
+                val clubs = clubsRepository.fetchClubs(userId, ignoreList)
                 val (deletedClubs, newClubs) = withContext(Dispatchers.Default) {
                     val currentClubsIds = clubs.map { it.id.value }
                     clubsLocalDataSource.saveClubsIds(currentClubsIds)
