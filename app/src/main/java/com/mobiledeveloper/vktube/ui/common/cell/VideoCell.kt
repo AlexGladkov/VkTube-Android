@@ -86,8 +86,7 @@ private fun VideoImageView(previewUrl: String, previewSize: Size) {
     AsyncImage(
         modifier = Modifier
             .width(previewSize.width)
-            .height(previewSize.height)
-           ,
+            .height(previewSize.height),
         model = previewUrl,
         contentDescription = stringResource(id = R.string.video_preview),
         contentScale = ContentScale.Crop

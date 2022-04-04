@@ -63,7 +63,7 @@ fun FeedScreen(
 }
 
 object FeedViewParameters{
-    const val ratio = 16 / 9
+    const val ratio = 16f / 9
     const val landscapeItemsPerScreen = 3
     const val space = 4
 
