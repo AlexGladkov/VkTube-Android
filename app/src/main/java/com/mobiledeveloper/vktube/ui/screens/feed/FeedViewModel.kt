@@ -98,7 +98,7 @@ class FeedViewModel @Inject constructor(
     }
 
     private inner class LoadMoreController {
-        private var groups = mapOf<Long, LoadedGroupInfo>()
+        private var groups = mutableMapOf<Long, LoadedGroupInfo>()
 
         /**
          * [groupId,[offset1, offset2..]
@@ -108,15 +108,13 @@ class FeedViewModel @Inject constructor(
 
         fun handleScroll(lastVisibleItemIndex: Int, screenItemsCount: Int) {
             fun getGroupForLoad(): LoadedGroupInfo? {
+                val itemsSize = viewState.items.size
+                val preloadIndex =
+                    (screenItemsCount * PRELOAD_SCREENS_COUNT + lastVisibleItemIndex)
+                        .coerceAtMost(itemsSize - 1)
+                val groupId = viewState.items.getOrNull(preloadIndex)?.ownerId ?: return null
                 synchronized(loadingListLock) {
-                    val itemsSize = viewState.items.size
-                    val preloadIndex =
-                        (screenItemsCount * PRELOAD_SCREENS_COUNT + lastVisibleItemIndex)
-                            .coerceAtMost(itemsSize - 1)
-                    val groupId = viewState.items.getOrNull(preloadIndex)?.ownerId ?: return null
-
-                    val local = groups
-                    val groupInfo = local[groupId] ?: return null
+                    val groupInfo = groups[groupId] ?: return null
                     if (!groupInfo.hasMore) return null
                     if (groupInfo.lastItemIndex > preloadIndex) return null
                     val offset = groupInfo.loadedCount
@@ -128,6 +126,7 @@ class FeedViewModel @Inject constructor(
                     if (maxLoadingOffset >= offset) return null
 
                     loadedGroupsList[groupId] = loadingOffsets + listOf(groupInfo.loadedCount)
+
                     return groupInfo
                 }
             }
@@ -136,9 +135,8 @@ class FeedViewModel @Inject constructor(
                 withContext(Dispatchers.Default) {
                     try {
                         val groupInfo = getGroupForLoad() ?: return@withContext
-                        Log.d("FETCH","load video for group ${groupInfo.groupInfo.userName}")
                         val rawVideos = videosRepository.fetchVideos(
-                            groupId = -groupInfo.groupInfo.id.absoluteValue,
+                            groupId = groupInfo.groupInfo.id,
                             count = PAGE_SIZE,
                             offset = groupInfo.loadedCount
                         )
@@ -156,8 +154,10 @@ class FeedViewModel @Inject constructor(
                                 items = newItems.sortedByDescending { it.dateAdded },
                                 loading = false
                             )
+                            groups[groupInfo.groupInfo.id] = groupInfo.copy(hasMore = videos.any())
                             fillGroups(viewState.items)
                         }
+
                     } catch (ex: Exception) {
                         ex.printStackTrace()
                     }
@@ -174,19 +174,20 @@ class FeedViewModel @Inject constructor(
                         .forEachIndexed { index, item ->
                             val groupInfo = item.groupInfo
                             val groupId = groupInfo.id
+
                             newGroups[groupId] = newGroups[groupId]?.let {
                                 it.copy(
                                     loadedCount = it.loadedCount + 1,
-                                    hasMore = (it.loadedCount + 1) % PAGE_SIZE == 0
+                                    hasMore = groups[groupId]?.hasMore ?: ((it.loadedCount + 1) % PAGE_SIZE == 0)
                                 )
                             } ?: LoadedGroupInfo(
                                 groupInfo = groupInfo.copy(),
                                 lastItemIndex = size - index - 1,
                                 loadedCount = 1,
-                                hasMore = false
+                                hasMore = groups[groupId]?.hasMore ?: false
                             )
                         }
-                    groups = newGroups.filter { it.value.hasMore }
+                    groups = newGroups.filter { it.value.hasMore }.toMutableMap()
                 }
             }
     }
