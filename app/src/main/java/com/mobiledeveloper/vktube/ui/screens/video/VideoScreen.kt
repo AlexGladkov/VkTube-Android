@@ -1,10 +1,8 @@
 package com.mobiledeveloper.vktube.ui.screens.video
 
-import android.graphics.Bitmap
-import android.view.ViewGroup
-import android.webkit.WebSettings
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.content.Context
+import android.content.res.Configuration
+import android.view.View
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -63,30 +61,47 @@ fun VideoScreen(
     var bottomSheetHeight by remember(configuration.orientation) { mutableStateOf(0.dp) }
     val coroutineScope = rememberCoroutineScope()
 
-    BottomSheetScaffold(
-        scaffoldState = bottomSheetScaffoldState,
-        sheetContent = {
-            CommentsScreen(viewState = viewState,
-                onSendClick = {
-                    videoViewModel.obtainEvent(VideoEvent.SendComment(it))
-                }, onCloseClick = {
-                    videoViewModel.obtainEvent(VideoEvent.CloseCommentsClick)
-                })
-        },
-        sheetPeekHeight = bottomSheetHeight
-    ) {
-        VideoScreenView(
-            viewState = viewState,
-            onCommentsClick = {
-                videoViewModel.obtainEvent(VideoEvent.CommentsClick)
+    val video = viewState.video
+
+    if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        if (video != null) {
+            VideoPlayerView(
+                getView = {
+                    videoViewModel.getWebView(it, video, onVideoLoading = {
+                        videoViewModel.obtainEvent(VideoEvent.VideoLoading)
+                    })
+                },
+                isLoadingVideo = viewState.isLoadingVideo
+            )
+        }
+    } else {
+        BottomSheetScaffold(
+            scaffoldState = bottomSheetScaffoldState,
+            sheetContent = {
+                CommentsScreen(viewState = viewState,
+                    onSendClick = {
+                        videoViewModel.obtainEvent(VideoEvent.SendComment(it))
+                    }, onCloseClick = {
+                        videoViewModel.obtainEvent(VideoEvent.CloseCommentsClick)
+                    })
             },
-            onLikeClick = {
-                videoViewModel.obtainEvent(VideoEvent.LikeClick)
-            },
-            onVideoLoading = {
-                videoViewModel.obtainEvent(VideoEvent.VideoLoading)
-            }
-        )
+            sheetPeekHeight = bottomSheetHeight
+        ) {
+            VideoScreenView(
+                getView = { context, video ->
+                    videoViewModel.getWebView(context, video, onVideoLoading = {
+                        videoViewModel.obtainEvent(VideoEvent.VideoLoading)
+                    })
+                },
+                viewState = viewState,
+                onCommentsClick = {
+                    videoViewModel.obtainEvent(VideoEvent.CommentsClick)
+                },
+                onLikeClick = {
+                    videoViewModel.obtainEvent(VideoEvent.LikeClick)
+                },
+            )
+        }
     }
 
     LaunchedEffect(key1 = viewAction, block = {
@@ -119,21 +134,22 @@ fun VideoScreen(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun VideoScreenView(
+    getView: (context: Context, video: VideoCellModel) -> View,
     viewState: VideoViewState,
     onCommentsClick: () -> Unit,
-    onLikeClick: () -> Unit,
-    onVideoLoading: () -> Unit
+    onLikeClick: () -> Unit
 ) {
     val context = LocalContext.current
 
     val video = viewState.video ?: return
 
     LazyColumn(modifier = Modifier.fillMaxSize()) {
-        item {
+        stickyHeader {
             VideoPlayerView(
-                video = video,
-                isLoadingVideo = viewState.isLoadingVideo,
-                onVideoLoading = onVideoLoading,
+                getView = {
+                    getView(it, video)
+                },
+                isLoadingVideo = viewState.isLoadingVideo
             )
         }
 
@@ -347,8 +363,7 @@ private fun VideoCommentsView(
 
 @Composable
 private fun VideoPlayerView(
-    video: VideoCellModel,
-    onVideoLoading: () -> Unit,
+    getView: (context: Context) -> View,
     isLoadingVideo: Boolean?
 ) {
     val configuration = LocalConfiguration.current
@@ -360,47 +375,7 @@ private fun VideoPlayerView(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(videoHeight),
-            factory = {
-                val data = """
-                        <html>
-                            <head>
-                            <style>
-                                .frame {
-                                    width: 100%;
-                                    height: 100vh;
-                                    overflow: auto;
-                                }
-                            </style>
-                            </head>
-                            <body>
-                                <iframe class="frame" src="${video.videoUrl}" frameborder="0" allowfullscreen/>
-                            </body>
-                        </html>
-                        """
-
-                WebView(it).apply {
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
-                    settings.javaScriptEnabled = true
-                    settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.SINGLE_COLUMN
-                    settings.loadWithOverviewMode = true
-                    settings.useWideViewPort = true
-                    webViewClient = object : WebViewClient() {
-                        override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                            onVideoLoading.invoke()
-                            super.onPageStarted(view, url, favicon)
-                        }
-
-                        override fun onPageFinished(view: WebView?, url: String?) {
-                            onVideoLoading.invoke()
-                            super.onPageFinished(view, url)
-                        }
-                    }
-                    loadData(data, "text/html", "utf-8")
-                }
-            }
+            factory = { context -> getView(context) }
         )
     } else {
         Box(
