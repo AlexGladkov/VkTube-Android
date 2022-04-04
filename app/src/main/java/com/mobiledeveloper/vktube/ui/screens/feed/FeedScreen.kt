@@ -18,6 +18,9 @@ import com.mobiledeveloper.vktube.ui.common.cell.Size
 import com.mobiledeveloper.vktube.ui.common.cell.VideoCell
 import com.mobiledeveloper.vktube.ui.common.cell.VideoCellModel
 import com.mobiledeveloper.vktube.ui.common.cell.VideoGrayCell
+import com.mobiledeveloper.vktube.ui.screens.feed.FeedViewParameters.landscapeItemsPerScreen
+import com.mobiledeveloper.vktube.ui.screens.feed.FeedViewParameters.ratio
+import com.mobiledeveloper.vktube.ui.screens.feed.FeedViewParameters.space
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedAction
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedEvent
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedState
@@ -59,6 +62,13 @@ fun FeedScreen(
     })
 }
 
+object FeedViewParameters{
+    const val ratio = 16 / 9
+    const val landscapeItemsPerScreen = 3
+    const val space = 4
+
+}
+
 @Composable
 private fun FeedView(
     viewState: FeedState, onVideoClick: (VideoCellModel) -> Unit,
@@ -68,10 +78,10 @@ private fun FeedView(
 
     val previewSize = remember(configuration.orientation) {
         if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            val height = configuration.screenHeightDp.dp / 3
-            Size(height * 16 / 9, height)
+            val height = configuration.screenHeightDp.dp / landscapeItemsPerScreen
+            Size(height * ratio, height)
         } else {
-            Size(configuration.screenWidthDp.dp + 1.dp, configuration.screenWidthDp.dp / 16 * 9)
+            Size(configuration.screenWidthDp.dp, configuration.screenWidthDp.dp / ratio)
         }
     }
     if (viewState.loading) {
@@ -93,7 +103,7 @@ private fun DataView(
     LaunchedEffect(lastVisibleItemIndex) {
         onScroll(lastVisibleItemIndex)
     }
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp), state = state) {
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(space.dp), state = state) {
         items(
             items = viewState.items,
             key = { item -> item.id }
@@ -107,7 +117,7 @@ private fun DataView(
 
 @Composable
 private fun LoadingView(previewSize: Size) {
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(space.dp)) {
         repeat(10) {
             item {
                 VideoGrayCell(previewSize)
