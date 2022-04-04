@@ -23,27 +23,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.mobiledeveloper.vktube.R
-import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.eyeIconSize
-import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.eyeIgnoreAlpha
-import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.ignoredAlpha
-import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.groupImageSize
-import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.maxTextLines
-import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.padding
-import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.textSize
-import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.weightEye
-import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.weightGroupInfo
+import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.eyeIconSize
+import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.eyeIgnoreAlpha
+import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.ignoredAlpha
+import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.groupImageSize
+import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.maxTextLines
+import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.padding
+import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.textSize
+import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.weightEye
+import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.weightGroupInfo
 import com.mobiledeveloper.vktube.ui.theme.Fronton
 import com.valentinilk.shimmer.shimmer
 import com.vk.sdk.api.groups.dto.GroupsGroupFull
 
-data class GroupCellModel(
+data class SubscriptionCellModel(
     val groupId: Long,
     val groupIcon: String,
     val groupName: String,
     var isIgnored: Boolean = false
 )
 
-object GroupCellParameters{
+object SubscriptionListParameters{
     const val groupImageSize = 50
     const val eyeIconSize = 15
     const val textSize = 15
@@ -55,13 +55,13 @@ object GroupCellParameters{
     const val maxTextLines = 2
 }
 
-fun GroupsGroupFull.mapToGroupCellModel(
+fun GroupsGroupFull.mapToSubscriptionCellModel(
     imageUrl: String,
     name: String,
     id: Long,
     isIgnored: Boolean
-): GroupCellModel {
-    return GroupCellModel(
+): SubscriptionCellModel {
+    return SubscriptionCellModel(
         groupId = id,
         groupIcon = imageUrl,
         groupName = name,
@@ -70,25 +70,25 @@ fun GroupsGroupFull.mapToGroupCellModel(
 }
 
 @Composable
-fun GroupCell(model: GroupCellModel) {
+fun SubscriptionCell(model: SubscriptionCellModel) {
     val configuration = LocalConfiguration.current
 
     if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
         Row(modifier = Modifier
             .fillMaxWidth()) {
-            GroupDataView(model = model)
+            SubscriptionDataView(model = model)
         }
     else {
         Column(modifier = Modifier
             .fillMaxWidth()) {
-            GroupDataView(model = model)
+            SubscriptionDataView(model = model)
         }
     }
 }
 
 
 @Composable
-private fun GroupDataView(model: GroupCellModel) {
+private fun SubscriptionDataView(model: SubscriptionCellModel) {
 
     val isChecked = remember {
         mutableStateOf(!model.isIgnored)
@@ -157,22 +157,22 @@ private fun GroupDataView(model: GroupCellModel) {
 }
 
 @Composable
-fun GroupGrayCell() {
+fun SubscriptionGrayCell() {
     val configuration = LocalConfiguration.current
 
     if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
         Row(modifier = Modifier.fillMaxWidth()) {
-            GroupGrayImageView()
+            SubscriptionGrayImageView()
         }
     else {
         Column {
-            GroupGrayImageView()
+            SubscriptionGrayImageView()
         }
     }
 }
 
 @Composable
-private fun GroupGrayImageView() {
+private fun SubscriptionGrayImageView() {
     Box(
         modifier = Modifier
             .padding(all = padding.dp)

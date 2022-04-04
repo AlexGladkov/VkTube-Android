@@ -1,31 +1,31 @@
-package com.mobiledeveloper.vktube.ui.screens.blacklist
+package com.mobiledeveloper.vktube.ui.screens.subscriptions
 
 import androidx.lifecycle.viewModelScope
 import com.mobiledeveloper.vktube.base.BaseViewModel
 import com.mobiledeveloper.vktube.data.clubs.ClubsLocalDataSource
 import com.mobiledeveloper.vktube.data.clubs.ClubsRepository
 import com.mobiledeveloper.vktube.data.user.UserRepository
-import com.mobiledeveloper.vktube.ui.common.cell.mapToGroupCellModel
-import com.mobiledeveloper.vktube.ui.screens.blacklist.models.BlackListAction
-import com.mobiledeveloper.vktube.ui.screens.blacklist.models.BlackListEvent
-import com.mobiledeveloper.vktube.ui.screens.blacklist.models.BlackListState
+import com.mobiledeveloper.vktube.ui.common.cell.mapToSubscriptionCellModel
+import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsListAction
+import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsListEvent
+import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsListState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import javax.inject.Inject
 
 @HiltViewModel
-class GroupsBlackListViewModel @Inject constructor(
+class SubscriptionsListViewModel @Inject constructor(
     private val groupsRepository: ClubsRepository,
     private val groupsLocalDataSource: ClubsLocalDataSource,
     private val userRepository: UserRepository
-) : BaseViewModel<BlackListState, BlackListAction, BlackListEvent>(initialState = BlackListState()) {
+) : BaseViewModel<SubscriptionsListState, SubscriptionsListAction, SubscriptionsListEvent>(initialState = SubscriptionsListState()) {
 
 
-    override fun obtainEvent(viewEvent: BlackListEvent) {
+    override fun obtainEvent(viewEvent: SubscriptionsListEvent) {
         when (viewEvent) {
-            BlackListEvent.ScreenShown -> onScreenShown()
-            BlackListEvent.ClearAction -> clearAction()
-            is BlackListEvent.Back -> saveIgnoreListAndGoBack()
+            SubscriptionsListEvent.ScreenShown -> onScreenShown()
+            SubscriptionsListEvent.ClearAction -> clearAction()
+            is SubscriptionsListEvent.Back -> saveIgnoreListAndGoBack()
         }
     }
 
@@ -35,7 +35,7 @@ class GroupsBlackListViewModel @Inject constructor(
             val ignoreList = viewState.items.filter { it.isIgnored }.map { it.groupId }
             groupsLocalDataSource.saveIgnoreList(ignoreList)
 
-            viewAction = BlackListAction.BackToFeed
+            viewAction = SubscriptionsListAction.BackToFeed
         }
     }
 
@@ -66,7 +66,7 @@ class GroupsBlackListViewModel @Inject constructor(
                 val ignoreList = groupsLocalDataSource.loadIgnoreList()
 
                 val groups = groupsRepository.fetchClubs(userId).map {
-                    it.mapToGroupCellModel(
+                    it.mapToSubscriptionCellModel(
                         name = it.name ?: "",
                         imageUrl = it.photo200 ?: "",
                         id = it.id.value,
