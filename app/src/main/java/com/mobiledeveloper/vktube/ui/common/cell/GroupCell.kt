@@ -5,12 +5,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
 import androidx.compose.material.Checkbox
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -19,15 +17,17 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.mobiledeveloper.vktube.R
+import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.eyeIconSize
+import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.eyeIgnoreAlpha
 import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.ignoredAlpha
-import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.imageSize
+import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.groupImageSize
 import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.padding
 import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.textSize
 import com.mobiledeveloper.vktube.ui.theme.Fronton
@@ -42,9 +42,11 @@ data class GroupCellModel(
 )
 
 object GroupCellParameters{
-    const val imageSize = 75
-    const val textSize = 20
+    const val groupImageSize = 50
+    const val eyeIconSize = 25
+    const val textSize = 15
     const val ignoredAlpha = 0.4f
+    const val eyeIgnoreAlpha = 0.0f
     const val padding = 16
 }
 
@@ -68,8 +70,7 @@ fun GroupCell(model: GroupCellModel, previewSize: Size, onGroupClick: () -> Unit
 
     if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
         Row(modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onGroupClick.invoke() }) {
+            .fillMaxWidth()) {
             GroupDataView(model = model)
         }
     else {
@@ -83,50 +84,66 @@ fun GroupCell(model: GroupCellModel, previewSize: Size, onGroupClick: () -> Unit
 @Composable
 private fun GroupDataView(model: GroupCellModel) {
 
+    val isChecked = remember {
+        mutableStateOf(!model.isIgnored)
+    }
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(all = padding.dp),
-        verticalAlignment = Alignment.CenterVertically
-
-    ) {
-        val isChecked = remember {
-            mutableStateOf(!model.isIgnored)
-        }
-
-        Checkbox(
-            checked = isChecked.value,
-            onCheckedChange = {
+            .padding(all = padding.dp)
+            .clickable {
                 model.isIgnored = !model.isIgnored
                 isChecked.value = !model.isIgnored
             }
-        )
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+
+    ) {
 
         val alpha = when (isChecked.value){
             true -> 1f
             false -> ignoredAlpha
         }
 
-        AsyncImage(
-            modifier = Modifier
-                .size(imageSize.dp)
-                .clip(CircleShape)
-                .alpha(alpha),
-            model = model.groupIcon,
-            contentDescription = stringResource(id = R.string.user_image_preview),
-            contentScale = ContentScale.Crop
-        )
+        val eyeAlpha = when (isChecked.value){
+            true -> 1f
+            false -> eyeIgnoreAlpha
+        }
 
-        Text(
-            modifier = Modifier
-                .alpha(alpha)
-                .padding(16.dp),
+        Row(horizontalArrangement = Arrangement.Start){
+            AsyncImage(
+                modifier = Modifier
+                    .size(groupImageSize.dp)
+                    .clip(CircleShape)
+                    .alpha(alpha)
+                    .weight(1f),
+                model = model.groupIcon,
+                contentDescription = stringResource(id = R.string.user_image_preview),
+                contentScale = ContentScale.Crop
+            )
+
+            Text(
+                modifier = Modifier
+                    .alpha(alpha)
+                    .padding(padding.dp),
                 text = model.groupName,
                 color = Fronton.color.textPrimary,
                 overflow = TextOverflow.Ellipsis,
                 fontSize = textSize.sp,
-        )
+                maxLines = 2,
+            )
 
+        }
+
+        Icon(
+            modifier = Modifier
+                .size(eyeIconSize.dp)
+                .clip(CircleShape)
+                .alpha(eyeAlpha)
+                .weight(1f),
+            painter = painterResource(id = R.drawable.ic_eye),
+            contentDescription = null
+        )
     }
 }
 
@@ -152,7 +169,7 @@ private fun GroupGrayImageView(previewSize: Size) {
             .padding(all = padding.dp)
             .background(Fronton.color.backgroundSecondary)
             .width(previewSize.width)
-            .height(imageSize.dp)
+            .height(groupImageSize.dp)
             .shimmer()
     )
 }
