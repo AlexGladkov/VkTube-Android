@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Checkbox
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -28,8 +27,11 @@ import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.eyeIconSize
 import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.eyeIgnoreAlpha
 import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.ignoredAlpha
 import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.groupImageSize
+import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.maxTextLines
 import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.padding
 import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.textSize
+import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.weightEye
+import com.mobiledeveloper.vktube.ui.common.cell.GroupCellParameters.weightGroupInfo
 import com.mobiledeveloper.vktube.ui.theme.Fronton
 import com.valentinilk.shimmer.shimmer
 import com.vk.sdk.api.groups.dto.GroupsGroupFull
@@ -43,11 +45,14 @@ data class GroupCellModel(
 
 object GroupCellParameters{
     const val groupImageSize = 50
-    const val eyeIconSize = 25
+    const val eyeIconSize = 15
     const val textSize = 15
     const val ignoredAlpha = 0.4f
     const val eyeIgnoreAlpha = 0.0f
     const val padding = 16
+    const val weightGroupInfo = 10f
+    const val weightEye = 1f
+    const val maxTextLines = 2
 }
 
 fun GroupsGroupFull.mapToGroupCellModel(
@@ -65,7 +70,7 @@ fun GroupsGroupFull.mapToGroupCellModel(
 }
 
 @Composable
-fun GroupCell(model: GroupCellModel, previewSize: Size, onGroupClick: () -> Unit) {
+fun GroupCell(model: GroupCellModel) {
     val configuration = LocalConfiguration.current
 
     if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
@@ -74,7 +79,8 @@ fun GroupCell(model: GroupCellModel, previewSize: Size, onGroupClick: () -> Unit
             GroupDataView(model = model)
         }
     else {
-        Column(modifier = Modifier.clickable { onGroupClick.invoke() }) {
+        Column(modifier = Modifier
+            .fillMaxWidth()) {
             GroupDataView(model = model)
         }
     }
@@ -110,13 +116,16 @@ private fun GroupDataView(model: GroupCellModel) {
             false -> eyeIgnoreAlpha
         }
 
-        Row(horizontalArrangement = Arrangement.Start){
+        Row(
+            modifier = Modifier.weight(weightGroupInfo),
+            horizontalArrangement = Arrangement.Start
+        )
+        {
             AsyncImage(
                 modifier = Modifier
                     .size(groupImageSize.dp)
                     .clip(CircleShape)
-                    .alpha(alpha)
-                    .weight(1f),
+                    .alpha(alpha),
                 model = model.groupIcon,
                 contentDescription = stringResource(id = R.string.user_image_preview),
                 contentScale = ContentScale.Crop
@@ -130,7 +139,7 @@ private fun GroupDataView(model: GroupCellModel) {
                 color = Fronton.color.textPrimary,
                 overflow = TextOverflow.Ellipsis,
                 fontSize = textSize.sp,
-                maxLines = 2,
+                maxLines = maxTextLines,
             )
 
         }
@@ -140,7 +149,7 @@ private fun GroupDataView(model: GroupCellModel) {
                 .size(eyeIconSize.dp)
                 .clip(CircleShape)
                 .alpha(eyeAlpha)
-                .weight(1f),
+                .weight(weightEye),
             painter = painterResource(id = R.drawable.ic_eye),
             contentDescription = null
         )
@@ -148,27 +157,27 @@ private fun GroupDataView(model: GroupCellModel) {
 }
 
 @Composable
-fun GroupGrayCell(previewSize: Size) {
+fun GroupGrayCell() {
     val configuration = LocalConfiguration.current
 
     if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
         Row(modifier = Modifier.fillMaxWidth()) {
-            GroupGrayImageView(previewSize)
+            GroupGrayImageView()
         }
     else {
         Column {
-            GroupGrayImageView(previewSize)
+            GroupGrayImageView()
         }
     }
 }
 
 @Composable
-private fun GroupGrayImageView(previewSize: Size) {
+private fun GroupGrayImageView() {
     Box(
         modifier = Modifier
             .padding(all = padding.dp)
             .background(Fronton.color.backgroundSecondary)
-            .width(previewSize.width)
+            .fillMaxWidth()
             .height(groupImageSize.dp)
             .shimmer()
     )

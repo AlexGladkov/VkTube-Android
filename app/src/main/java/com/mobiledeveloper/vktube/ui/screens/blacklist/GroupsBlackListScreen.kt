@@ -1,18 +1,13 @@
 package com.mobiledeveloper.vktube.ui.screens.blacklist
 
-import android.content.res.Configuration
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mobiledeveloper.vktube.navigation.NavigationTree
@@ -36,9 +31,7 @@ fun GroupsBlackListScreen(
 
     Box(modifier = Modifier.background(color = Fronton.color.backgroundPrimary)) {
         GroupsView(
-            viewState = viewState,
-            onGroupClick = {},
-            onScroll = {}
+            viewState = viewState
     )}
 
     LaunchedEffect(key1 = viewAction, block = {
@@ -60,56 +53,35 @@ fun GroupsBlackListScreen(
 
 @Composable
 private fun GroupsView(
-    viewState: BlackListState, onGroupClick: (GroupCellModel) -> Unit,
-    onScroll: (lastVisibleItemIndex: Int) -> Unit
+    viewState: BlackListState
 ) {
-    val configuration = LocalConfiguration.current
-
-    val previewSize = remember(configuration.orientation) {
-        if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            val height = configuration.screenHeightDp.dp / 3
-            Size(height * 16 / 9, height)
-        } else {
-            Size(configuration.screenWidthDp.dp + 1.dp, configuration.screenWidthDp.dp / 16 * 9)
-        }
-    }
     if (viewState.loading) {
-        LoadingView(previewSize)
+        LoadingView()
     } else {
-        GroupView(viewState, previewSize, onGroupClick, onScroll)
+        GroupView(viewState)
     }
 }
 
 @Composable
 private fun GroupView(
-    viewState: BlackListState,
-    previewSize: Size,
-    onGroupClick: (GroupCellModel) -> Unit,
-    onScroll: (lastVisibleItemIndex: Int) -> Unit
+    viewState: BlackListState
 ) {
-    val state: LazyListState = rememberLazyListState()
-    val lastVisibleItemIndex = state.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-    LaunchedEffect(lastVisibleItemIndex) {
-        onScroll(lastVisibleItemIndex)
-    }
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+     LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         items(
             items = viewState.items,
             key = { item -> item.groupId }
         ) { viewModel ->
-            GroupCell(viewModel, previewSize) {
-                onGroupClick.invoke(viewModel)
-            }
+            GroupCell(viewModel)
         }
     }
 }
 
 @Composable
-private fun LoadingView(previewSize: Size) {
+private fun LoadingView() {
     LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         repeat(10) {
             item {
-                GroupGrayCell(previewSize)
+                GroupGrayCell()
             }
         }
     }
