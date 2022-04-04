@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -62,9 +63,10 @@ class VideoViewModel @Inject constructor(
                                     overflow: auto;
                                 }
                             </style>
+                          
                             </head>
-                            <body>
-                                <iframe class="frame" src="${video.videoUrl}" frameborder="0" allowfullscreen/>
+                            <body style="background:black">
+                                <iframe id="video" class="frame" src="${video.videoUrl}&autoplay=1" frameborder="0" allow="autoplay"/>
                             </body>
                         </html>
                         """
@@ -73,10 +75,14 @@ class VideoViewModel @Inject constructor(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
-                settings.javaScriptEnabled = true
-                settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.SINGLE_COLUMN
-                settings.loadWithOverviewMode = true
-                settings.useWideViewPort = true
+                settings.apply {
+                    javaScriptEnabled = true
+                    layoutAlgorithm = WebSettings.LayoutAlgorithm.SINGLE_COLUMN
+                    loadWithOverviewMode = true
+                    useWideViewPort = true
+                    mediaPlaybackRequiresUserGesture = false
+                }
+
                 webViewClient = object : WebViewClient() {
                     override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                         onVideoLoading.invoke()
@@ -88,13 +94,16 @@ class VideoViewModel @Inject constructor(
                         super.onPageFinished(view, url)
                     }
                 }
+                webChromeClient = object : WebChromeClient(){
+
+                }
                 loadData(data, "text/html", "utf-8")
             }
             webView = WeakReference(view)
         }
         val view = webView?.get()!!
         (view.parent as ViewGroup?)?.removeView(view)
-        return webView?.get()!!
+        return view
     }
 
     private fun performVideoLoading() {

@@ -14,16 +14,23 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.LifecycleOwner
 import coil.compose.AsyncImage
+import com.google.accompanist.insets.systemBarsPadding
+import com.google.accompanist.systemuicontroller.SystemUiController
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.mobiledeveloper.vktube.R
 import com.mobiledeveloper.vktube.ui.common.cell.VideoCellModel
 import com.mobiledeveloper.vktube.ui.common.views.VideoActionView
@@ -36,19 +43,26 @@ import com.mobiledeveloper.vktube.ui.theme.Fronton
 import com.mobiledeveloper.vktube.utils.DateUtil
 import com.mobiledeveloper.vktube.utils.NumberUtil
 import com.valentinilk.shimmer.shimmer
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
+@OptIn(
+    ExperimentalFoundationApi::class, ExperimentalMaterialApi::class,
+    androidx.compose.ui.ExperimentalComposeUiApi::class
+)
 @Composable
 fun VideoScreen(
     videoId: Long?,
-    videoViewModel: VideoViewModel
+    videoViewModel: VideoViewModel,
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
 ) {
     val viewState by videoViewModel.viewStates().collectAsState()
     val viewAction by videoViewModel.viewActions().collectAsState(initial = null)
 
     val configuration = LocalConfiguration.current
+
+    val systemUiController = rememberSystemUiController()
 
     val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
@@ -63,19 +77,32 @@ fun VideoScreen(
 
     val video = viewState.video
 
-    if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    if (isLandscape) {
         if (video != null) {
             VideoPlayerView(
+                modifier = Modifier
+                    .background(color = Color.Black)
+                    .pointerInteropFilter {
+                        coroutineScope.launch {
+                            delay(500)
+                            setBarsVisible(systemUiController, false)
+                        }
+
+                        false
+                    },
                 getView = {
-                    videoViewModel.getWebView(it, video, onVideoLoading = {
+                    val view = videoViewModel.getWebView(it, video, onVideoLoading = {
                         videoViewModel.obtainEvent(VideoEvent.VideoLoading)
                     })
+                    view
                 },
                 isLoadingVideo = viewState.isLoadingVideo
             )
         }
     } else {
         BottomSheetScaffold(
+            modifier = Modifier.systemBarsPadding(),
             scaffoldState = bottomSheetScaffoldState,
             sheetContent = {
                 CommentsScreen(viewState = viewState,
@@ -129,6 +156,25 @@ fun VideoScreen(
     LaunchedEffect(key1 = Unit, block = {
         videoViewModel.obtainEvent(VideoEvent.LaunchVideo(videoId))
     })
+
+    LaunchedEffect(configuration.orientation) {
+        coroutineScope.launch {
+            val fullScreen = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+            setBarsVisible(systemUiController, !fullScreen)
+        }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        onDispose {
+            setBarsVisible(systemUiController, true)
+        }
+    }
+}
+
+private fun setBarsVisible(systemUiController: SystemUiController, visible: Boolean) {
+    systemUiController.isSystemBarsVisible = visible
+    systemUiController.isStatusBarVisible = visible
+    systemUiController.isNavigationBarVisible = visible
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -363,24 +409,25 @@ private fun VideoCommentsView(
 
 @Composable
 private fun VideoPlayerView(
+    modifier: Modifier = Modifier,
     getView: (context: Context) -> View,
     isLoadingVideo: Boolean?
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val videoHeight = (screenWidth / 16) * 9
-
+    val fullScreen = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     if (isLoadingVideo != true) {
         AndroidView(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
                 .height(videoHeight),
             factory = { context -> getView(context) }
         )
     } else {
         Box(
-            modifier = Modifier
-                .background(Fronton.color.backgroundSecondary)
+            modifier = modifier
+                .background(if (fullScreen) Color.Black else Fronton.color.backgroundSecondary)
                 .fillMaxWidth()
                 .height(videoHeight)
                 .shimmer()

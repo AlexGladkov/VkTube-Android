@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.SideEffect
+import androidx.core.view.WindowCompat
+import com.google.accompanist.insets.ProvideWindowInsets
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.mobiledeveloper.vktube.navigation.NavigationGraph
 import com.mobiledeveloper.vktube.ui.theme.Fronton
@@ -15,21 +17,23 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
-            FrontonTheme {
-                val systemUiController = rememberSystemUiController()
-                val backgroundPrimary = Fronton.color.backgroundPrimary
-                val isLight = Fronton.color.isLight
-                SideEffect {
-                    systemUiController.setSystemBarsColor(
-                        color = backgroundPrimary,
-                        darkIcons = isLight
-                    )
-                }
+            ProvideWindowInsets {
+                FrontonTheme {
+                    val systemUiController = rememberSystemUiController()
+                    val backgroundPrimary = Fronton.color.backgroundPrimary
+                    val isLight = Fronton.color.isLight
+                    SideEffect {
+                        systemUiController.setSystemBarsColor(
+                            color = backgroundPrimary,
+                            darkIcons = isLight
+                        )
+                    }
 
-                // A surface container using the 'background' color from the theme
-                NavigationGraph()
+                    // A surface container using the 'background' color from the theme
+                    NavigationGraph()
+                }
             }
         }
     }
