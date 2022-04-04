@@ -1,6 +1,5 @@
 package com.mobiledeveloper.vktube.ui.screens.video
 
-import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.view.ViewGroup
 import android.webkit.WebSettings
@@ -20,7 +19,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
@@ -236,13 +234,13 @@ private fun VideoUserRow(video: VideoCellModel) {
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape),
-            model = video.userImage,
+            model = video.groupInfo.userImage,
             contentDescription = stringResource(id = R.string.comment_user_image_preview),
             contentScale = ContentScale.Crop
         )
 
         val subscribers = NumberUtil.formatNumberShort(
-            video.subscribers,
+            video.groupInfo.subscribers,
             context,
             R.plurals.number_short_format,
             R.plurals.subscribers
@@ -250,7 +248,7 @@ private fun VideoUserRow(video: VideoCellModel) {
 
         Column(modifier = Modifier.padding(start = 16.dp)) {
             Text(
-                text = video.userName,
+                text = video.groupInfo.userName,
                 color = Fronton.color.textPrimary,
                 style = Fronton.typography.body.medium.long
             )
@@ -356,9 +354,6 @@ private fun VideoPlayerView(
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val videoHeight = (screenWidth / 16) * 9
-
-    val widthPx = with(LocalDensity.current) { screenWidth.toPx() }
-    val heightPx = with(LocalDensity.current) { videoHeight.toPx() }
 
     if (isLoadingVideo != true) {
         AndroidView(

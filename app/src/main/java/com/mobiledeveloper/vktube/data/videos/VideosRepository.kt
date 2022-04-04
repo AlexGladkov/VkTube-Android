@@ -22,6 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.lang.reflect.Type
 import javax.inject.Inject
+import kotlin.math.absoluteValue
 
 class VideosRepository @Inject constructor() {
     suspend fun fetchVideos(
@@ -29,7 +30,7 @@ class VideosRepository @Inject constructor() {
         count: Int
     ): List<VideoVideoFull> = withContext(Dispatchers.IO) {
         val result = try {
-            fetchBatchVideos(groupIds.map { -it }, count)
+            fetchBatchVideos(groupIds.map { -it.absoluteValue }, count)
         } catch (ex: Throwable) {
             ex.printStackTrace()
             emptyList()
@@ -46,7 +47,11 @@ class VideosRepository @Inject constructor() {
         count: Int,
         offset: Int = 0
     ): List<VideoVideoFull> = withContext(Dispatchers.IO) {
-        val request = VideoService().videoGet(count = count, ownerId = -UserId(groupId), offset = offset)
+        val request = VideoService().videoGet(
+            count = count,
+            ownerId = -UserId(groupId.absoluteValue),
+            offset = offset
+        )
         fetchVideo(request).items
     }
 
