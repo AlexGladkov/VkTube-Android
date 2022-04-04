@@ -25,8 +25,7 @@ fun NavigationGraph() {
             SplashScreen(navController, splashViewModel)
         }
         composable(NavigationTree.Root.Auth.name) {
-            val loginViewModel = hiltViewModel<LoginViewModel>()
-            LoginScreen(navController, loginViewModel)
+            LoginScreen(navController)
         }
         composable(NavigationTree.Root.Main.name) {
             val feedViewModel = hiltViewModel<FeedViewModel>()

@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.google.accompanist.insets.systemBarsPadding
 import com.mobiledeveloper.vktube.navigation.NavigationTree
 import com.mobiledeveloper.vktube.ui.common.cell.Size
 import com.mobiledeveloper.vktube.ui.common.cell.VideoCell
@@ -31,7 +32,9 @@ fun FeedScreen(
     val viewState by feedViewModel.viewStates().collectAsState()
     val viewAction by feedViewModel.viewActions().collectAsState(initial = null)
 
-    Box(modifier = Modifier.background(color = Fronton.color.backgroundPrimary)) {
+    Box(modifier = Modifier
+        .systemBarsPadding()
+        .background(color = Fronton.color.backgroundPrimary)) {
         FeedView(
             viewState = viewState,
             onVideoClick = {

@@ -65,7 +65,7 @@ dependencies {
     implementation "androidx.compose.runtime:runtime-livedata:$compose_version"
 
     implementation "com.google.accompanist:accompanist-systemuicontroller:0.24.3-alpha"
-
+    implementation "com.google.accompanist:accompanist-insets:0.24.3-alpha"
     implementation "com.google.dagger:hilt-android:2.38.1"
     implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03'
     implementation "androidx.hilt:hilt-navigation-compose:1.0.0"

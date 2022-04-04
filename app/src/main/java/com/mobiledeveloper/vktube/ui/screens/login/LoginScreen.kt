@@ -13,14 +13,13 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.google.accompanist.insets.systemBarsPadding
+import com.mobiledeveloper.vktube.R
 import com.mobiledeveloper.vktube.navigation.NavigationTree
 import com.mobiledeveloper.vktube.ui.theme.Fronton
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
-import androidx.compose.ui.res.stringResource
-import com.mobiledeveloper.vktube.R
 import com.vk.api.sdk.VK.getVKAuthActivityResultContract
 import com.vk.api.sdk.auth.VKAuthenticationResult
 import com.vk.api.sdk.auth.VKScope
@@ -28,7 +27,6 @@ import com.vk.api.sdk.auth.VKScope
 @Composable
 fun LoginScreen(
     navController: NavController,
-    loginViewModel: LoginViewModel,
 ) {
     val launcher = rememberLauncherForActivityResult(getVKAuthActivityResultContract()) { result ->
         when (result) {
@@ -43,6 +41,7 @@ fun LoginScreen(
     }
     Surface(
         modifier = Modifier
+            .systemBarsPadding()
             .background(Fronton.color.backgroundPrimary)
             .fillMaxSize()
     ) {

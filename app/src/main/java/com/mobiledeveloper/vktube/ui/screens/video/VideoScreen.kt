@@ -1,10 +1,8 @@
 package com.mobiledeveloper.vktube.ui.screens.video
 
-import android.graphics.Bitmap
-import android.view.ViewGroup
-import android.webkit.WebSettings
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.content.Context
+import android.content.res.Configuration
+import android.view.View
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,16 +14,23 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.LifecycleOwner
 import coil.compose.AsyncImage
+import com.google.accompanist.insets.systemBarsPadding
+import com.google.accompanist.systemuicontroller.SystemUiController
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.mobiledeveloper.vktube.R
 import com.mobiledeveloper.vktube.ui.common.cell.VideoCellModel
 import com.mobiledeveloper.vktube.ui.common.views.VideoActionView
@@ -38,19 +43,26 @@ import com.mobiledeveloper.vktube.ui.theme.Fronton
 import com.mobiledeveloper.vktube.utils.DateUtil
 import com.mobiledeveloper.vktube.utils.NumberUtil
 import com.valentinilk.shimmer.shimmer
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
+@OptIn(
+    ExperimentalFoundationApi::class, ExperimentalMaterialApi::class,
+    androidx.compose.ui.ExperimentalComposeUiApi::class
+)
 @Composable
 fun VideoScreen(
     videoId: Long?,
-    videoViewModel: VideoViewModel
+    videoViewModel: VideoViewModel,
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
 ) {
     val viewState by videoViewModel.viewStates().collectAsState()
     val viewAction by videoViewModel.viewActions().collectAsState(initial = null)
 
     val configuration = LocalConfiguration.current
+
+    val systemUiController = rememberSystemUiController()
 
     val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
@@ -63,30 +75,60 @@ fun VideoScreen(
     var bottomSheetHeight by remember(configuration.orientation) { mutableStateOf(0.dp) }
     val coroutineScope = rememberCoroutineScope()
 
-    BottomSheetScaffold(
-        scaffoldState = bottomSheetScaffoldState,
-        sheetContent = {
-            CommentsScreen(viewState = viewState,
-                onSendClick = {
-                    videoViewModel.obtainEvent(VideoEvent.SendComment(it))
-                }, onCloseClick = {
-                    videoViewModel.obtainEvent(VideoEvent.CloseCommentsClick)
-                })
-        },
-        sheetPeekHeight = bottomSheetHeight
-    ) {
-        VideoScreenView(
-            viewState = viewState,
-            onCommentsClick = {
-                videoViewModel.obtainEvent(VideoEvent.CommentsClick)
+    val video = viewState.video
+
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    if (isLandscape) {
+        if (video != null) {
+            VideoPlayerView(
+                modifier = Modifier
+                    .background(color = Color.Black)
+                    .pointerInteropFilter {
+                        coroutineScope.launch {
+                            delay(500)
+                            setBarsVisible(systemUiController, false)
+                        }
+
+                        false
+                    },
+                getView = {
+                    val view = videoViewModel.getWebView(it, video, onVideoLoading = {
+                        videoViewModel.obtainEvent(VideoEvent.VideoLoading)
+                    })
+                    view
+                },
+                isLoadingVideo = viewState.isLoadingVideo
+            )
+        }
+    } else {
+        BottomSheetScaffold(
+            modifier = Modifier.systemBarsPadding(),
+            scaffoldState = bottomSheetScaffoldState,
+            sheetContent = {
+                CommentsScreen(viewState = viewState,
+                    onSendClick = {
+                        videoViewModel.obtainEvent(VideoEvent.SendComment(it))
+                    }, onCloseClick = {
+                        videoViewModel.obtainEvent(VideoEvent.CloseCommentsClick)
+                    })
             },
-            onLikeClick = {
-                videoViewModel.obtainEvent(VideoEvent.LikeClick)
-            },
-            onVideoLoading = {
-                videoViewModel.obtainEvent(VideoEvent.VideoLoading)
-            }
-        )
+            sheetPeekHeight = bottomSheetHeight
+        ) {
+            VideoScreenView(
+                getView = { context, video ->
+                    videoViewModel.getWebView(context, video, onVideoLoading = {
+                        videoViewModel.obtainEvent(VideoEvent.VideoLoading)
+                    })
+                },
+                viewState = viewState,
+                onCommentsClick = {
+                    videoViewModel.obtainEvent(VideoEvent.CommentsClick)
+                },
+                onLikeClick = {
+                    videoViewModel.obtainEvent(VideoEvent.LikeClick)
+                },
+            )
+        }
     }
 
     LaunchedEffect(key1 = viewAction, block = {
@@ -114,26 +156,46 @@ fun VideoScreen(
     LaunchedEffect(key1 = Unit, block = {
         videoViewModel.obtainEvent(VideoEvent.LaunchVideo(videoId))
     })
+
+    LaunchedEffect(configuration.orientation) {
+        coroutineScope.launch {
+            val fullScreen = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+            setBarsVisible(systemUiController, !fullScreen)
+        }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        onDispose {
+            setBarsVisible(systemUiController, true)
+        }
+    }
+}
+
+private fun setBarsVisible(systemUiController: SystemUiController, visible: Boolean) {
+    systemUiController.isSystemBarsVisible = visible
+    systemUiController.isStatusBarVisible = visible
+    systemUiController.isNavigationBarVisible = visible
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun VideoScreenView(
+    getView: (context: Context, video: VideoCellModel) -> View,
     viewState: VideoViewState,
     onCommentsClick: () -> Unit,
-    onLikeClick: () -> Unit,
-    onVideoLoading: () -> Unit
+    onLikeClick: () -> Unit
 ) {
     val context = LocalContext.current
 
     val video = viewState.video ?: return
 
     LazyColumn(modifier = Modifier.fillMaxSize()) {
-        item {
+        stickyHeader {
             VideoPlayerView(
-                video = video,
-                isLoadingVideo = viewState.isLoadingVideo,
-                onVideoLoading = onVideoLoading,
+                getView = {
+                    getView(it, video)
+                },
+                isLoadingVideo = viewState.isLoadingVideo
             )
         }
 
@@ -347,65 +409,25 @@ private fun VideoCommentsView(
 
 @Composable
 private fun VideoPlayerView(
-    video: VideoCellModel,
-    onVideoLoading: () -> Unit,
+    modifier: Modifier = Modifier,
+    getView: (context: Context) -> View,
     isLoadingVideo: Boolean?
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val videoHeight = (screenWidth / 16) * 9
-
+    val fullScreen = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     if (isLoadingVideo != true) {
         AndroidView(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
                 .height(videoHeight),
-            factory = {
-                val data = """
-                        <html>
-                            <head>
-                            <style>
-                                .frame {
-                                    width: 100%;
-                                    height: 100vh;
-                                    overflow: auto;
-                                }
-                            </style>
-                            </head>
-                            <body>
-                                <iframe class="frame" src="${video.videoUrl}" frameborder="0" allowfullscreen/>
-                            </body>
-                        </html>
-                        """
-
-                WebView(it).apply {
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
-                    settings.javaScriptEnabled = true
-                    settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.SINGLE_COLUMN
-                    settings.loadWithOverviewMode = true
-                    settings.useWideViewPort = true
-                    webViewClient = object : WebViewClient() {
-                        override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                            onVideoLoading.invoke()
-                            super.onPageStarted(view, url, favicon)
-                        }
-
-                        override fun onPageFinished(view: WebView?, url: String?) {
-                            onVideoLoading.invoke()
-                            super.onPageFinished(view, url)
-                        }
-                    }
-                    loadData(data, "text/html", "utf-8")
-                }
-            }
+            factory = { context -> getView(context) }
         )
     } else {
         Box(
-            modifier = Modifier
-                .background(Fronton.color.backgroundSecondary)
+            modifier = modifier
+                .background(if (fullScreen) Color.Black else Fronton.color.backgroundSecondary)
                 .fillMaxWidth()
                 .height(videoHeight)
                 .shimmer()
