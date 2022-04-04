@@ -118,7 +118,8 @@ private fun SubscriptionDataView(model: SubscriptionCellModel) {
 
         Row(
             modifier = Modifier.weight(weightGroupInfo),
-            horizontalArrangement = Arrangement.Start
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
         )
         {
             AsyncImage(
