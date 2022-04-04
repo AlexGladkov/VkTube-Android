@@ -27,13 +27,26 @@ import com.valentinilk.shimmer.shimmer
 import com.vk.sdk.api.video.dto.VideoVideoFull
 
 data class VideoCellModel(
-    val videoId: Long, val subscribers: Int,
-    val title: String, val previewUrl: String, val userImage: String, val userName: String,
-    val viewsCount: Int, val dateAdded: Int,
-    val likes: Int, val likesByMe: Boolean, val videoUrl: String, val ownerId: Long
+    val videoId: Long,
+    val title: String,
+    val previewUrl: String,
+    val viewsCount: Int,
+    val dateAdded: Int,
+    val likes: Int,
+    val likesByMe: Boolean,
+    val videoUrl: String,
+    val ownerId: Long,
+    val groupInfo: VideoCellGroupInfo
 ) {
     val id = "${ownerId}_${videoId}"
 }
+
+data class VideoCellGroupInfo(
+    val id: Long,
+    val userImage: String,
+    val userName: String,
+    val subscribers: Int,
+)
 
 fun VideoVideoFull.mapToVideoCellModel(
     userImage: String,
@@ -50,15 +63,18 @@ fun VideoVideoFull.mapToVideoCellModel(
         videoId = videoId.toLong(),
         title = title.orEmpty(),
         previewUrl = maxQualityImage?.url.orEmpty(),
-        userImage = userImage,
-        userName = userName,
         viewsCount = views ?: 0,
         dateAdded = addingDate ?: 0,
-        subscribers = subscribers,
         likes = likes?.count ?: 0,
         likesByMe = likes?.userLikes?.value == 1,
         videoUrl = player.orEmpty(),
-        ownerId = ownerId.value
+        ownerId = ownerId.value,
+        groupInfo = VideoCellGroupInfo(
+            id = ownerId.value,
+            userImage = userImage,
+            userName = userName,
+            subscribers = subscribers
+        )
     )
 }
 
@@ -86,8 +102,7 @@ private fun VideoImageView(previewUrl: String, previewSize: Size) {
     AsyncImage(
         modifier = Modifier
             .width(previewSize.width)
-            .height(previewSize.height)
-           ,
+            .height(previewSize.height),
         model = previewUrl,
         contentDescription = stringResource(id = R.string.video_preview),
         contentScale = ContentScale.Crop
@@ -107,12 +122,12 @@ private fun VideoDataView(model: VideoCellModel) {
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape),
-            model = model.userImage,
+            model = model.groupInfo.userImage,
             contentDescription = stringResource(id = R.string.user_image_preview),
             contentScale = ContentScale.Crop
         )
 
-        val text = remember(model.userName, model.dateAdded, model.viewsCount) {
+        val text = remember(model.groupInfo.userName, model.dateAdded, model.viewsCount) {
             val views =
                 NumberUtil.formatNumberShort(
                     model.viewsCount,
@@ -122,7 +137,7 @@ private fun VideoDataView(model: VideoCellModel) {
                 )
 
             val date = DateUtil.getTimeAgo(model.dateAdded, context)
-            "${model.userName} • $views • $date"
+            "${model.groupInfo.userName} • $views • $date"
         }
 
         Column(

@@ -1,12 +1,12 @@
 package com.mobiledeveloper.vktube.ui.screens.feed
 
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.mobiledeveloper.vktube.base.BaseViewModel
 import com.mobiledeveloper.vktube.data.cache.InMemoryCache
-import com.mobiledeveloper.vktube.data.clubs.ClubsLocalDataSource
-import com.mobiledeveloper.vktube.data.clubs.ClubsRepository
-import com.mobiledeveloper.vktube.data.user.UserRepository
+import com.mobiledeveloper.vktube.data.videos.GetUserVideoUseCase
 import com.mobiledeveloper.vktube.data.videos.VideosRepository
+import com.mobiledeveloper.vktube.ui.common.cell.VideoCellGroupInfo
 import com.mobiledeveloper.vktube.ui.common.cell.VideoCellModel
 import com.mobiledeveloper.vktube.ui.common.cell.mapToVideoCellModel
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedAction
@@ -14,15 +14,16 @@ import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedEvent
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedState
 import com.vk.dto.common.id.abs
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import kotlin.math.absoluteValue
 
 @HiltViewModel
 class FeedViewModel @Inject constructor(
-    private val clubsRepository: ClubsRepository,
     private val videosRepository: VideosRepository,
-    private val clubsLocalDataSource: ClubsLocalDataSource,
-    private val userRepository: UserRepository
+    private val getUserVideoUseCase: GetUserVideoUseCase
 ) : BaseViewModel<FeedState, FeedAction, FeedEvent>(initialState = FeedState()) {
     private val loadMoreController = LoadMoreController()
 
@@ -31,7 +32,10 @@ class FeedViewModel @Inject constructor(
             FeedEvent.ScreenShown -> onScreenShown()
             FeedEvent.ClearAction -> clearAction()
             is FeedEvent.VideoClicked -> obtainVideoClick(viewEvent.videoCellModel)
-            is FeedEvent.OnScroll -> loadMoreController.handleScroll(viewEvent.lastVisibleItemIndex)
+            is FeedEvent.OnScroll -> loadMoreController.handleScroll(
+                viewEvent.lastVisibleItemIndex,
+                viewEvent.screenItemsCount
+            )
         }
     }
 
@@ -59,50 +63,12 @@ class FeedViewModel @Inject constructor(
                 loading = true
             )
             try {
-                val userId = try {
-                    userRepository.fetchLocalUser().userId
-                } catch (e: Exception) {
-                    userRepository.fetchAndSaveUser()
-                    userRepository.fetchLocalUser().userId
-                }
-
-                val localClubsIds = clubsLocalDataSource.loadClubsIds()
-                val rawVideosJob = async {
-                    if (localClubsIds.any())
-                        videosRepository.fetchVideos(
-                            groupIds = localClubsIds.map { it },
-                            count = PAGE_SIZE
-                        )
-                    else
-                        emptyList()
-                }
-
-                val clubs = clubsRepository.fetchClubs(userId)
-                val (deletedClubs, newClubs) = withContext(Dispatchers.Default) {
-                    val currentClubsIds = clubs.map { it.id.value }
-                    clubsLocalDataSource.saveClubsIds(currentClubsIds)
-
-                    val deletedClubs = localClubsIds.filter { it !in currentClubsIds }
-                    val newClubs = currentClubsIds.filter { it !in localClubsIds }
-
-                    listOf(deletedClubs, newClubs)
-                }
-
-                val newClubsRawVideosJob = async {
-                    if (newClubs.any())
-                        videosRepository.fetchVideos(
-                            groupIds = newClubs.map { it },
-                            count = PAGE_SIZE
-                        )
-                    else
-                        emptyList()
-                }
-
-                val rawVideos = rawVideosJob.await().filter { it.ownerId?.value !in deletedClubs }
-                val newClubsRawVideos = newClubsRawVideosJob.await()
+                val userClubsWithVideos = getUserVideoUseCase(PAGE_SIZE)
+                val clubs = userClubsWithVideos.clubs
+                val rawVideos = userClubsWithVideos.videos
 
                 val videos = withContext(Dispatchers.Default) {
-                    (rawVideos + newClubsRawVideos)
+                    rawVideos
                         .groupBy { it.ownerId }
                         .mapNotNull { (ownerId, items) ->
                             val group =
@@ -132,7 +98,7 @@ class FeedViewModel @Inject constructor(
     }
 
     private inner class LoadMoreController {
-        private val groups = mutableMapOf<Long, LoadedGroupInfo>()
+        private var groups = mapOf<Long, LoadedGroupInfo>()
 
         /**
          * [groupId,[offset1, offset2..]
@@ -140,19 +106,19 @@ class FeedViewModel @Inject constructor(
         private val loadedGroupsList = mutableMapOf<Long, List<Int>>()
         private val loadingListLock = Any()
 
-        fun handleScroll(lastVisibleItemIndex: Int) {
+        fun handleScroll(lastVisibleItemIndex: Int, screenItemsCount: Int) {
             fun getGroupForLoad(): LoadedGroupInfo? {
                 synchronized(loadingListLock) {
                     val itemsSize = viewState.items.size
-                    val groupId =
-                        viewState.items.getOrNull(
-                            (lastVisibleItemIndex + PAGE_SIZE).coerceAtMost(itemsSize - 1)
-                        )?.ownerId
-                            ?: return null
+                    val preloadIndex =
+                        (screenItemsCount * PRELOAD_SCREENS_COUNT + lastVisibleItemIndex)
+                            .coerceAtMost(itemsSize - 1)
+                    val groupId = viewState.items.getOrNull(preloadIndex)?.ownerId ?: return null
 
-                    val groupInfo = groups[groupId] ?: return null
+                    val local = groups
+                    val groupInfo = local[groupId] ?: return null
                     if (!groupInfo.hasMore) return null
-                    if (groupInfo.lastItemIndex > lastVisibleItemIndex + PAGE_SIZE) return null
+                    if (groupInfo.lastItemIndex > preloadIndex) return null
                     val offset = groupInfo.loadedCount
 
                     val loadingOffsets = loadedGroupsList[groupId] ?: emptyList()
@@ -170,18 +136,18 @@ class FeedViewModel @Inject constructor(
                 withContext(Dispatchers.Default) {
                     try {
                         val groupInfo = getGroupForLoad() ?: return@withContext
-
+                        Log.d("FETCH","load video for group ${groupInfo.groupInfo.userName}")
                         val rawVideos = videosRepository.fetchVideos(
-                            groupId = -groupInfo.ownerId,
+                            groupId = -groupInfo.groupInfo.id.absoluteValue,
                             count = PAGE_SIZE,
                             offset = groupInfo.loadedCount
                         )
                         if (rawVideos.any()) {
                             val videos = rawVideos.mapNotNull { videoFull ->
                                 videoFull.mapToVideoCellModel(
-                                    userName = groupInfo.userName,
-                                    userImage = groupInfo.userImage,
-                                    subscribers = groupInfo.subscribers
+                                    userName = groupInfo.groupInfo.userName,
+                                    userImage = groupInfo.groupInfo.userImage,
+                                    subscribers = groupInfo.groupInfo.subscribers
                                 )
                             }
 
@@ -202,41 +168,38 @@ class FeedViewModel @Inject constructor(
         suspend fun fillGroups(items: List<VideoCellModel>) =
             withContext(Dispatchers.Default) {
                 synchronized(loadingListLock) {
-                    groups.clear()
+                    val newGroups = mutableMapOf<Long, LoadedGroupInfo>()
                     val size = items.size
                     items.reversed()
                         .forEachIndexed { index, item ->
-                            val ownerId = item.ownerId
-                            groups[ownerId] = groups[ownerId]?.let {
+                            val groupInfo = item.groupInfo
+                            val groupId = groupInfo.id
+                            newGroups[groupId] = newGroups[groupId]?.let {
                                 it.copy(
                                     loadedCount = it.loadedCount + 1,
                                     hasMore = (it.loadedCount + 1) % PAGE_SIZE == 0
                                 )
                             } ?: LoadedGroupInfo(
-                                ownerId = ownerId,
+                                groupInfo = groupInfo.copy(),
                                 lastItemIndex = size - index - 1,
                                 loadedCount = 1,
-                                hasMore = false,
-                                userName = item.userName,
-                                userImage = item.userImage,
-                                subscribers = item.subscribers
+                                hasMore = false
                             )
                         }
+                    groups = newGroups.filter { it.value.hasMore }
                 }
             }
     }
 
     private data class LoadedGroupInfo(
-        val ownerId: Long,
         val lastItemIndex: Int,
         val loadedCount: Int,
         val hasMore: Boolean,
-        val userImage: String,
-        val userName: String,
-        val subscribers: Int
+        val groupInfo: VideoCellGroupInfo
     )
 
     companion object {
         private const val PAGE_SIZE = 20
+        private const val PRELOAD_SCREENS_COUNT = 4
     }
 }

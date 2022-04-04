@@ -37,10 +37,16 @@ fun FeedScreen(
             onVideoClick = {
                 feedViewModel.obtainEvent(FeedEvent.VideoClicked(it))
             },
-        onScroll = {
-            feedViewModel.obtainEvent(FeedEvent.OnScroll(it))
-        }
-    )}
+            onScroll = { lastVisibleItemIndex, screenItemsCount ->
+                feedViewModel.obtainEvent(
+                    FeedEvent.OnScroll(
+                        lastVisibleItemIndex,
+                        screenItemsCount
+                    )
+                )
+            }
+        )
+    }
 
     LaunchedEffect(key1 = viewAction, block = {
         feedViewModel.obtainEvent(FeedEvent.ClearAction)
@@ -62,7 +68,7 @@ fun FeedScreen(
 @Composable
 private fun FeedView(
     viewState: FeedState, onVideoClick: (VideoCellModel) -> Unit,
-    onScroll: (lastVisibleItemIndex: Int) -> Unit
+    onScroll: (lastVisibleItemIndex: Int, screenItemsCount: Int) -> Unit
 ) {
     val configuration = LocalConfiguration.current
 
@@ -86,14 +92,18 @@ private fun DataView(
     viewState: FeedState,
     previewSize: Size,
     onVideoClick: (VideoCellModel) -> Unit,
-    onScroll: (lastVisibleItemIndex: Int) -> Unit
+    onScroll: (lastVisibleItemIndex: Int, screenItemsCount: Int) -> Unit
 ) {
     val state: LazyListState = rememberLazyListState()
     val lastVisibleItemIndex = state.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+    val screenItemsCount = state.layoutInfo.visibleItemsInfo.count()
     LaunchedEffect(lastVisibleItemIndex) {
-        onScroll(lastVisibleItemIndex)
+        onScroll(lastVisibleItemIndex, screenItemsCount)
     }
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    LazyColumn(
+        state = state,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
         items(
             items = viewState.items,
             key = { item -> item.id }
