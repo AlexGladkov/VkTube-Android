@@ -20,7 +20,7 @@ class ClubsRepository @Inject constructor() {
      * фильтры GroupsFilter.GROUPS, GroupsFilter.PUBLICS позволяют эту проблему решить
      */
 
-    suspend fun fetchClubs(userId: Long, ignoreList: List<Long>? = null): List<GroupsGroupFull> =
+    suspend fun fetchClubs(userId: Long, ignoreList: List<Long> = emptyList()): List<GroupsGroupFull> =
         withContext(Dispatchers.IO) {
             var requestedCount = 0
             val result = mutableListOf<GroupsGroupFull>()
@@ -38,7 +38,7 @@ class ClubsRepository @Inject constructor() {
                 requestedCount += PAGE_SIZE
                 if (requestedCount >= response.count) break
             }
-            result.filter { it.id.value !in ignoreList ?: emptyList() }.distinctBy { it.id }
+            result.filter { it.id.value !in ignoreList }.distinctBy { it.id }
         }
 
     companion object {
