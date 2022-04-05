@@ -20,47 +20,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.mobiledeveloper.vktube.R
+import com.mobiledeveloper.vktube.ui.screens.feed.models.VideoCellModel
 import com.mobiledeveloper.vktube.ui.theme.Fronton
 import com.mobiledeveloper.vktube.utils.DateUtil
 import com.mobiledeveloper.vktube.utils.NumberUtil
 import com.valentinilk.shimmer.shimmer
-import com.vk.sdk.api.video.dto.VideoVideoFull
-
-data class VideoCellModel(
-    val videoId: Long, val subscribers: Int,
-    val title: String, val previewUrl: String, val userImage: String, val userName: String,
-    val viewsCount: Int, val dateAdded: Int,
-    val likes: Int, val likesByMe: Boolean, val videoUrl: String, val ownerId: Long
-) {
-    val id = "${ownerId}_${videoId}"
-}
-
-fun VideoVideoFull.mapToVideoCellModel(
-    userImage: String,
-    userName: String,
-    subscribers: Int
-): VideoCellModel? {
-    val videoId = id ?: return null
-    val ownerId = ownerId ?: return null
-
-    val maxQualityImage = image?.reversed()?.firstOrNull()
-
-
-    return VideoCellModel(
-        videoId = videoId.toLong(),
-        title = title.orEmpty(),
-        previewUrl = maxQualityImage?.url.orEmpty(),
-        userImage = userImage,
-        userName = userName,
-        viewsCount = views ?: 0,
-        dateAdded = addingDate ?: 0,
-        subscribers = subscribers,
-        likes = likes?.count ?: 0,
-        likesByMe = likes?.userLikes?.value == 1,
-        videoUrl = player.orEmpty(),
-        ownerId = ownerId.value
-    )
-}
 
 @Composable
 fun VideoCell(model: VideoCellModel, previewSize: Size, onVideoClick: () -> Unit) {

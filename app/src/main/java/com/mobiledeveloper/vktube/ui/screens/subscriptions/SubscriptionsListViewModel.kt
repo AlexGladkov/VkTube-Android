@@ -5,10 +5,11 @@ import com.mobiledeveloper.vktube.base.BaseViewModel
 import com.mobiledeveloper.vktube.data.clubs.ClubsLocalDataSource
 import com.mobiledeveloper.vktube.data.clubs.ClubsRepository
 import com.mobiledeveloper.vktube.data.user.UserRepository
-import com.mobiledeveloper.vktube.ui.common.cell.mapToSubscriptionCellModel
+import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionCellModel
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsListAction
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsListEvent
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsListState
+import com.vk.sdk.api.groups.dto.GroupsGroupFull
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import javax.inject.Inject
@@ -19,7 +20,6 @@ class SubscriptionsListViewModel @Inject constructor(
     private val groupsLocalDataSource: ClubsLocalDataSource,
     private val userRepository: UserRepository
 ) : BaseViewModel<SubscriptionsListState, SubscriptionsListAction, SubscriptionsListEvent>(initialState = SubscriptionsListState()) {
-
 
     override fun obtainEvent(viewEvent: SubscriptionsListEvent) {
         when (viewEvent) {
@@ -67,8 +67,8 @@ class SubscriptionsListViewModel @Inject constructor(
 
                 val groups = groupsRepository.fetchClubs(userId).map {
                     it.mapToSubscriptionCellModel(
-                        name = it.name ?: "",
-                        imageUrl = it.photo200 ?: "",
+                        name = it.name.orEmpty(),
+                        imageUrl = it.photo200.orEmpty(),
                         id = it.id.value,
                         isIgnored = ignoreList.contains(it.id.value)
                     )
@@ -85,5 +85,19 @@ class SubscriptionsListViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    fun GroupsGroupFull.mapToSubscriptionCellModel(
+        imageUrl: String,
+        name: String,
+        id: Long,
+        isIgnored: Boolean
+    ): SubscriptionCellModel {
+        return SubscriptionCellModel(
+            groupId = id,
+            groupIcon = imageUrl,
+            groupName = name,
+            isIgnored = isIgnored
+        )
     }
 }

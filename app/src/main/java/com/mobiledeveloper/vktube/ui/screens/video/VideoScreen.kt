@@ -1,6 +1,5 @@
 package com.mobiledeveloper.vktube.ui.screens.video
 
-import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.view.ViewGroup
 import android.webkit.WebSettings
@@ -29,9 +28,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import coil.compose.AsyncImage
 import com.mobiledeveloper.vktube.R
-import com.mobiledeveloper.vktube.ui.common.cell.VideoCellModel
+import com.mobiledeveloper.vktube.ui.screens.feed.models.VideoCellModel
 import com.mobiledeveloper.vktube.ui.common.views.VideoActionView
-import com.mobiledeveloper.vktube.ui.screens.comments.CommentCellModel
+import com.mobiledeveloper.vktube.ui.screens.feed.models.CommentCellModel
 import com.mobiledeveloper.vktube.ui.screens.comments.CommentsScreen
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoAction
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoEvent

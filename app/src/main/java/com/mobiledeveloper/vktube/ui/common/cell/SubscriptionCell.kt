@@ -30,18 +30,11 @@ import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.marg
 import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.maxTextLines
 import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.textSize
 import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.weight
+import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionCellModel
 import com.mobiledeveloper.vktube.ui.theme.Fronton
 import com.valentinilk.shimmer.shimmer
-import com.vk.sdk.api.groups.dto.GroupsGroupFull
 
-data class SubscriptionCellModel(
-    val groupId: Long,
-    val groupIcon: String,
-    val groupName: String,
-    var isIgnored: Boolean = false
-)
-
-object SubscriptionListParameters{
+private object SubscriptionListParameters{
     const val groupImageSize = 50
     const val eyeIconSize = 15
     const val textSize = 15
@@ -51,20 +44,6 @@ object SubscriptionListParameters{
     const val marginUD = 4
     const val weight= 1f
     const val maxTextLines = 2
-}
-
-fun GroupsGroupFull.mapToSubscriptionCellModel(
-    imageUrl: String,
-    name: String,
-    id: Long,
-    isIgnored: Boolean
-): SubscriptionCellModel {
-    return SubscriptionCellModel(
-        groupId = id,
-        groupIcon = imageUrl,
-        groupName = name,
-        isIgnored = isIgnored
-    )
 }
 
 @Composable

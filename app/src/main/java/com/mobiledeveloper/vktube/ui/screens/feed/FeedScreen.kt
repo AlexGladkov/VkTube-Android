@@ -16,7 +16,7 @@ import androidx.navigation.NavController
 import com.mobiledeveloper.vktube.navigation.NavigationTree
 import com.mobiledeveloper.vktube.ui.common.cell.Size
 import com.mobiledeveloper.vktube.ui.common.cell.VideoCell
-import com.mobiledeveloper.vktube.ui.common.cell.VideoCellModel
+import com.mobiledeveloper.vktube.ui.screens.feed.models.VideoCellModel
 import com.mobiledeveloper.vktube.ui.common.cell.VideoGrayCell
 import com.mobiledeveloper.vktube.ui.screens.feed.FeedViewParameters.landscapeItemsPerScreen
 import com.mobiledeveloper.vktube.ui.screens.feed.FeedViewParameters.ratio
@@ -62,11 +62,10 @@ fun FeedScreen(
     })
 }
 
-object FeedViewParameters{
+private object FeedViewParameters{
     const val ratio = 16f / 9
     const val landscapeItemsPerScreen = 3
     const val space = 4
-
 }
 
 @Composable

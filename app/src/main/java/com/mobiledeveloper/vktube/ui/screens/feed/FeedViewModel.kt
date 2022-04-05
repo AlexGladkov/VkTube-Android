@@ -1,6 +1,5 @@
 package com.mobiledeveloper.vktube.ui.screens.feed
 
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.mobiledeveloper.vktube.base.BaseViewModel
 import com.mobiledeveloper.vktube.data.cache.InMemoryCache
@@ -8,12 +7,12 @@ import com.mobiledeveloper.vktube.data.clubs.ClubsLocalDataSource
 import com.mobiledeveloper.vktube.data.clubs.ClubsRepository
 import com.mobiledeveloper.vktube.data.user.UserRepository
 import com.mobiledeveloper.vktube.data.videos.VideosRepository
-import com.mobiledeveloper.vktube.ui.common.cell.VideoCellModel
-import com.mobiledeveloper.vktube.ui.common.cell.mapToVideoCellModel
+import com.mobiledeveloper.vktube.ui.screens.feed.models.VideoCellModel
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedAction
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedEvent
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedState
 import com.vk.dto.common.id.abs
+import com.vk.sdk.api.video.dto.VideoVideoFull
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import javax.inject.Inject
@@ -227,6 +226,33 @@ class FeedViewModel @Inject constructor(
                         }
                 }
             }
+    }
+
+    fun VideoVideoFull.mapToVideoCellModel(
+        userImage: String,
+        userName: String,
+        subscribers: Int
+    ): VideoCellModel? {
+        val videoId = id ?: return null
+        val ownerId = ownerId ?: return null
+
+        val maxQualityImage = image?.reversed()?.firstOrNull()
+
+
+        return VideoCellModel(
+            videoId = videoId.toLong(),
+            title = title.orEmpty(),
+            previewUrl = maxQualityImage?.url.orEmpty(),
+            userImage = userImage,
+            userName = userName,
+            viewsCount = views ?: 0,
+            dateAdded = addingDate ?: 0,
+            subscribers = subscribers,
+            likes = likes?.count ?: 0,
+            likesByMe = likes?.userLikes?.value == 1,
+            videoUrl = player.orEmpty(),
+            ownerId = ownerId.value
+        )
     }
 
     private data class LoadedGroupInfo(
