@@ -1,6 +1,5 @@
 package com.mobiledeveloper.vktube.ui.common.cell
 
-import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -25,13 +23,13 @@ import coil.compose.AsyncImage
 import com.mobiledeveloper.vktube.R
 import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.eyeIconSize
 import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.eyeIgnoreAlpha
-import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.ignoredAlpha
 import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.groupImageSize
+import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.ignoredAlpha
+import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.marginLR
+import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.marginUD
 import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.maxTextLines
-import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.padding
 import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.textSize
-import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.weightEye
-import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.weightGroupInfo
+import com.mobiledeveloper.vktube.ui.common.cell.SubscriptionListParameters.weight
 import com.mobiledeveloper.vktube.ui.theme.Fronton
 import com.valentinilk.shimmer.shimmer
 import com.vk.sdk.api.groups.dto.GroupsGroupFull
@@ -49,9 +47,9 @@ object SubscriptionListParameters{
     const val textSize = 15
     const val ignoredAlpha = 0.4f
     const val eyeIgnoreAlpha = 0.0f
-    const val padding = 16
-    const val weightGroupInfo = 10f
-    const val weightEye = 1f
+    const val marginLR = 16
+    const val marginUD = 4
+    const val weight= 1f
     const val maxTextLines = 2
 }
 
@@ -71,19 +69,10 @@ fun GroupsGroupFull.mapToSubscriptionCellModel(
 
 @Composable
 fun SubscriptionCell(model: SubscriptionCellModel) {
-    val configuration = LocalConfiguration.current
-
-    if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
         Row(modifier = Modifier
             .fillMaxWidth()) {
             SubscriptionDataView(model = model)
         }
-    else {
-        Column(modifier = Modifier
-            .fillMaxWidth()) {
-            SubscriptionDataView(model = model)
-        }
-    }
 }
 
 
@@ -95,63 +84,55 @@ private fun SubscriptionDataView(model: SubscriptionCellModel) {
     }
     Row(
         modifier = Modifier
-            .padding(all = padding.dp)
+            .padding(start= marginLR.dp, end = marginLR.dp, bottom = marginUD.dp, top = marginUD.dp)
             .clickable {
                 model.isIgnored = !model.isIgnored
                 isChecked.value = !model.isIgnored
             }
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.Start
 
     ) {
 
-        val alpha = when (isChecked.value){
+        val alpha = when (isChecked.value) {
             true -> 1f
             false -> ignoredAlpha
         }
 
-        val eyeAlpha = when (isChecked.value){
+        val eyeAlpha = when (isChecked.value) {
             true -> 1f
             false -> eyeIgnoreAlpha
         }
 
-        Row(
-            modifier = Modifier.weight(weightGroupInfo),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
+        AsyncImage(
+            modifier = Modifier
+                .size(groupImageSize.dp)
+                .clip(CircleShape)
+                .alpha(alpha),
+            model = model.groupIcon,
+            contentDescription = stringResource(id = R.string.user_image_preview),
+            contentScale = ContentScale.Crop
         )
-        {
-            AsyncImage(
-                modifier = Modifier
-                    .size(groupImageSize.dp)
-                    .clip(CircleShape)
-                    .alpha(alpha),
-                model = model.groupIcon,
-                contentDescription = stringResource(id = R.string.user_image_preview),
-                contentScale = ContentScale.Crop
-            )
 
-            Text(
-                modifier = Modifier
-                    .alpha(alpha)
-                    .padding(padding.dp),
-                text = model.groupName,
-                color = Fronton.color.textPrimary,
-                overflow = TextOverflow.Ellipsis,
-                fontSize = textSize.sp,
-                maxLines = maxTextLines,
-            )
-
-        }
-
+        Text(
+            modifier = Modifier
+                .alpha(alpha)
+                .padding(start= marginLR.dp, end = marginLR.dp)
+                .weight(weight),
+            text = model.groupName,
+            color = Fronton.color.textPrimary,
+            overflow = TextOverflow.Ellipsis,
+            fontSize = textSize.sp,
+            maxLines = maxTextLines,
+        )
         Icon(
             modifier = Modifier
                 .size(eyeIconSize.dp)
                 .clip(CircleShape)
-                .alpha(eyeAlpha)
-                .weight(weightEye),
+                .alpha(eyeAlpha),
             painter = painterResource(id = R.drawable.ic_eye),
+            tint = Fronton.color.textPrimary,
             contentDescription = null
         )
     }
@@ -159,24 +140,16 @@ private fun SubscriptionDataView(model: SubscriptionCellModel) {
 
 @Composable
 fun SubscriptionGrayCell() {
-    val configuration = LocalConfiguration.current
-
-    if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
         Row(modifier = Modifier.fillMaxWidth()) {
             SubscriptionGrayImageView()
         }
-    else {
-        Column {
-            SubscriptionGrayImageView()
-        }
-    }
 }
 
 @Composable
 private fun SubscriptionGrayImageView() {
     Box(
         modifier = Modifier
-            .padding(all = padding.dp)
+            .padding(start= marginLR.dp, end = marginLR.dp, bottom = marginUD.dp, top = marginUD.dp)
             .background(Fronton.color.backgroundSecondary)
             .fillMaxWidth()
             .height(groupImageSize.dp)
