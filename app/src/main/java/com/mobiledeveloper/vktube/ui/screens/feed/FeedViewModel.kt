@@ -7,11 +7,11 @@ import com.mobiledeveloper.vktube.data.cache.InMemoryCache
 import com.mobiledeveloper.vktube.data.videos.GetUserVideoUseCase
 import com.mobiledeveloper.vktube.data.videos.VideosRepository
 import com.mobiledeveloper.vktube.ui.common.cell.VideoCellGroupInfo
-import com.mobiledeveloper.vktube.ui.common.cell.VideoCellModel
 import com.mobiledeveloper.vktube.ui.common.cell.mapToVideoCellModel
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedAction
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedEvent
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedState
+import com.mobiledeveloper.vktube.ui.screens.feed.models.VideoCellModel
 import com.vk.dto.common.id.abs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
