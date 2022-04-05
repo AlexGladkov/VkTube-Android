@@ -66,7 +66,7 @@ private fun SubscriptionDataView(
     toggleIgnore: (SubscriptionCellModel) -> Unit
 ) {
 
-    var isChecked by remember { mutableStateOf(!model.isIgnored) }
+    var isChecked = !model.isIgnored
 
     Row(
         modifier = Modifier
