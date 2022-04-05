@@ -34,7 +34,7 @@ fun NavigationGraph() {
             val feedViewModel = hiltViewModel<FeedViewModel>()
             FeedScreen(navController, feedViewModel)
         }
-        composable(NavigationTree.Root.BlackListGroups.name) {
+        composable(NavigationTree.Root.SubscriptionsList.name) {
             val blackListViewModel = hiltViewModel<SubscriptionsListViewModel>()
             SubscriptionsListScreen(navController, blackListViewModel)
         }
