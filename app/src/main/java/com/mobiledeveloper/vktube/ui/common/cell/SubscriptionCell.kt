@@ -6,9 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -47,39 +45,51 @@ private object SubscriptionListParameters{
 }
 
 @Composable
-fun SubscriptionCell(model: SubscriptionCellModel) {
+fun SubscriptionCell(
+    model: SubscriptionCellModel,
+    addToIgnore: (Long) -> Unit,
+    removeFromIgnore: (Long) -> Unit,
+    toggleIgnore: (SubscriptionCellModel) -> Unit
+) {
         Row(modifier = Modifier
             .fillMaxWidth()) {
-            SubscriptionDataView(model = model)
+            SubscriptionDataView(model = model, addToIgnore, removeFromIgnore, toggleIgnore)
         }
 }
 
 
 @Composable
-private fun SubscriptionDataView(model: SubscriptionCellModel) {
+private fun SubscriptionDataView(
+    model: SubscriptionCellModel,
+    addToIgnore: (Long) -> Unit,
+    removeFromIgnore: (Long) -> Unit,
+    toggleIgnore: (SubscriptionCellModel) -> Unit
+) {
 
-    val isChecked = remember {
-        mutableStateOf(!model.isIgnored)
-    }
+    var isChecked by remember { mutableStateOf(!model.isIgnored) }
+
     Row(
         modifier = Modifier
-            .padding(start= marginLR.dp, end = marginLR.dp, bottom = marginUD.dp, top = marginUD.dp)
             .clickable {
-                model.isIgnored = !model.isIgnored
-                isChecked.value = !model.isIgnored
+                isChecked = !isChecked
+                when (isChecked) {
+                    true -> removeFromIgnore.invoke(model.groupId)
+                    false -> addToIgnore.invoke(model.groupId)
+                }
+                toggleIgnore(model)
             }
+            .padding(horizontal = marginLR.dp, vertical = marginUD.dp)
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Start
-
+        horizontalArrangement = Arrangement.Start,
     ) {
 
-        val alpha = when (isChecked.value) {
+        val alpha = when (isChecked) {
             true -> 1f
             false -> ignoredAlpha
         }
 
-        val eyeAlpha = when (isChecked.value) {
+        val eyeAlpha = when (isChecked) {
             true -> 1f
             false -> eyeIgnoreAlpha
         }
@@ -97,7 +107,7 @@ private fun SubscriptionDataView(model: SubscriptionCellModel) {
         Text(
             modifier = Modifier
                 .alpha(alpha)
-                .padding(start= marginLR.dp, end = marginLR.dp)
+                .padding(start = marginLR.dp, end = marginLR.dp)
                 .weight(weight),
             text = model.groupName,
             color = Fronton.color.textPrimary,
@@ -128,7 +138,7 @@ fun SubscriptionGrayCell() {
 private fun SubscriptionGrayImageView() {
     Box(
         modifier = Modifier
-            .padding(start= marginLR.dp, end = marginLR.dp, bottom = marginUD.dp, top = marginUD.dp)
+            .padding(horizontal = marginLR.dp, vertical = marginUD.dp)
             .background(Fronton.color.backgroundSecondary)
             .fillMaxWidth()
             .height(groupImageSize.dp)

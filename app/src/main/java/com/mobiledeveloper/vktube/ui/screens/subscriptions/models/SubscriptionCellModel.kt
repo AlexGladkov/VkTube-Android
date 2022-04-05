@@ -4,5 +4,5 @@ data class SubscriptionCellModel(
     val groupId: Long,
     val groupIcon: String,
     val groupName: String,
-    var isIgnored: Boolean = false
+    val isIgnored: Boolean = false
 )

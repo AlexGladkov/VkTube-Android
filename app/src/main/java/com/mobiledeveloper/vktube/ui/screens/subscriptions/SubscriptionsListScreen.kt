@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mobiledeveloper.vktube.navigation.NavigationTree
 import com.mobiledeveloper.vktube.ui.common.cell.*
+import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionCellModel
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsListAction
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsListEvent
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsListState
@@ -25,13 +26,28 @@ fun SubscriptionsListScreen(
     val viewState by viewModel.viewStates().collectAsState()
     val viewAction by viewModel.viewActions().collectAsState(initial = null)
 
+    val addToIgnore = fun (id: Long) {
+        viewModel.obtainEvent(SubscriptionsListEvent.Add(id))
+    }
+
+    val removeFromIgnore = fun (id: Long) {
+        viewModel.obtainEvent(SubscriptionsListEvent.Remove(id))
+    }
+
+    val toggleIgnore = fun (item: SubscriptionCellModel) {
+        viewModel.obtainEvent(SubscriptionsListEvent.ToggleIgnore(item))
+    }
+
     BackHandler(enabled = true){
         viewModel.obtainEvent(SubscriptionsListEvent.Back)
     }
 
     Box(modifier = Modifier.background(color = Fronton.color.backgroundPrimary)) {
         SubscriptionsView(
-            viewState = viewState
+            viewState = viewState,
+            addToIgnore,
+            toggleIgnore,
+            removeFromIgnore
     )}
 
     LaunchedEffect(key1 = viewAction, block = {
@@ -49,32 +65,40 @@ fun SubscriptionsListScreen(
     LaunchedEffect(key1 = Unit, block = {
         viewModel.obtainEvent(SubscriptionsListEvent.ScreenShown)
     })
+
 }
 
 @Composable
 private fun SubscriptionsView(
-    viewState: SubscriptionsListState
+    viewState: SubscriptionsListState,
+    addToIgnore: (Long) -> Unit,
+    toggleIgnore: (SubscriptionCellModel) -> Unit,
+    removeFromIgnore: (Long) -> Unit
 ) {
     if (viewState.loading) {
         LoadingView()
     } else {
-        SubscriptionView(viewState)
+        SubscriptionView(viewState, addToIgnore, removeFromIgnore, toggleIgnore)
     }
 }
 
 @Composable
 private fun SubscriptionView(
-    viewState: SubscriptionsListState
+    viewState: SubscriptionsListState,
+    addToIgnore: (Long) -> Unit,
+    removeFromIgnore: (Long) -> Unit,
+    toggleIgnore: (SubscriptionCellModel) -> Unit
 ) {
      LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         items(
             items = viewState.items,
             key = { item -> item.groupId }
         ) { viewModel ->
-            SubscriptionCell(viewModel)
+            SubscriptionCell(viewModel, addToIgnore, removeFromIgnore, toggleIgnore)
         }
     }
 }
+
 
 @Composable
 private fun LoadingView() {

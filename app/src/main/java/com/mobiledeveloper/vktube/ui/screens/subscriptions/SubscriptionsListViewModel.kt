@@ -11,7 +11,7 @@ import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsL
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsListState
 import com.vk.sdk.api.groups.dto.GroupsGroupFull
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.*
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -25,18 +25,38 @@ class SubscriptionsListViewModel @Inject constructor(
         when (viewEvent) {
             SubscriptionsListEvent.ScreenShown -> onScreenShown()
             SubscriptionsListEvent.ClearAction -> clearAction()
-            is SubscriptionsListEvent.Back -> saveIgnoreListAndGoBack()
+            is SubscriptionsListEvent.Back -> goBack()
+            is SubscriptionsListEvent.Add -> add(viewEvent.id)
+            is SubscriptionsListEvent.Remove -> remove(viewEvent.id)
+            is SubscriptionsListEvent.ToggleIgnore -> toggleIgnored(viewEvent.item)
         }
     }
 
-    private fun saveIgnoreListAndGoBack() {
+    private fun goBack() {
+        clearAction()
+        viewAction = SubscriptionsListAction.BackToFeed
+    }
+
+    private fun remove(id: Long) {
         viewModelScope.launch {
-
-            val ignoreList = viewState.items.filter { it.isIgnored }.map { it.groupId }
+            val ignoreList = groupsLocalDataSource.loadIgnoreList() as MutableList
+            ignoreList.remove(id)
             groupsLocalDataSource.saveIgnoreList(ignoreList)
-
-            viewAction = SubscriptionsListAction.BackToFeed
         }
+    }
+
+    private fun add(id: Long) {
+        viewModelScope.launch {
+            val ignoreList = groupsLocalDataSource.loadIgnoreList() as MutableList
+            ignoreList.add(id)
+            groupsLocalDataSource.saveIgnoreList(ignoreList)
+        }
+    }
+
+    private fun toggleIgnored(item:SubscriptionCellModel) {
+        viewState = viewState.copy(
+            items = viewState.items.map { if (it.groupId == item.groupId) item.copy(isIgnored = !item.isIgnored) else it }
+        )
     }
 
     private fun clearAction() {
