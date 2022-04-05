@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mobiledeveloper.vktube.R
 import com.mobiledeveloper.vktube.navigation.NavigationTree
+import com.mobiledeveloper.vktube.navigation.NavigationTree.POP_UP_TO_AUTH
 import com.mobiledeveloper.vktube.ui.screens.settings.models.SettingsAction
 import com.mobiledeveloper.vktube.ui.screens.settings.models.SettingsEvent
 import com.mobiledeveloper.vktube.ui.theme.Fronton
@@ -29,7 +30,7 @@ fun SettingsScreen(
 
     Button(
         modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 16.dp)
+            .padding(16.dp)
             .fillMaxWidth()
             .wrapContentHeight(),
         colors = ButtonDefaults.buttonColors(backgroundColor = Fronton.color.controlPrimary),
@@ -42,7 +43,7 @@ fun SettingsScreen(
         when (viewAction) {
             is SettingsAction.NavigateLogin -> {
                 navController.navigate(NavigationTree.Root.Auth.name) {
-                    popUpTo(0)
+                    popUpTo(POP_UP_TO_AUTH)
                 }
             }
         }

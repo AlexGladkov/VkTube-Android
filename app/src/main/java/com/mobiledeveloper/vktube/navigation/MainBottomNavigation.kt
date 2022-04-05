@@ -45,7 +45,7 @@ fun MainBottomNavigation(navController: NavHostController) {
 }
 
 
-fun shouldShowBottomBar(backStackEntry: NavBackStackEntry?): Boolean {
+private fun shouldShowBottomBar(backStackEntry: NavBackStackEntry?): Boolean {
     return backStackEntry?.destination?.route in items.map { it.route }
 }
 
