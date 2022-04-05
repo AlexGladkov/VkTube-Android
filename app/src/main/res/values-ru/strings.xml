@@ -1,6 +1,5 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">VkTube</string>
-    <integer name="com_vk_sdk_AppId">8097985</integer>
 
     <string name="video_preview">Предпросмотр видео</string>
     <string name="user_image_preview">Предпросмотр аватарки человека</string>
@@ -42,11 +41,17 @@
     </plurals>
 
     <plurals name="views">
-        <item quantity="one">просмотр</item>
+        <item quantity="one" tools:ignore="ImpliedQuantity">просмотр</item>
         <item quantity="few">просмотра</item>
         <item quantity="many">просмотров</item>
         <item quantity="other">просмотра</item>
     </plurals>
-    <string name="logout_from_vk">Выйти из ВК</string>
+
+    <plurals name="subscribers">
+        <item quantity="one" tools:ignore="ImpliedQuantity">подписчик</item>
+        <item quantity="few">подписчиков</item>
+        <item quantity="many">подписчиков</item>
+        <item quantity="other">подписчиков</item>
+    </plurals>
 
 </resources>

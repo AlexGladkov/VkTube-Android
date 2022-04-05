@@ -1,5 +1,13 @@
 package com.mobiledeveloper.vktube.ui.screens.video
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.view.View
+import android.view.ViewGroup
+import android.webkit.WebChromeClient
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.lifecycle.viewModelScope
 import com.mobiledeveloper.vktube.base.BaseViewModel
 import com.mobiledeveloper.vktube.data.cache.InMemoryCache
@@ -13,9 +21,9 @@ import com.mobiledeveloper.vktube.ui.screens.video.models.VideoAction
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoEvent
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoViewState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.lang.Exception
-import java.lang.IllegalStateException
+import java.lang.ref.WeakReference
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,11 +44,86 @@ class VideoViewModel @Inject constructor(
             is VideoEvent.LikeClick -> performLike()
             is VideoEvent.CommentsClick -> showComments()
             is VideoEvent.ClearAction -> clearAction()
+            is VideoEvent.VideoLoading -> performVideoLoading()
+            VideoEvent.CloseCommentsClick -> closeComments()
+        }
+    }
+
+    private var webView: WeakReference<View>? = null
+
+    fun getWebView(context: Context, video: VideoCellModel, onVideoLoading: () -> Unit): View {
+        if (webView?.get() == null) {
+            val data = """
+                        <html>
+                            <head>
+                            <style>
+                                .frame {
+                                    width: 100%;
+                                    height: 100vh;
+                                    overflow: auto;
+                                }
+                            </style>
+                          
+                            </head>
+                            <body style="background:black">
+                                <iframe id="video" class="frame" src="${video.videoUrl}&autoplay=1" frameborder="0" allow="autoplay"/>
+                            </body>
+                        </html>
+                        """
+            val view = WebView(context).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                settings.apply {
+                    javaScriptEnabled = true
+                    layoutAlgorithm = WebSettings.LayoutAlgorithm.SINGLE_COLUMN
+                    loadWithOverviewMode = true
+                    useWideViewPort = true
+                    mediaPlaybackRequiresUserGesture = false
+                }
+
+                webViewClient = object : WebViewClient() {
+                    override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                        onVideoLoading.invoke()
+                        super.onPageStarted(view, url, favicon)
+                    }
+
+                    override fun onPageFinished(view: WebView?, url: String?) {
+                        onVideoLoading.invoke()
+                        super.onPageFinished(view, url)
+                    }
+                }
+                webChromeClient = object : WebChromeClient(){
+
+                }
+                loadData(data, "text/html", "utf-8")
+            }
+            webView = WeakReference(view)
+        }
+        val view = webView?.get()!!
+        (view.parent as ViewGroup?)?.removeView(view)
+        return view
+    }
+
+    private fun performVideoLoading() {
+        viewModelScope.launch {
+            delay(500)
+            when (viewState.isLoadingVideo) {
+                true -> viewState = viewState.copy(
+                    isLoadingVideo = false
+                )
+                false -> {
+                }
+                null -> viewState = viewState.copy(
+                    isLoadingVideo = true
+                )
+            }
         }
     }
 
     private fun performLike() {
-        viewModelScope.launch{
+        viewModelScope.launch {
             val video: VideoCellModel = viewState.video ?: return@launch
 
             if (video.likesByMe) {
@@ -51,8 +134,7 @@ class VideoViewModel @Inject constructor(
                     ),
                 )
                 likeRepository.unlike(video.videoId, video.ownerId)
-            }
-            else {
+            } else {
                 viewState = viewState.copy(
                     video = video.copy(
                         likesByMe = true,
@@ -73,22 +155,23 @@ class VideoViewModel @Inject constructor(
         viewModelScope.launch {
             val video = InMemoryCache.clickedVideos.first { it.videoId == videoId }
             val currentUser = userRepository.fetchLocalUser()
+            val ownerId = video.ownerId
 
             viewState = viewState.copy(
                 video = video,
                 currentUser = currentUser
             )
 
-
-            try {
-                val comments =
-                    commentsRepository.fetchCommentsForVideo(videoId = video.videoId, count = 20)
-                viewState = viewState.copy(
-                    comments = comments.items.map { it.mapToCommentCellModel() }
+            val comments =
+                commentsRepository.fetchCommentsForVideo(
+                    ownerId = ownerId,
+                    videoId = video.videoId,
+                    count = 20
                 )
-            } catch (e: Exception) {
-                println(e.localizedMessage)
-            }
+            viewState = viewState.copy(
+                comments = comments.items.map { it.mapToCommentCellModel() }
+            )
+            InMemoryCache.comments[videoId!!] = comments.items.map { it.mapToCommentCellModel() }
         }
     }
 
@@ -96,7 +179,17 @@ class VideoViewModel @Inject constructor(
         viewModelScope.launch {
             val storedUser = userRepository.fetchLocalUser()
             val userId = storedUser.userId
+            val ownerId = viewState.video?.ownerId ?: return@launch
             val currentComments = viewState.comments.toMutableList()
+
+            videoId?.let {
+                commentsRepository.addCommentForVideo(
+                    ownerId = ownerId,
+                    videoId = it,
+                    comment = comment
+                )
+            }
+
             currentComments.add(
                 CommentCellModel(
                     messageId = -1,
@@ -107,19 +200,11 @@ class VideoViewModel @Inject constructor(
                     avatar = storedUser.avatar
                 )
             )
+            InMemoryCache.comments[videoId!!] = currentComments
 
             viewState = viewState.copy(
                 comments = currentComments
             )
-
-
-            videoId?.let {
-                commentsRepository.addCommentForVideo(
-                    userId = userId,
-                    videoId = it,
-                    comment = comment
-                )
-            }
         }
     }
 
@@ -129,4 +214,15 @@ class VideoViewModel @Inject constructor(
         }
     }
 
+    private fun closeComments() {
+        viewModelScope.launch {
+            viewAction = VideoAction.CloseComments
+        }
+    }
+
+    private fun clearAction() {
+        viewModelScope.launch {
+            viewAction = null
+        }
+    }
 }

@@ -1,8 +1,8 @@
 package com.mobiledeveloper.vktube.ui.screens.video
 
-import android.webkit.WebSettings
-import android.webkit.WebView
-import android.webkit.*
+import android.content.Context
+import android.content.res.Configuration
+import android.view.View
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,22 +14,24 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.LifecycleOwner
 import coil.compose.AsyncImage
+import com.google.accompanist.insets.systemBarsPadding
+import com.google.accompanist.systemuicontroller.SystemUiController
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.mobiledeveloper.vktube.R
-import com.mobiledeveloper.vktube.extensions.VideoType
-import com.mobiledeveloper.vktube.extensions.extractVideoType
 import com.mobiledeveloper.vktube.ui.common.cell.VideoCellModel
 import com.mobiledeveloper.vktube.ui.common.views.VideoActionView
 import com.mobiledeveloper.vktube.ui.screens.comments.CommentCellModel
@@ -40,79 +42,145 @@ import com.mobiledeveloper.vktube.ui.screens.video.models.VideoViewState
 import com.mobiledeveloper.vktube.ui.theme.Fronton
 import com.mobiledeveloper.vktube.utils.DateUtil
 import com.mobiledeveloper.vktube.utils.NumberUtil
+import com.valentinilk.shimmer.shimmer
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
+@OptIn(
+    ExperimentalFoundationApi::class, ExperimentalMaterialApi::class,
+    androidx.compose.ui.ExperimentalComposeUiApi::class
+)
 @Composable
 fun VideoScreen(
     videoId: Long?,
-    videoViewModel: VideoViewModel
+    videoViewModel: VideoViewModel,
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
 ) {
     val viewState by videoViewModel.viewStates().collectAsState()
     val viewAction by videoViewModel.viewActions().collectAsState(initial = null)
 
     val configuration = LocalConfiguration.current
+
+    val systemUiController = rememberSystemUiController()
+
     val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
     val videoHeight = (screenWidth / 16) * 9
-    val bottomSheetPeekHeight = screenHeight - videoHeight
+    val bottomSheetPeekHeight = (screenHeight - videoHeight).coerceAtLeast(screenHeight / 2)
 
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed)
     )
-    var bottomSheetHeight by remember { mutableStateOf(0.dp) }
+    var bottomSheetHeight by remember(configuration.orientation) { mutableStateOf(0.dp) }
     val coroutineScope = rememberCoroutineScope()
 
-    BottomSheetScaffold(
-        scaffoldState = bottomSheetScaffoldState,
-        sheetContent = {
-            CommentsScreen(viewState = viewState,
-                onSendClick = {
-                    videoViewModel.obtainEvent(VideoEvent.SendComment(it))
-                }, onCloseClick = {
+    val video = viewState.video
 
-                })
-        },
-        sheetPeekHeight = bottomSheetHeight
-    ) {
-        VideoScreenView(
-            viewState = viewState,
-            onCommentsClick = {
-                videoViewModel.obtainEvent(VideoEvent.CommentsClick)
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    if (isLandscape) {
+        if (video != null) {
+            VideoPlayerView(
+                modifier = Modifier
+                    .background(color = Color.Black)
+                    .pointerInteropFilter {
+                        coroutineScope.launch {
+                            delay(500)
+                            setBarsVisible(systemUiController, false)
+                        }
+
+                        false
+                    },
+                getView = {
+                    val view = videoViewModel.getWebView(it, video, onVideoLoading = {
+                        videoViewModel.obtainEvent(VideoEvent.VideoLoading)
+                    })
+                    view
+                },
+                isLoadingVideo = viewState.isLoadingVideo
+            )
+        }
+    } else {
+        BottomSheetScaffold(
+            modifier = Modifier.systemBarsPadding(),
+            scaffoldState = bottomSheetScaffoldState,
+            sheetContent = {
+                CommentsScreen(viewState = viewState,
+                    onSendClick = {
+                        videoViewModel.obtainEvent(VideoEvent.SendComment(it))
+                    }, onCloseClick = {
+                        videoViewModel.obtainEvent(VideoEvent.CloseCommentsClick)
+                    })
             },
-            onLikeClick = {
-                videoViewModel.obtainEvent(VideoEvent.LikeClick)
-            }
-        )
+            sheetPeekHeight = bottomSheetHeight
+        ) {
+            VideoScreenView(
+                getView = { context, video ->
+                    videoViewModel.getWebView(context, video, onVideoLoading = {
+                        videoViewModel.obtainEvent(VideoEvent.VideoLoading)
+                    })
+                },
+                viewState = viewState,
+                onCommentsClick = {
+                    videoViewModel.obtainEvent(VideoEvent.CommentsClick)
+                },
+                onLikeClick = {
+                    videoViewModel.obtainEvent(VideoEvent.LikeClick)
+                },
+            )
+        }
     }
 
     LaunchedEffect(key1 = viewAction, block = {
+        videoViewModel.obtainEvent(VideoEvent.ClearAction)
+
         when (viewAction) {
             VideoAction.OpenComments -> {
                 coroutineScope.launch {
-                    if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
-                        bottomSheetHeight = bottomSheetPeekHeight
-                        bottomSheetScaffoldState.bottomSheetState.expand()
-                    } else {
-                        bottomSheetHeight = 0.dp
-                        bottomSheetScaffoldState.bottomSheetState.collapse()
-                    }
+                    bottomSheetHeight = bottomSheetPeekHeight
+                    bottomSheetScaffoldState.bottomSheetState.expand()
                 }
             }
+            VideoAction.CloseComments -> {
+                coroutineScope.launch {
+                    bottomSheetHeight = 0.dp
+                    bottomSheetScaffoldState.bottomSheetState.collapse()
+                }
+            }
+            null -> {
+                // ignore
+            }
         }
-
-        videoViewModel.obtainEvent(VideoEvent.ClearAction)
     })
 
     LaunchedEffect(key1 = Unit, block = {
         videoViewModel.obtainEvent(VideoEvent.LaunchVideo(videoId))
     })
+
+    LaunchedEffect(configuration.orientation) {
+        coroutineScope.launch {
+            val fullScreen = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+            setBarsVisible(systemUiController, !fullScreen)
+        }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        onDispose {
+            setBarsVisible(systemUiController, true)
+        }
+    }
+}
+
+private fun setBarsVisible(systemUiController: SystemUiController, visible: Boolean) {
+    systemUiController.isSystemBarsVisible = visible
+    systemUiController.isStatusBarVisible = visible
+    systemUiController.isNavigationBarVisible = visible
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun VideoScreenView(
+    getView: (context: Context, video: VideoCellModel) -> View,
     viewState: VideoViewState,
     onCommentsClick: () -> Unit,
     onLikeClick: () -> Unit
@@ -123,7 +191,12 @@ fun VideoScreenView(
 
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         stickyHeader {
-            VideoPlayerView(video)
+            VideoPlayerView(
+                getView = {
+                    getView(it, video)
+                },
+                isLoadingVideo = viewState.isLoadingVideo
+            )
         }
 
         item {
@@ -136,8 +209,13 @@ fun VideoScreenView(
             )
         }
 
-        val views = NumberUtil.formatNumberShort(video.viewsCount, context, R.plurals.number_short_format, R.plurals.views)
-        val date = DateUtil.getTimeAgo(video.dateAdded,context)
+        val views = NumberUtil.formatNumberShort(
+            video.viewsCount,
+            context,
+            R.plurals.number_short_format,
+            R.plurals.views
+        )
+        val date = DateUtil.getTimeAgo(video.dateAdded, context)
 
         item {
             Text(
@@ -206,6 +284,9 @@ private fun VideoActionsRow(
 
 @Composable
 private fun VideoUserRow(video: VideoCellModel) {
+
+    val context = LocalContext.current
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -215,19 +296,26 @@ private fun VideoUserRow(video: VideoCellModel) {
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape),
-            model = video.userImage,
+            model = video.groupInfo.userImage,
             contentDescription = stringResource(id = R.string.comment_user_image_preview),
             contentScale = ContentScale.Crop
         )
 
+        val subscribers = NumberUtil.formatNumberShort(
+            video.groupInfo.subscribers,
+            context,
+            R.plurals.number_short_format,
+            R.plurals.subscribers
+        )
+
         Column(modifier = Modifier.padding(start = 16.dp)) {
             Text(
-                text = video.userName,
+                text = video.groupInfo.userName,
                 color = Fronton.color.textPrimary,
                 style = Fronton.typography.body.medium.long
             )
             Text(
-                text = video.subscribers,
+                text = subscribers,
                 color = Fronton.color.textSecondary,
                 style = Fronton.typography.body.small.short
             )
@@ -320,68 +408,29 @@ private fun VideoCommentsView(
 }
 
 @Composable
-private fun VideoPlayerView(video: VideoCellModel) {
+private fun VideoPlayerView(
+    modifier: Modifier = Modifier,
+    getView: (context: Context) -> View,
+    isLoadingVideo: Boolean?
+) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val videoHeight = (screenWidth / 16) * 9
-
-    when (video.videoUrl.extractVideoType()) {
-        VideoType.Vk -> VkVideoPlayer(url = video.videoUrl, height = videoHeight, width = screenWidth)
-        VideoType.Youtube -> YoutubePlayer(url = video.videoUrl, height = videoHeight, width = screenWidth)
+    val fullScreen = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    if (isLoadingVideo != true) {
+        AndroidView(
+            modifier = modifier
+                .fillMaxWidth()
+                .height(videoHeight),
+            factory = { context -> getView(context) }
+        )
+    } else {
+        Box(
+            modifier = modifier
+                .background(if (fullScreen) Color.Black else Fronton.color.backgroundSecondary)
+                .fillMaxWidth()
+                .height(videoHeight)
+                .shimmer()
+        )
     }
 }
-
-@Composable
-private fun VkVideoPlayer(url: String, width: Dp, height: Dp) {
-    val widthPx = with(LocalDensity.current) { width.toPx() }
-    val heightPx = with(LocalDensity.current) { height.toPx() }
-
-    AndroidView(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(height),
-        factory = {
-            val dataUrl = "<html>" +
-                    "<body>" +
-                    "<iframe width=\"$widthPx\" height=\"$heightPx\" src=\"" + url + "\" frameborder=\"0\" allowfullscreen/>" +
-                    "</body>" +
-                    "</html>"
-
-            WebView(it).apply {
-                settings.javaScriptEnabled = true
-                settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.SINGLE_COLUMN
-                settings.loadWithOverviewMode = true
-                settings.useWideViewPort = true
-
-                loadData(dataUrl, "text/html", "utf-8")
-            }
-        })
-}
-
-@Composable
-private fun YoutubePlayer(url: String, width: Dp, height: Dp) {
-    val widthPx = with(LocalDensity.current) { width.toPx() }
-    val heightPx = with(LocalDensity.current) { height.toPx() }
-
-    AndroidView(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(height),
-        factory = {
-            val dataUrl = "<html>" +
-                    "<body>" +
-                    "<iframe width=\"$widthPx\" height=\"$heightPx\" src=\"" + url + "\" frameborder=\"0\" allowfullscreen/>" +
-                    "</body>" +
-                    "</html>"
-
-            WebView(it).apply {
-                settings.javaScriptEnabled = true
-                settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.SINGLE_COLUMN
-                settings.loadWithOverviewMode = true
-                settings.useWideViewPort = true
-
-                loadData(dataUrl, "text/html", "utf-8")
-            }
-        })
-}
-

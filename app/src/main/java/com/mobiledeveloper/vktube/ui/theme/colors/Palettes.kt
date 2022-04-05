@@ -3,7 +3,7 @@ package com.mobiledeveloper.vktube.ui.theme.colors
 import androidx.compose.ui.graphics.Color
 
 internal val lightPalette = FrontonColors(
-
+    isLight = true,
     //Brand
     brandPrimary = Color(0xFF5AB030),
     brandMinor = Color(0xFF000000),
