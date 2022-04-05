@@ -1,5 +1,13 @@
 package com.mobiledeveloper.vktube.ui.screens.video
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.view.View
+import android.view.ViewGroup
+import android.webkit.WebChromeClient
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.lifecycle.viewModelScope
 import com.mobiledeveloper.vktube.base.BaseViewModel
 import com.mobiledeveloper.vktube.data.cache.InMemoryCache
@@ -15,6 +23,7 @@ import com.vk.sdk.api.wall.dto.WallWallComment
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.lang.ref.WeakReference
 import javax.inject.Inject
 
 @HiltViewModel
@@ -40,6 +49,63 @@ class VideoViewModel @Inject constructor(
         }
     }
 
+    private var webView: WeakReference<View>? = null
+
+    fun getWebView(context: Context, video: VideoCellModel, onVideoLoading: () -> Unit): View {
+        if (webView?.get() == null) {
+            val data = """
+                        <html>
+                            <head>
+                            <style>
+                                .frame {
+                                    width: 100%;
+                                    height: 100vh;
+                                    overflow: auto;
+                                }
+                            </style>
+                          
+                            </head>
+                            <body style="background:black">
+                                <iframe id="video" class="frame" src="${video.videoUrl}&autoplay=1" frameborder="0" allow="autoplay"/>
+                            </body>
+                        </html>
+                        """
+            val view = WebView(context).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                settings.apply {
+                    javaScriptEnabled = true
+                    layoutAlgorithm = WebSettings.LayoutAlgorithm.SINGLE_COLUMN
+                    loadWithOverviewMode = true
+                    useWideViewPort = true
+                    mediaPlaybackRequiresUserGesture = false
+                }
+
+                webViewClient = object : WebViewClient() {
+                    override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                        onVideoLoading.invoke()
+                        super.onPageStarted(view, url, favicon)
+                    }
+
+                    override fun onPageFinished(view: WebView?, url: String?) {
+                        onVideoLoading.invoke()
+                        super.onPageFinished(view, url)
+                    }
+                }
+                webChromeClient = object : WebChromeClient(){
+
+                }
+                loadData(data, "text/html", "utf-8")
+            }
+            webView = WeakReference(view)
+        }
+        val view = webView?.get()!!
+        (view.parent as ViewGroup?)?.removeView(view)
+        return view
+    }
+
     private fun performVideoLoading() {
         viewModelScope.launch {
             delay(500)
@@ -47,7 +113,8 @@ class VideoViewModel @Inject constructor(
                 true -> viewState = viewState.copy(
                     isLoadingVideo = false
                 )
-                false -> {}
+                false -> {
+                }
                 null -> viewState = viewState.copy(
                     isLoadingVideo = true
                 )
