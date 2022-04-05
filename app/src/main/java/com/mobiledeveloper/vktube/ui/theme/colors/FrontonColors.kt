@@ -4,7 +4,6 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 data class FrontonColors(
-    val isLight: Boolean,
     // Text Colors
     val textPrimary: Color,
     val textSecondary: Color,

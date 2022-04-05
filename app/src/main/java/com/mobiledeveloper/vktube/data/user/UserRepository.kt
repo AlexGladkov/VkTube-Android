@@ -1,36 +1,48 @@
 package com.mobiledeveloper.vktube.data.user
 
 import com.vk.api.sdk.VK
+import com.vk.api.sdk.VKApiCallback
+import com.vk.dto.common.id.UserId
 import com.vk.sdk.api.users.UsersService
 import com.vk.sdk.api.users.dto.UsersFields
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import com.vk.sdk.api.users.dto.UsersUserFull
+import com.vk.sdk.api.video.VideoService
+import com.vk.sdk.api.video.dto.VideoGetCommentsResponse
 import javax.inject.Inject
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-@Suppress("BlockingMethodInNonBlockingContext")
 class UserRepository @Inject constructor(
-    private val localDataSource: UserLocalDataSource
+    val localDataSource: UserLocalDataSource
 ) {
-    suspend fun fetchAndSaveUser(): Boolean = withContext(Dispatchers.IO) {
-        suspendCoroutine { continuation ->
-            val request = UsersService().usersGet(
-                userIds = listOf(VK.getUserId()),
-                fields = listOf(
-                    UsersFields.BIRTHDATE, UsersFields.PHOTO_200,
-                    UsersFields.SCREEN_NAME
-                )
-            )
-            try {
-                val result = VK.executeSync(request)
-                println("User ${result.first()}")
-                localDataSource.saveUser(result.first())
-                continuation.resume(true)
-            } catch (ex: Throwable) {
-                VK.logout()
-                continuation.resume(false)
-            }
+
+    suspend fun fetchAndSaveUser(): Boolean {
+        return suspendCoroutine { continuation ->
+            VK.execute(
+                UsersService().usersGet(
+                    userIds = listOf(VK.getUserId()),
+                    fields = listOf(
+                        UsersFields.BIRTHDATE, UsersFields.PHOTO_200,
+                        UsersFields.SCREEN_NAME
+                    )
+                ),
+                object : VKApiCallback<List<UsersUserFull>> {
+                    override fun fail(error: Exception) {
+                        VK.logout()
+                        continuation.resume(false)
+                    }
+
+                    override fun success(result: List<UsersUserFull>) {
+                        try {
+                            println("User ${result.first()}")
+                            localDataSource.saveUser(result.first())
+                            continuation.resume(true)
+                        } catch (e: java.lang.Exception) {
+                            continuation.resume(false)
+                        }
+                    }
+                })
         }
     }
 

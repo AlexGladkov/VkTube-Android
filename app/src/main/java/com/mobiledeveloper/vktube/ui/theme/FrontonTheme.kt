@@ -35,6 +35,7 @@ fun FrontonTheme(
 }
 
 object Fronton {
+
     val color: FrontonColors
         @Composable
         get() = LocalFrontonColors.current

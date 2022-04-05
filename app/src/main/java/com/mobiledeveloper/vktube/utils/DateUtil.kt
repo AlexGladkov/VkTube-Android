@@ -11,37 +11,47 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 object DateUtil {
+
+
     private const val UI_DATE_FORMAT = "dd MMM yyyy"
 
-    private val dateFormat by lazy {
-        SimpleDateFormat(UI_DATE_FORMAT, Locale.getDefault())
-    }
-
     fun getTimeAgo(unixTime: Int, context: Context): String {
+
         val res = context.resources
 
+        val nowTime = System.currentTimeMillis()
         val time = unixTime * 1000L
-        val passedTime = System.currentTimeMillis() - time
 
-        val days = TimeUnit.MILLISECONDS.toDays(passedTime).toInt()
-        if (days > 0) return getDate(time)
+        val seconds = TimeUnit.MILLISECONDS.toSeconds(nowTime - time).toInt()
+        val minutes = TimeUnit.MILLISECONDS.toMinutes(nowTime - time).toInt()
+        val hours = TimeUnit.MILLISECONDS.toHours(nowTime - time).toInt()
+        val days = TimeUnit.MILLISECONDS.toDays(nowTime - time).toInt()
 
-        val hours = TimeUnit.MILLISECONDS.toHours(passedTime).toInt()
-        if (hours > 0) return res.getQuantityString(R.plurals.hours, hours, hours)
-
-        val minutes = TimeUnit.MILLISECONDS.toMinutes(passedTime).toInt()
-        if (minutes > 0) return res.getQuantityString(R.plurals.minutes, minutes, minutes)
-
-        val seconds = TimeUnit.MILLISECONDS.toSeconds(passedTime).toInt()
-        return res.getQuantityString(R.plurals.seconds, seconds, seconds)
+        return when {
+            days > 0 -> getDate(time, UI_DATE_FORMAT)
+            hours > 0 -> getTimeWithDescriptor(hours, res, R.plurals.hours)
+            minutes > 0 -> getTimeWithDescriptor(minutes, res, R.plurals.minutes)
+            else -> getTimeWithDescriptor(seconds, res, R.plurals.seconds)
+        }
     }
 
+    private fun getTimeWithDescriptor(value: Int, res: Resources, idDescriptor: Int): String {
+        return with(value) {
+            when {
+                mod(10) == 1 -> res.getQuantityString(idDescriptor, ONE, value)
+                mod(10) in 2..4 -> res.getQuantityString(idDescriptor, FEW, value)
+                mod(10) in 5..9 || mod(10) == 0 -> res.getQuantityString(idDescriptor, MANY, value)
+                else -> ""
+            }
+        }
+    }
 
-    private fun getDate(milliSeconds: Long): String {
+    private fun getDate(milliSeconds: Long, dateFormat: String): String {
+        val formatter = SimpleDateFormat(dateFormat, Locale.getDefault())
         val calendar: Calendar = Calendar.getInstance()
 
         calendar.timeInMillis = milliSeconds
 
-        return dateFormat.format(calendar.time)
+        return formatter.format(calendar.time)
     }
 }

@@ -1,28 +1,23 @@
 package com.mobiledeveloper.vktube.ui.screens.feed
 
-import android.content.res.Configuration
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.runtime.*
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.google.accompanist.insets.systemBarsPadding
 import com.mobiledeveloper.vktube.navigation.NavigationTree
-import com.mobiledeveloper.vktube.ui.common.cell.Size
 import com.mobiledeveloper.vktube.ui.common.cell.VideoCell
 import com.mobiledeveloper.vktube.ui.common.cell.VideoCellModel
 import com.mobiledeveloper.vktube.ui.common.cell.VideoGrayCell
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedAction
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedEvent
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedState
-import com.mobiledeveloper.vktube.ui.theme.Fronton
 
 @Composable
 fun FeedScreen(
@@ -32,35 +27,21 @@ fun FeedScreen(
     val viewState by feedViewModel.viewStates().collectAsState()
     val viewAction by feedViewModel.viewActions().collectAsState(initial = null)
 
-    Box(modifier = Modifier
-        .systemBarsPadding()
-        .background(color = Fronton.color.backgroundPrimary)) {
-        FeedView(
-            viewState = viewState,
-            onVideoClick = {
-                feedViewModel.obtainEvent(FeedEvent.VideoClicked(it))
-            },
-            onScroll = { lastVisibleItemIndex, screenItemsCount ->
-                feedViewModel.obtainEvent(
-                    FeedEvent.OnScroll(
-                        lastVisibleItemIndex,
-                        screenItemsCount
-                    )
-                )
-            }
-        )
-    }
+    FeedView(
+        viewState = viewState,
+        onVideoClick = {
+            feedViewModel.obtainEvent(FeedEvent.VideoClicked(it))
+        }
+    )
 
     LaunchedEffect(key1 = viewAction, block = {
-        feedViewModel.obtainEvent(FeedEvent.ClearAction)
         when (viewAction) {
             is FeedAction.OpenVideoDetail -> {
                 navController.navigate("${NavigationTree.Root.Detail.name}/${(viewAction as FeedAction.OpenVideoDetail).videoId}")
             }
-            null -> {
-                // ignore
-            }
         }
+
+        feedViewModel.obtainEvent(FeedEvent.ClearAction)
     })
 
     LaunchedEffect(key1 = Unit, block = {
@@ -69,61 +50,21 @@ fun FeedScreen(
 }
 
 @Composable
-private fun FeedView(
-    viewState: FeedState, onVideoClick: (VideoCellModel) -> Unit,
-    onScroll: (lastVisibleItemIndex: Int, screenItemsCount: Int) -> Unit
-) {
-    val configuration = LocalConfiguration.current
-
-    val previewSize = remember(configuration.orientation) {
-        if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            val height = configuration.screenHeightDp.dp / 3
-            Size(height * 16 / 9, height)
-        } else {
-            Size(configuration.screenWidthDp.dp + 1.dp, configuration.screenWidthDp.dp / 16 * 9)
-        }
-    }
-    if (viewState.loading) {
-        LoadingView(previewSize)
-    } else {
-        DataView(viewState, previewSize, onVideoClick, onScroll)
-    }
-}
-
-@Composable
-private fun DataView(
-    viewState: FeedState,
-    previewSize: Size,
-    onVideoClick: (VideoCellModel) -> Unit,
-    onScroll: (lastVisibleItemIndex: Int, screenItemsCount: Int) -> Unit
-) {
-    val state: LazyListState = rememberLazyListState()
-    val lastVisibleItemIndex = state.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-    val screenItemsCount = state.layoutInfo.visibleItemsInfo.count()
-    LaunchedEffect(lastVisibleItemIndex) {
-        onScroll(lastVisibleItemIndex, screenItemsCount)
-    }
-    LazyColumn(
-        state = state,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        items(
-            items = viewState.items,
-            key = { item -> item.id }
-        ) { viewModel ->
-            VideoCell(viewModel, previewSize) {
-                onVideoClick.invoke(viewModel)
+private fun FeedView(viewState: FeedState, onVideoClick: (VideoCellModel) -> Unit) {
+    LazyColumn {
+        if (viewState.items.isEmpty()) {
+            repeat(10) {
+                item {
+                    VideoGrayCell()
+                }
             }
-        }
-    }
-}
-
-@Composable
-private fun LoadingView(previewSize: Size) {
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        repeat(10) {
-            item {
-                VideoGrayCell(previewSize)
+        } else {
+            viewState.items.forEach {
+                item {
+                    VideoCell(it) {
+                        onVideoClick.invoke(it)
+                    }
+                }
             }
         }
     }

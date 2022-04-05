@@ -31,9 +31,7 @@ fun CommentsScreen(
     val views = NumberUtil.formatNumberShort(viewState.video?.viewsCount ?: 0 , context, R.plurals.number_short_format, R.plurals.views)
 
     Column {
-        CommentsHeaderView(count = views) {
-            onCloseClick()
-        }
+        CommentsHeaderView(count = views)
         CommentsAddView(viewState, onSendClick)
         Divider(thickness = 1.dp, color = Fronton.color.controlMinor)
         CommentsList(viewState)
@@ -41,15 +39,11 @@ fun CommentsScreen(
 }
 
 @Composable
-private fun CommentsHeaderView(count: String,
-                               onCloseClick: () -> Unit,) {
+private fun CommentsHeaderView(count: String) {
     Column(
         modifier = Modifier
             .background(Fronton.color.backgroundSecondary)
             .height(80.dp)
-            .clickable {
-                onCloseClick()
-            }
     ) {
         Spacer(modifier = Modifier.weight(1f))
 

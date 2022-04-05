@@ -12,6 +12,7 @@
     <string name="comments">Comments</string>
     <string name="enter_comment_text">Enter comment text</string>
     <string name="login_to_vk">Sign up VK</string>
+    <string name="logout_from_vk">Log out from VK</string>
 
     <plurals name="seconds">
         <item quantity="one">%1d second ago</item>
@@ -46,13 +47,6 @@
         <item quantity="few">views</item>
         <item quantity="many">views</item>
         <item quantity="other">views</item>
-    </plurals>
-
-    <plurals name="subscribers">
-        <item quantity="one">subscriber</item>
-        <item quantity="few">subscribers</item>
-        <item quantity="many">subscribers</item>
-        <item quantity="other">subscribers</item>
     </plurals>
 
 </resources>

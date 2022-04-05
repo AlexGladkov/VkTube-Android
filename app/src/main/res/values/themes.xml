@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
 
     <style name="Theme.VkTube" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:forceDarkAllowed" tools:ignore="NewApi">false</item>
         <item name="android:statusBarColor">@color/purple_700</item>
     </style>
 </resources>
