@@ -1,15 +1,14 @@
 package com.mobiledeveloper.vktube.ui.screens.settings
 
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -21,6 +20,7 @@ import com.mobiledeveloper.vktube.ui.screens.settings.models.SettingsAction
 import com.mobiledeveloper.vktube.ui.screens.settings.models.SettingsEvent
 import com.mobiledeveloper.vktube.ui.theme.Fronton
 
+
 @Composable
 fun SettingsScreen(
     settingsViewModel: SettingsViewModel,
@@ -28,15 +28,16 @@ fun SettingsScreen(
 ) {
     val viewAction by settingsViewModel.viewActions().collectAsState(initial = null)
 
-    Button(
+    Column(
         modifier = Modifier
             .padding(16.dp)
             .fillMaxWidth()
-            .wrapContentHeight(),
-        colors = ButtonDefaults.buttonColors(backgroundColor = Fronton.color.controlPrimary),
-        onClick = { settingsViewModel.obtainEvent(SettingsEvent.LogOut) }
+            .wrapContentHeight()
     ) {
-        Text(text = stringResource(id = R.string.logout_from_vk), color = Fronton.color.textInvert)
+        SettingsItem(modifier = Modifier,
+            title = stringResource(id = R.string.logout_from_vk),
+            onClick = { settingsViewModel.obtainEvent(SettingsEvent.LogOut) }
+        )
     }
 
     LaunchedEffect(key1 = viewAction, block = {
@@ -46,7 +47,43 @@ fun SettingsScreen(
                     popUpTo(POP_UP_TO_AUTH)
                 }
             }
+            null -> {
+                // ignore
+            }
         }
         settingsViewModel.obtainEvent(SettingsEvent.ClearAction)
     })
+}
+
+
+@Composable
+private fun SettingsItem(
+    modifier: Modifier = Modifier,
+    title: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(54.dp)
+            .clickable {
+                onClick()
+            }
+            .background(color=Fronton.color.backgroundSecondary)
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+//        Icon(
+//            modifier = Modifier.size(24.dp),
+//            tint = AppTheme.colors.secondaryVariant,
+//            painter = icon,
+//            contentDescription = null
+//        )
+        Text(
+            text = title,
+            color = Fronton.color.textPrimary,
+            modifier = Modifier.padding(start = 16.dp),
+            maxLines = 1,
+        )
+    }
 }
