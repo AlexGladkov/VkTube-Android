@@ -11,13 +11,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.mobiledeveloper.vktube.R
 import com.mobiledeveloper.vktube.navigation.NavigationTree
 import com.mobiledeveloper.vktube.navigation.NavigationTree.POP_UP_TO_AUTH
 import com.mobiledeveloper.vktube.ui.screens.settings.SettingsScreenParameters.heightItem
 import com.mobiledeveloper.vktube.ui.screens.settings.SettingsScreenParameters.marginLeftText
+import com.mobiledeveloper.vktube.ui.screens.settings.SettingsScreenParameters.sizeText
 import com.mobiledeveloper.vktube.ui.screens.settings.SettingsScreenParameters.spaceBetweenItems
 import com.mobiledeveloper.vktube.ui.screens.settings.models.SettingsAction
 import com.mobiledeveloper.vktube.ui.screens.settings.models.SettingsEvent
@@ -27,6 +30,7 @@ private object SettingsScreenParameters{
     const val spaceBetweenItems = 4
     const val marginLeftText = 16
     const val heightItem = 54
+    const val sizeText = 18
 }
 
 @Composable
@@ -88,16 +92,13 @@ private fun SettingsItem(
             .padding(vertical = spaceBetweenItems.dp)
             .background(color =  Fronton.color.controlPrimary),verticalAlignment = Alignment.CenterVertically
     ) {
-//        Icon(
-//            modifier = Modifier.size(24.dp),
-//            tint = AppTheme.colors.secondaryVariant,
-//            painter = icon,
-//            contentDescription = null
-//        )
+
         Text(
             text = title,
             color = Fronton.color.textInvert,
             modifier = Modifier.padding(start = marginLeftText.dp),
+            fontSize = sizeText.sp,
+            overflow = TextOverflow.Ellipsis,
             maxLines = 1,
         )
     }
