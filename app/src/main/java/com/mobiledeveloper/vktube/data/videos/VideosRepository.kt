@@ -28,18 +28,14 @@ class VideosRepository @Inject constructor() {
     suspend fun fetchVideos(
         groupIds: List<Long>,
         count: Int
-    ): List<VideoVideoFull> = withContext(Dispatchers.IO) {
-        val result = try {
-            fetchBatchVideos(groupIds.map { -it.absoluteValue }, count)
-        } catch (ex: Throwable) {
-            ex.printStackTrace()
-            emptyList()
-        }
-        withContext(Dispatchers.Default) {
-            result.map { response ->
-                response.items
-            }.flatten().sortedByDescending { it.addingDate }
-        }
+    ): List<VideoVideoFull> {
+        return fetchBatchVideoFulls(groupIds.map {
+            LoadSettings(
+                groupId = -it.absoluteValue,
+                count = count,
+                offset = 0
+            )
+        })
     }
 
     suspend fun fetchVideos(
@@ -60,41 +56,61 @@ class VideosRepository @Inject constructor() {
             VK.executeSync(videoGetRequest)
         }
 
+    suspend fun fetchBatchVideoFulls(
+        groupsParams: List<LoadSettings>
+    ): List<VideoVideoFull> {
+        val result = try {
+            fetchBatchVideos(groupsParams)
+        } catch (ex: Throwable) {
+            ex.printStackTrace()
+            emptyList()
+        }
+        return withContext(Dispatchers.Default) {
+            result.map { response ->
+                response.items
+            }.flatten().sortedByDescending { it.addingDate }
+        }
+    }
+
     private suspend fun fetchBatchVideos(
-        groupIds: List<Long>,
-        count: Int
+        groupsParams: List<LoadSettings>
     ): List<VideoGetResponse> =
         withContext(Dispatchers.IO) {
-            VK.executeSync(GroupsVideosCommand(groupIds, count = count, offset = 0))
+            VK.executeSync(GroupsVideosCommand(groupsParams))
         }
 
     class GroupsVideosCommand(
-        private val ownerIds: List<Long>,
-        private val count: Int,
-        private val offset: Int
+        private val groupsParams: List<LoadSettings>
     ) : ApiCommand<List<VideoGetResponse>>() {
         override fun onExecute(manager: VKApiManager): List<VideoGetResponse> {
-            return ownerIds.toList().chunked(CHUNK_LIMIT).map { chunk ->
-                val code = chunk
-                    .map { id ->
-                        "API.video.get({\"owner_id\":$id,\"count\":$count,\"offset\":$offset})"
-                    }.toString()
+            return groupsParams
+                .chunked(CHUNK_LIMIT)
+                .map { chunk ->
+                    val code = chunk
+                        .map { settings ->
+                            val params = mapOf(
+                                "owner_id" to settings.groupId,
+                                "count" to settings.count,
+                                "offset" to settings.offset
+                            ).map { "${it.key}:${it.value}" }.joinToString(",")
+                            """API.video.get({$params})"""
+                        }.toString()
 
-                val call = VKMethodCall.Builder()
-                    .method("execute")
-                    .args("code", "return $code;")
-                    .version(manager.config.version)
-                    .build()
-                try {
-                    GroupIdsMethodChainCall(
-                        manager,
-                        call
-                    ).call(ChainArgs())?.filterNotNull() ?: emptyList()
-                } catch (ex: Throwable) {
-                    ex.printStackTrace()
-                    emptyList()
-                }
-            }.flatten()
+                    val call = VKMethodCall.Builder()
+                        .method("execute")
+                        .args("code", "return $code;")
+                        .version(manager.config.version)
+                        .build()
+                    try {
+                        GroupIdsMethodChainCall(
+                            manager,
+                            call
+                        ).call(ChainArgs())?.filterNotNull() ?: emptyList()
+                    } catch (ex: Throwable) {
+                        ex.printStackTrace()
+                        emptyList()
+                    }
+                }.flatten()
         }
 
         /**
@@ -168,4 +184,6 @@ class VideosRepository @Inject constructor() {
             private const val CHUNK_LIMIT = 25
         }
     }
+
+    data class LoadSettings(val groupId: Long, val count: Int, val offset: Int = 0)
 }
