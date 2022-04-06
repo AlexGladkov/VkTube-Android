@@ -16,16 +16,25 @@ import androidx.navigation.NavController
 import com.mobiledeveloper.vktube.R
 import com.mobiledeveloper.vktube.navigation.NavigationTree
 import com.mobiledeveloper.vktube.navigation.NavigationTree.POP_UP_TO_AUTH
+import com.mobiledeveloper.vktube.ui.screens.settings.SettingsScreenParameters.heightItem
+import com.mobiledeveloper.vktube.ui.screens.settings.SettingsScreenParameters.marginLeftText
+import com.mobiledeveloper.vktube.ui.screens.settings.SettingsScreenParameters.spaceBetweenItems
 import com.mobiledeveloper.vktube.ui.screens.settings.models.SettingsAction
 import com.mobiledeveloper.vktube.ui.screens.settings.models.SettingsEvent
 import com.mobiledeveloper.vktube.ui.theme.Fronton
 
+private object SettingsScreenParameters{
+    const val spaceBetweenItems = 4
+    const val marginLeftText = 16
+    const val heightItem = 54
+}
 
 @Composable
 fun SettingsScreen(
     settingsViewModel: SettingsViewModel,
     navController: NavController
 ) {
+
     val viewAction by settingsViewModel.viewActions().collectAsState(initial = null)
 
     Column(
@@ -72,13 +81,12 @@ private fun SettingsItem(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(54.dp)
+            .height(heightItem.dp)
             .clickable {
                 onClick()
             }
-            .background(color=Fronton.color.backgroundSecondary)
-            .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(vertical = spaceBetweenItems.dp)
+            .background(color =  Fronton.color.controlPrimary),verticalAlignment = Alignment.CenterVertically
     ) {
 //        Icon(
 //            modifier = Modifier.size(24.dp),
@@ -88,8 +96,8 @@ private fun SettingsItem(
 //        )
         Text(
             text = title,
-            color = Fronton.color.textPrimary,
-            modifier = Modifier.padding(start = 16.dp),
+            color = Fronton.color.textInvert,
+            modifier = Modifier.padding(start = marginLeftText.dp),
             maxLines = 1,
         )
     }
