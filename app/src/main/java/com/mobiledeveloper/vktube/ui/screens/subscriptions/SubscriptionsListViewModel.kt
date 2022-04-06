@@ -85,12 +85,7 @@ class SubscriptionsListViewModel @Inject constructor(
                 val ignoreList = groupsLocalDataSource.loadIgnoreList()
 
                 val groups = groupsRepository.fetchClubs(userId).map {
-                    it.mapToSubscriptionCellModel(
-                        name = it.name.orEmpty(),
-                        imageUrl = it.photo200.orEmpty(),
-                        id = it.id.value,
-                        isIgnored = ignoreList.contains(it.id.value)
-                    )
+                   mapToSubscriptionCellModel(it, ignoreList)
                 }
 
                 viewState = viewState.copy(
@@ -106,17 +101,12 @@ class SubscriptionsListViewModel @Inject constructor(
         }
     }
 
-    fun GroupsGroupFull.mapToSubscriptionCellModel(
-        imageUrl: String,
-        name: String,
-        id: Long,
-        isIgnored: Boolean
-    ): SubscriptionCellModel {
+    private fun mapToSubscriptionCellModel(group: GroupsGroupFull, ignoreList: List<Long>): SubscriptionCellModel {
         return SubscriptionCellModel(
-            groupId = id,
-            groupIcon = imageUrl,
-            groupName = name,
-            isIgnored = isIgnored
+            groupName = group.name.orEmpty(),
+            groupIcon = group.photo200.orEmpty(),
+            groupId = group.id.value,
+            isIgnored = ignoreList.contains(group.id.value)
         )
     }
 }
