@@ -40,7 +40,7 @@ fun SettingsScreen(
         )
         SettingsItem(modifier = Modifier,
             title = stringResource(id = R.string.subscribes),
-            onClick = { settingsViewModel.obtainEvent(SettingsEvent.SubscribesScreen) }
+            onClick = { settingsViewModel.obtainEvent(SettingsEvent.SubscriptionsScreen) }
         )
     }
 

@@ -26,9 +26,7 @@ class SubscriptionsListViewModel @Inject constructor(
             SubscriptionsListEvent.ScreenShown -> onScreenShown()
             SubscriptionsListEvent.ClearAction -> clearAction()
             is SubscriptionsListEvent.Back -> goBack()
-            is SubscriptionsListEvent.Add -> add(viewEvent.id)
-            is SubscriptionsListEvent.Remove -> remove(viewEvent.id)
-            is SubscriptionsListEvent.ToggleIgnore -> toggleIgnored(viewEvent.item)
+            is SubscriptionsListEvent.GroupClick -> toggleIgnored(viewEvent.item)
         }
     }
 
@@ -54,6 +52,7 @@ class SubscriptionsListViewModel @Inject constructor(
     }
 
     private fun toggleIgnored(item:SubscriptionCellModel) {
+        if (item.isIgnored) remove(item.groupId) else add(item.groupId)
         viewState = viewState.copy(
             items = viewState.items.map { if (it.groupId == item.groupId) item.copy(isIgnored = !item.isIgnored) else it }
         )

@@ -19,7 +19,7 @@ class SettingsViewModel @Inject constructor(
         when (viewEvent) {
             SettingsEvent.ClearAction -> clearAction()
             SettingsEvent.LogOut -> logOutVK()
-            SettingsEvent.SubscribesScreen -> goToSubscribesList()
+            SettingsEvent.SubscriptionsScreen -> goToSubscribesList()
         }
     }
 

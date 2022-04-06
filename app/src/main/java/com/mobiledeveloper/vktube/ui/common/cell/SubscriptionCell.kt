@@ -47,13 +47,11 @@ private object SubscriptionListParameters{
 @Composable
 fun SubscriptionCell(
     model: SubscriptionCellModel,
-    addToIgnore: (Long) -> Unit,
-    removeFromIgnore: (Long) -> Unit,
-    toggleIgnore: (SubscriptionCellModel) -> Unit
+    groupClick: (SubscriptionCellModel) -> Unit
 ) {
         Row(modifier = Modifier
             .fillMaxWidth()) {
-            SubscriptionDataView(model = model, addToIgnore, removeFromIgnore, toggleIgnore)
+            SubscriptionDataView(model = model, groupClick)
         }
 }
 
@@ -61,22 +59,13 @@ fun SubscriptionCell(
 @Composable
 private fun SubscriptionDataView(
     model: SubscriptionCellModel,
-    addToIgnore: (Long) -> Unit,
-    removeFromIgnore: (Long) -> Unit,
-    toggleIgnore: (SubscriptionCellModel) -> Unit
+    groupClick: (SubscriptionCellModel) -> Unit
 ) {
-
-    var isChecked = !model.isIgnored
 
     Row(
         modifier = Modifier
             .clickable {
-                isChecked = !isChecked
-                when (isChecked) {
-                    true -> removeFromIgnore.invoke(model.groupId)
-                    false -> addToIgnore.invoke(model.groupId)
-                }
-                toggleIgnore(model)
+                groupClick(model)
             }
             .padding(horizontal = marginLR.dp, vertical = marginUD.dp)
             .fillMaxWidth(),
@@ -84,14 +73,14 @@ private fun SubscriptionDataView(
         horizontalArrangement = Arrangement.Start,
     ) {
 
-        val alpha = when (isChecked) {
-            true -> 1f
-            false -> ignoredAlpha
+        val alpha = when (model.isIgnored) {
+            false -> 1f
+            true -> ignoredAlpha
         }
 
-        val eyeAlpha = when (isChecked) {
-            true -> 1f
-            false -> eyeIgnoreAlpha
+        val eyeAlpha = when (model.isIgnored) {
+            false -> 1f
+            true -> eyeIgnoreAlpha
         }
 
         AsyncImage(

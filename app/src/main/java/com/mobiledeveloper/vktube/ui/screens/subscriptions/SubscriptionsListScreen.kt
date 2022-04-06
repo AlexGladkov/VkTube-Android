@@ -26,16 +26,8 @@ fun SubscriptionsListScreen(
     val viewState by viewModel.viewStates().collectAsState()
     val viewAction by viewModel.viewActions().collectAsState(initial = null)
 
-    val addToIgnore = fun (id: Long) {
-        viewModel.obtainEvent(SubscriptionsListEvent.Add(id))
-    }
-
-    val removeFromIgnore = fun (id: Long) {
-        viewModel.obtainEvent(SubscriptionsListEvent.Remove(id))
-    }
-
-    val toggleIgnore = fun (item: SubscriptionCellModel) {
-        viewModel.obtainEvent(SubscriptionsListEvent.ToggleIgnore(item))
+    val groupClick = fun (item: SubscriptionCellModel) {
+        viewModel.obtainEvent(SubscriptionsListEvent.GroupClick(item))
     }
 
     BackHandler(enabled = true){
@@ -45,9 +37,7 @@ fun SubscriptionsListScreen(
     Box(modifier = Modifier.background(color = Fronton.color.backgroundPrimary)) {
         SubscriptionsView(
             viewState = viewState,
-            addToIgnore,
-            toggleIgnore,
-            removeFromIgnore
+            groupClick
     )}
 
     LaunchedEffect(key1 = viewAction, block = {
@@ -71,30 +61,26 @@ fun SubscriptionsListScreen(
 @Composable
 private fun SubscriptionsView(
     viewState: SubscriptionsListState,
-    addToIgnore: (Long) -> Unit,
-    toggleIgnore: (SubscriptionCellModel) -> Unit,
-    removeFromIgnore: (Long) -> Unit
+    groupClick: (SubscriptionCellModel) -> Unit
 ) {
     if (viewState.loading) {
         LoadingView()
     } else {
-        SubscriptionView(viewState, addToIgnore, removeFromIgnore, toggleIgnore)
+        SubscriptionView(viewState, groupClick)
     }
 }
 
 @Composable
 private fun SubscriptionView(
     viewState: SubscriptionsListState,
-    addToIgnore: (Long) -> Unit,
-    removeFromIgnore: (Long) -> Unit,
-    toggleIgnore: (SubscriptionCellModel) -> Unit
+    groupClick: (SubscriptionCellModel) -> Unit
 ) {
      LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         items(
             items = viewState.items,
             key = { item -> item.groupId }
         ) { viewModel ->
-            SubscriptionCell(viewModel, addToIgnore, removeFromIgnore, toggleIgnore)
+            SubscriptionCell(viewModel, groupClick)
         }
     }
 }
