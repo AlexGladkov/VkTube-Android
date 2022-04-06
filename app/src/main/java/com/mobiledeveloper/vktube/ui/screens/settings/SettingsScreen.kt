@@ -38,6 +38,10 @@ fun SettingsScreen(
             title = stringResource(id = R.string.logout_from_vk),
             onClick = { settingsViewModel.obtainEvent(SettingsEvent.LogOut) }
         )
+        SettingsItem(modifier = Modifier,
+            title = stringResource(id = R.string.subscribes),
+            onClick = { settingsViewModel.obtainEvent(SettingsEvent.SubscribesScreen) }
+        )
     }
 
     LaunchedEffect(key1 = viewAction, block = {
@@ -46,6 +50,9 @@ fun SettingsScreen(
                 navController.navigate(NavigationTree.Root.Auth.name) {
                     popUpTo(POP_UP_TO_AUTH)
                 }
+            }
+            is SettingsAction.NavigateSubscribes -> {
+                navController.navigate(NavigationTree.Root.SubscriptionsList.name)
             }
             null -> {
                 // ignore

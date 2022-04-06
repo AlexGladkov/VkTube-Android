@@ -19,6 +19,7 @@ class SettingsViewModel @Inject constructor(
         when (viewEvent) {
             SettingsEvent.ClearAction -> clearAction()
             SettingsEvent.LogOut -> logOutVK()
+            SettingsEvent.SubscribesScreen -> goToSubscribesList()
         }
     }
 
@@ -26,6 +27,12 @@ class SettingsViewModel @Inject constructor(
         VK.logout()
         viewAction = SettingsAction.NavigateLogin
     }
+
+    private fun goToSubscribesList() {
+        VK.logout()
+        viewAction = SettingsAction.NavigateSubscribes
+    }
+
 
     private fun clearAction() {
         viewModelScope.launch {

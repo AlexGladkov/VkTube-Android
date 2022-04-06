@@ -16,6 +16,8 @@ import com.mobiledeveloper.vktube.ui.screens.settings.SettingsScreen
 import com.mobiledeveloper.vktube.ui.screens.settings.SettingsViewModel
 import com.mobiledeveloper.vktube.ui.screens.splash.SplashScreen
 import com.mobiledeveloper.vktube.ui.screens.splash.SplashViewModel
+import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionsListScreen
+import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionsListViewModel
 import com.mobiledeveloper.vktube.ui.screens.video.VideoScreen
 import com.mobiledeveloper.vktube.ui.screens.video.VideoViewModel
 
@@ -37,6 +39,10 @@ fun NavigationGraph() {
             composable(NavigationTree.Root.Main.name) {
                 val feedViewModel = hiltViewModel<FeedViewModel>()
                 FeedScreen(navController, feedViewModel)
+            }
+            composable(NavigationTree.Root.SubscriptionsList.name) {
+                val blackListViewModel = hiltViewModel<SubscriptionsListViewModel>()
+                SubscriptionsListScreen(navController, blackListViewModel)
             }
 
             composable(
