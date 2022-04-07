@@ -37,6 +37,7 @@ data class VideoCellGroupInfo(
 )
 
 fun VideoVideoFull.mapToVideoCellModel(
+    groupOrder: Int,
     userImage: String,
     userName: String,
     subscribers: Int
@@ -48,6 +49,7 @@ fun VideoVideoFull.mapToVideoCellModel(
 
 
     return VideoCellModel(
+        groupOrder = groupOrder,
         videoId = videoId.toLong(),
         title = title.orEmpty(),
         previewUrl = maxQualityImage?.url.orEmpty(),

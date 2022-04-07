@@ -28,6 +28,7 @@ class FeedViewModel @Inject constructor(
 ) : BaseViewModel<FeedState, FeedAction, FeedEvent>(initialState = FeedState()) {
     private val loadMoreController = LoadMoreController()
 
+    private val comparator = VideoCellModelComparator()
     override fun obtainEvent(viewEvent: FeedEvent) {
         when (viewEvent) {
             FeedEvent.ScreenShown -> onScreenShown()
@@ -93,14 +94,15 @@ class FeedViewModel @Inject constructor(
                 .mapNotNull { (ownerId, items) ->
                     val group =
                         clubs.firstOrNull { it.id.abs() == ownerId?.abs() }
-                    items.mapNotNull {
-                        it.mapToVideoCellModel(
+                    items.mapIndexedNotNull { index, videoVideoFull ->
+                        videoVideoFull.mapToVideoCellModel(
+                            groupOrder = index,
                             userName = group?.name.orEmpty(),
                             userImage = group?.photo100.orEmpty(),
                             subscribers = group?.membersCount ?: 0
                         )
                     }
-                }.flatten().sortedByDescending { it.dateAdded }
+                }.flatten().sortedWith(comparator)
         }
 
 
@@ -158,8 +160,9 @@ class FeedViewModel @Inject constructor(
                                 val group =
                                     groupsForLoad.firstOrNull { it.groupInfo.id.absoluteValue == ownerId?.value?.absoluteValue }
 
-                                items.mapNotNull {
-                                    it.mapToVideoCellModel(
+                                items.mapIndexedNotNull { index, videoVideoFull ->
+                                    videoVideoFull.mapToVideoCellModel(
+                                        groupOrder = index + (group?.loadedCount ?: 0),
                                         userName = group?.groupInfo?.userName.orEmpty(),
                                         userImage = group?.groupInfo?.userImage.orEmpty(),
                                         subscribers = group?.groupInfo?.subscribers ?: 0
@@ -168,9 +171,9 @@ class FeedViewModel @Inject constructor(
                             }.flatten()
 
                         if (videos.any()) {
-                            val newItems = (viewState.items + videos)
-                                .distinctBy { it.id }
-                                .sortedByDescending { it.dateAdded }
+                            val newItems =
+                                (viewState.items + videos).sortedWith(comparator)
+                                    .distinctBy { it.id }
                             viewState = viewState.copy(
                                 items = newItems,
                                 loading = false
@@ -205,7 +208,7 @@ class FeedViewModel @Inject constructor(
                             val groupId = groupInfo.id
 
                             newGroups[groupId] = newGroups[groupId]?.let {
-                                val hasMore = groups[groupId]?.hasMore?: true
+                                val hasMore = groups[groupId]?.hasMore ?: true
                                 it.copy(
                                     loadedCount = it.loadedCount + 1,
                                     hasMore = hasMore

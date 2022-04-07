@@ -12,7 +12,8 @@ data class VideoCellModel(
     val likesByMe: Boolean,
     val videoUrl: String,
     val ownerId: Long,
-    val groupInfo: VideoCellGroupInfo
+    val groupInfo: VideoCellGroupInfo,
+    val groupOrder:Int
 ) {
     val id = "${ownerId}_${videoId}"
 }
