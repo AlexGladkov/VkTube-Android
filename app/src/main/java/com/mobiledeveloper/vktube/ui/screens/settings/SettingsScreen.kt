@@ -20,6 +20,7 @@ import com.mobiledeveloper.vktube.navigation.NavigationTree
 import com.mobiledeveloper.vktube.navigation.NavigationTree.POP_UP_TO_AUTH
 import com.mobiledeveloper.vktube.ui.screens.settings.SettingsScreenParameters.heightItem
 import com.mobiledeveloper.vktube.ui.screens.settings.SettingsScreenParameters.marginLeftText
+import com.mobiledeveloper.vktube.ui.screens.settings.SettingsScreenParameters.paddingItems
 import com.mobiledeveloper.vktube.ui.screens.settings.SettingsScreenParameters.sizeText
 import com.mobiledeveloper.vktube.ui.screens.settings.SettingsScreenParameters.spaceBetweenItems
 import com.mobiledeveloper.vktube.ui.screens.settings.models.SettingsAction
@@ -27,10 +28,11 @@ import com.mobiledeveloper.vktube.ui.screens.settings.models.SettingsEvent
 import com.mobiledeveloper.vktube.ui.theme.Fronton
 
 private object SettingsScreenParameters{
-    const val spaceBetweenItems = 4
+    const val spaceBetweenItems = 8
     const val marginLeftText = 16
     const val heightItem = 54
     const val sizeText = 18
+    const val paddingItems = 16
 }
 
 @Composable
@@ -43,9 +45,10 @@ fun SettingsScreen(
 
     Column(
         modifier = Modifier
-            .padding(16.dp)
             .fillMaxWidth()
-            .wrapContentHeight()
+            .padding(horizontal = paddingItems.dp)
+            .wrapContentHeight(),
+        verticalArrangement = Arrangement.spacedBy(spaceBetweenItems.dp)
     ) {
         SettingsItem(modifier = Modifier,
             title = stringResource(id = R.string.logout_from_vk),
@@ -89,14 +92,14 @@ private fun SettingsItem(
             .clickable {
                 onClick()
             }
-            .padding(vertical = spaceBetweenItems.dp)
-            .background(color =  Fronton.color.controlPrimary),verticalAlignment = Alignment.CenterVertically
+            .background(color = Fronton.color.controlPrimary)
+            .padding(start = marginLeftText.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
 
         Text(
             text = title,
             color = Fronton.color.textInvert,
-            modifier = Modifier.padding(start = marginLeftText.dp),
             fontSize = sizeText.sp,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
