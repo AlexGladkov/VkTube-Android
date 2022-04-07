@@ -12,28 +12,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.mobiledeveloper.vktube.R
+import com.mobiledeveloper.vktube.ui.screens.feed.models.CommentCellModel
 import com.mobiledeveloper.vktube.ui.theme.Fronton
-import com.vk.sdk.api.wall.dto.WallWallComment
-
-data class CommentCellModel(
-    val messageId: Int,
-    val userId: Long,
-    val userName: String,
-    val dateAdded: String,
-    val avatar: String,
-    val text: String
-)
-
-fun WallWallComment.mapToCommentCellModel(): CommentCellModel {
-    return CommentCellModel(
-        messageId = id,
-        userId = fromId.value,
-        text = text,
-        userName = "Unowned user",
-        dateAdded = "Unowned date",
-        avatar = ""
-    )
-}
 
 @Composable
 fun CommentCell(model: CommentCellModel) {

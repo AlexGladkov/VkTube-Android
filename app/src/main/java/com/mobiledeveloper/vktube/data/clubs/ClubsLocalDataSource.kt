@@ -26,8 +26,23 @@ class ClubsLocalDataSource @Inject constructor(
         return storedString.split(SEPARATOR).mapNotNull { it.toLongOrNull() }
     }
 
+    fun saveIgnoreList(ids: List<Long>) {
+        val storedString = ids.joinToString(separator = SEPARATOR)
+
+        sharedPreferences.edit()
+            .putString(CLUBS_IGNORED_KEY, storedString)
+            .apply()
+    }
+
+    fun loadIgnoreList(): List<Long> {
+        val storedString = sharedPreferences.getString(CLUBS_IGNORED_KEY, "").orEmpty()
+
+        return storedString.split(SEPARATOR).mapNotNull { it.toLongOrNull() }
+    }
+
     companion object {
         private const val SEPARATOR=","
         private const val CLUBS_IDS_KEY = "clubs_key"
+        private const val CLUBS_IGNORED_KEY = "ignored_key"
     }
 }

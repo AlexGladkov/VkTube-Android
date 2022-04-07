@@ -6,6 +6,7 @@ import com.vk.api.sdk.VK
 import com.vk.dto.common.id.UserId
 import com.vk.sdk.api.groups.GroupsService
 import com.vk.sdk.api.groups.dto.GroupsFields
+import com.vk.sdk.api.groups.dto.GroupsFilter
 import com.vk.sdk.api.groups.dto.GroupsGroupFull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -16,10 +17,10 @@ class ClubsRepository @Inject constructor() {
     /**
      * на тек. момент (02.04.2022) из-за бага в апи вк метод возвращает не все группы
      * баг: при запросе групп с оффсетом метод возвращает группы из прошлых оффсетов
-     * тикет в поддержку создан
-     * проблема не в sdk, поэтому можно коммитить метод в этом виде
+     * фильтры GroupsFilter.GROUPS, GroupsFilter.PUBLICS позволяют эту проблему решить
      */
-    suspend fun fetchClubs(userId: Long): List<GroupsGroupFull> =
+
+    suspend fun fetchClubs(userId: Long, ignoreList: List<Long> = emptyList()): List<GroupsGroupFull> =
         withContext(Dispatchers.IO) {
             var requestedCount = 0
             val result = mutableListOf<GroupsGroupFull>()
@@ -28,7 +29,8 @@ class ClubsRepository @Inject constructor() {
                     userId = UserId(userId),
                     count = PAGE_SIZE,
                     offset = requestedCount,
-                    fields = listOf(GroupsFields.MEMBERS_COUNT)
+                    fields = listOf(GroupsFields.MEMBERS_COUNT),
+                    filter = listOf(GroupsFilter.GROUPS, GroupsFilter.PUBLICS)
                 )
                 val response = VK.executeSync(request)
 
@@ -36,7 +38,7 @@ class ClubsRepository @Inject constructor() {
                 requestedCount += PAGE_SIZE
                 if (requestedCount >= response.count) break
             }
-            result.distinctBy { it.id }
+            result.filter { it.id.value !in ignoreList }.distinctBy { it.id }
         }
 
     companion object {
