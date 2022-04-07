@@ -68,7 +68,7 @@ class VideosRepository @Inject constructor() {
         return withContext(Dispatchers.Default) {
             result.map { response ->
                 response.items
-            }.flatten().sortedByDescending { it.addingDate }
+            }.flatten()
         }
     }
 
