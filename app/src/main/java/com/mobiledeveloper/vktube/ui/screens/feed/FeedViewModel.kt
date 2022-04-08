@@ -38,6 +38,9 @@ class FeedViewModel @Inject constructor(
                 viewEvent.lastVisibleItemIndex,
                 viewEvent.screenItemsCount
             )
+            FeedEvent.RetryLoadClicked -> {
+                fetchVideos()
+            }
         }
     }
 
@@ -74,12 +77,12 @@ class FeedViewModel @Inject constructor(
                     items = videos,
                     loading = false
                 )
-
                 loadMoreController.fillGroups(videos)
             } catch (ex: Exception) {
                 viewState = viewState.copy(
                     loading = false
                 )
+                viewAction = FeedAction.LoadError(ex.localizedMessage ?: ex.message ?: ex.toString())
             }
         }
     }

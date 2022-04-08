@@ -13,6 +13,7 @@
     <string name="login_to_vk">Вход через ВК</string>
     <string name="logout_from_vk">Выйти из аккаунта ВК</string>
     <string name="subscribes">Список каналов</string>
+    <string name="retry">Повторить</string>
 
     <plurals name="seconds">
         <item quantity="one">%1d секунду назад</item>

@@ -1,6 +1,7 @@
 package com.mobiledeveloper.vktube.ui.theme
 
 import androidx.compose.foundation.LocalIndication
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -24,14 +25,16 @@ fun FrontonTheme(
         minor = minor
     )
 
+    val palette = lightPalette
     val rippleIndication = rememberRipple()
-
-    CompositionLocalProvider(
-        LocalFrontonColors provides lightPalette,
-        LocalFrontonTypography provides typography,
-        LocalIndication provides rippleIndication,
-        content = content
-    )
+    MaterialTheme(colors = palette.toMaterialColors()) {
+        CompositionLocalProvider(
+            LocalFrontonColors provides palette,
+            LocalFrontonTypography provides typography,
+            LocalIndication provides rippleIndication,
+            content = content
+        )
+    }
 }
 
 object Fronton {
