@@ -4,7 +4,10 @@ import android.content.Context
 import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.mobiledeveloper.vktube.data.resources.StringsProvider
+import com.mobiledeveloper.vktube.data.resources.StringsProviderImpl
 import com.mobiledeveloper.vktube.utils.DateUtil
+import com.mobiledeveloper.vktube.utils.NumberUtil
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -17,11 +20,18 @@ class DateMinutesTestRuLocale {
     val TEST_TAG = "Test_tag"
 
     private lateinit var appContext: Context
+    private lateinit var stringsProvider: StringsProvider
+    private lateinit var dateUtil: DateUtil
+    private lateinit var numberUtil: NumberUtil
 
     @Before
     fun setup() {
         appContext = InstrumentationRegistry.getInstrumentation().targetContext
         currentTime = System.currentTimeMillis()
+        stringsProvider = StringsProviderImpl(appContext.resources)
+        dateUtil = DateUtil(stringsProvider)
+        numberUtil = NumberUtil(stringsProvider)
+
     }
 
     @Test
@@ -30,7 +40,7 @@ class DateMinutesTestRuLocale {
         val minutesAgo = 1
 
         val timeAgoString =
-            DateUtil.getTimeAgo((currentTime / 1000).toInt() - 60 * minutesAgo, appContext)
+            dateUtil.getTimeAgo((currentTime / 1000).toInt() - 60 * minutesAgo)
 
         Log.d(TEST_TAG, timeAgoString)
 
@@ -43,7 +53,7 @@ class DateMinutesTestRuLocale {
         val minutesAgo = 2
 
         val timeAgoString =
-            DateUtil.getTimeAgo((currentTime / 1000).toInt() - 60 * minutesAgo, appContext)
+            dateUtil.getTimeAgo((currentTime / 1000).toInt() - 60 * minutesAgo)
 
         Log.d(TEST_TAG, timeAgoString)
 
@@ -56,7 +66,7 @@ class DateMinutesTestRuLocale {
         val minutesAgo = 5
 
         val timeAgoString =
-            DateUtil.getTimeAgo((currentTime / 1000).toInt() - 60 * minutesAgo, appContext)
+            dateUtil.getTimeAgo((currentTime / 1000).toInt() - 60 * minutesAgo)
 
         Log.d(TEST_TAG, timeAgoString)
 
@@ -69,7 +79,7 @@ class DateMinutesTestRuLocale {
         val minutesAgo = 11
 
         val timeAgoString =
-            DateUtil.getTimeAgo((currentTime / 1000).toInt() - 60 * minutesAgo, appContext)
+            dateUtil.getTimeAgo((currentTime / 1000).toInt() - 60 * minutesAgo)
 
         Log.d(TEST_TAG, timeAgoString)
 
@@ -82,7 +92,7 @@ class DateMinutesTestRuLocale {
         val minutesAgo = 12
 
         val timeAgoString =
-            DateUtil.getTimeAgo((currentTime / 1000).toInt() - 60 * minutesAgo, appContext)
+            dateUtil.getTimeAgo((currentTime / 1000).toInt() - 60 * minutesAgo)
 
         Log.d(TEST_TAG, timeAgoString)
 
@@ -95,7 +105,7 @@ class DateMinutesTestRuLocale {
         val minutesAgo = 21
 
         val timeAgoString =
-            DateUtil.getTimeAgo((currentTime / 1000).toInt() - 60 * minutesAgo, appContext)
+            dateUtil.getTimeAgo((currentTime / 1000).toInt() - 60 * minutesAgo)
 
         Log.d(TEST_TAG, timeAgoString)
 
@@ -108,7 +118,7 @@ class DateMinutesTestRuLocale {
         val minutesAgo = 32
 
         val timeAgoString =
-            DateUtil.getTimeAgo((currentTime / 1000).toInt() - 60 * minutesAgo, appContext)
+            dateUtil.getTimeAgo((currentTime / 1000).toInt() - 60 * minutesAgo)
 
         Log.d(TEST_TAG, timeAgoString)
 
@@ -121,7 +131,7 @@ class DateMinutesTestRuLocale {
         val minutesAgo = 49
 
         val timeAgoString =
-            DateUtil.getTimeAgo((currentTime / 1000).toInt() - 60 * minutesAgo, appContext)
+            dateUtil.getTimeAgo((currentTime / 1000).toInt() - 60 * minutesAgo)
 
         Log.d(TEST_TAG, timeAgoString)
 

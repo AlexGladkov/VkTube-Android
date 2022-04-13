@@ -1,6 +1,5 @@
 package com.mobiledeveloper.vktube.ui.screens.feed
 
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.mobiledeveloper.vktube.base.BaseViewModel
 import com.mobiledeveloper.vktube.data.cache.InMemoryCache
@@ -12,16 +11,19 @@ import com.mobiledeveloper.vktube.ui.common.cell.mapToVideoCellModel
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedAction
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedEvent
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedState
+import com.mobiledeveloper.vktube.utils.DateUtil
+import com.mobiledeveloper.vktube.utils.NumberUtil
 import com.vk.dto.common.id.abs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import kotlin.math.absoluteValue
 
 @HiltViewModel
 class FeedViewModel @Inject constructor(
+    private val dateUtil: DateUtil,
+    private val numberUtil: NumberUtil,
     private val videosRepository: VideosRepository,
     private val getUserVideoUseCase: GetUserVideoUseCase
 ) : BaseViewModel<FeedState, FeedAction, FeedEvent>(initialState = FeedState()) {
@@ -77,7 +79,9 @@ class FeedViewModel @Inject constructor(
                                 it.mapToVideoCellModel(
                                     userName = group?.name.orEmpty(),
                                     userImage = group?.photo100.orEmpty(),
-                                    subscribers = group?.membersCount ?: 0
+                                    subscribers = group?.membersCount ?: 0,
+                                    dateUtil = dateUtil,
+                                    numberUtil = numberUtil
                                 )
                             }
                         }.flatten().sortedByDescending { it.dateAdded }
@@ -145,7 +149,9 @@ class FeedViewModel @Inject constructor(
                                 videoFull.mapToVideoCellModel(
                                     userName = groupInfo.groupInfo.userName,
                                     userImage = groupInfo.groupInfo.userImage,
-                                    subscribers = groupInfo.groupInfo.subscribers
+                                    subscribers = groupInfo.groupInfo.subscribers,
+                                    dateUtil = dateUtil,
+                                    numberUtil = numberUtil
                                 )
                             }
 

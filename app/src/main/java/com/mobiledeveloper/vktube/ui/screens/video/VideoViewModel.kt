@@ -20,6 +20,7 @@ import com.mobiledeveloper.vktube.ui.screens.comments.mapToCommentCellModel
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoAction
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoEvent
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoViewState
+import com.mobiledeveloper.vktube.utils.DateUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -28,6 +29,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class VideoViewModel @Inject constructor(
+    private val dateUtil: DateUtil,
     private val commentsRepository: CommentsRepository,
     private val userRepository: UserRepository,
     private val likeRepository: LikeRepository,
@@ -94,7 +96,7 @@ class VideoViewModel @Inject constructor(
                         super.onPageFinished(view, url)
                     }
                 }
-                webChromeClient = object : WebChromeClient(){
+                webChromeClient = object : WebChromeClient() {
 
                 }
                 loadData(data, "text/html", "utf-8")
@@ -109,18 +111,12 @@ class VideoViewModel @Inject constructor(
     private fun performVideoLoading() {
         viewModelScope.launch {
             delay(500)
-            when (viewState.isLoadingVideo) {
-                true -> viewState = viewState.copy(
-                    isLoadingVideo = false
-                )
-                false -> {
-                }
-                null -> viewState = viewState.copy(
-                    isLoadingVideo = true
-                )
-            }
+            viewState = viewState.copy(isLoadingVideo =
+                viewState.isLoadingVideo?.let { !it } ?: true
+            )
         }
     }
+
 
     private fun performLike() {
         viewModelScope.launch {
@@ -169,9 +165,9 @@ class VideoViewModel @Inject constructor(
                     count = 20
                 )
             viewState = viewState.copy(
-                comments = comments.items.map { it.mapToCommentCellModel() }
+                comments = comments.items.map { it.mapToCommentCellModel(dateUtil) }
             )
-            InMemoryCache.comments[videoId!!] = comments.items.map { it.mapToCommentCellModel() }
+            InMemoryCache.comments[videoId!!] = comments.items.map { it.mapToCommentCellModel(dateUtil) }
         }
     }
 

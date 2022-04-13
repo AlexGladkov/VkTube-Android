@@ -5,7 +5,6 @@ import android.content.res.Configuration
 import android.view.View
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -18,11 +17,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -40,8 +39,6 @@ import com.mobiledeveloper.vktube.ui.screens.video.models.VideoAction
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoEvent
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoViewState
 import com.mobiledeveloper.vktube.ui.theme.Fronton
-import com.mobiledeveloper.vktube.utils.DateUtil
-import com.mobiledeveloper.vktube.utils.NumberUtil
 import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -64,10 +61,7 @@ fun VideoScreen(
 
     val systemUiController = rememberSystemUiController()
 
-    val screenWidth = configuration.screenWidthDp.dp
-    val screenHeight = configuration.screenHeightDp.dp
-    val videoHeight = (screenWidth / 16) * 9
-    val bottomSheetPeekHeight = (screenHeight - videoHeight).coerceAtLeast(screenHeight / 2)
+    val bottomSheetPeekHeight = getBottomSheetPeekHeight(configuration)
 
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed)
@@ -121,7 +115,7 @@ fun VideoScreen(
                     })
                 },
                 viewState = viewState,
-                onCommentsClick = {
+                onCommentsAvailable = {
                     videoViewModel.obtainEvent(VideoEvent.CommentsClick)
                 },
                 onLikeClick = {
@@ -171,6 +165,12 @@ fun VideoScreen(
     }
 }
 
+private fun getBottomSheetPeekHeight(configuration: Configuration): Dp {
+    val screenWidth = configuration.screenWidthDp.dp
+    val screenHeight = configuration.screenHeightDp.dp
+    return (screenHeight - (screenWidth / 16) * 9).coerceAtLeast(screenHeight / 2)
+}
+
 private fun setBarsVisible(systemUiController: SystemUiController, visible: Boolean) {
     systemUiController.isSystemBarsVisible = visible
     systemUiController.isStatusBarVisible = visible
@@ -182,11 +182,9 @@ private fun setBarsVisible(systemUiController: SystemUiController, visible: Bool
 fun VideoScreenView(
     getView: (context: Context, video: VideoCellModel) -> View,
     viewState: VideoViewState,
-    onCommentsClick: () -> Unit,
+    onCommentsAvailable: () -> Unit,
     onLikeClick: () -> Unit
 ) {
-    val context = LocalContext.current
-
     val video = viewState.video ?: return
 
     LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -209,18 +207,10 @@ fun VideoScreenView(
             )
         }
 
-        val views = NumberUtil.formatNumberShort(
-            video.viewsCount,
-            context,
-            R.plurals.number_short_format,
-            R.plurals.views
-        )
-        val date = DateUtil.getTimeAgo(video.dateAdded, context)
-
         item {
             Text(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                text = "$views • $date",
+                text = video.videoText,
                 color = Fronton.color.textSecondary,
                 style = Fronton.typography.body.medium.short,
                 overflow = TextOverflow.Ellipsis,
@@ -254,7 +244,7 @@ fun VideoScreenView(
         }
 
         item {
-            VideoCommentsView(viewState.comments, viewState, onCommentsClick)
+            VideoCommentsView(viewState.comments, viewState, onCommentsAvailable)
         }
     }
 }
@@ -284,9 +274,6 @@ private fun VideoActionsRow(
 
 @Composable
 private fun VideoUserRow(video: VideoCellModel) {
-
-    val context = LocalContext.current
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -301,21 +288,14 @@ private fun VideoUserRow(video: VideoCellModel) {
             contentScale = ContentScale.Crop
         )
 
-        val subscribers = NumberUtil.formatNumberShort(
-            video.groupInfo.subscribers,
-            context,
-            R.plurals.number_short_format,
-            R.plurals.subscribers
-        )
-
         Column(modifier = Modifier.padding(start = 16.dp)) {
             Text(
-                text = video.groupInfo.userName,
+                text =  video.groupInfo.userName,
                 color = Fronton.color.textPrimary,
                 style = Fronton.typography.body.medium.long
             )
             Text(
-                text = subscribers,
+                text = video.subscribersText,
                 color = Fronton.color.textSecondary,
                 style = Fronton.typography.body.small.short
             )
@@ -327,13 +307,12 @@ private fun VideoUserRow(video: VideoCellModel) {
 private fun VideoCommentsView(
     comments: List<CommentCellModel>,
     viewState: VideoViewState,
-    onCommentsClick: () -> Unit
+    onCommentsAvailable: () -> Unit
 ) {
     val hasComments = comments.count() > 0
 
     Column(
         modifier = Modifier
-            .clickable { onCommentsClick.invoke() }
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp, bottom = 16.dp, top = 4.dp)
     ) {
@@ -355,23 +334,7 @@ private fun VideoCommentsView(
         }
 
         if (hasComments) {
-            Row(modifier = Modifier.padding(top = 8.dp)) {
-                AsyncImage(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape),
-                    model = "https://sun1-30.userapi.com/s/v1/if1/HWVwYg9TvGZA1YCuBgOtSz3rb68518tAc8rH0SSdAdoGtsfF-YJ41XhlPJN0tmXhtryAjhGG.jpg?size=100x100&quality=96&crop=389,241,1069,1069&ava=1",
-                    contentDescription = stringResource(id = R.string.comment_user_image_preview),
-                    contentScale = ContentScale.Crop
-                )
-
-                Text(
-                    modifier = Modifier.padding(start = 12.dp),
-                    text = "Если будет возможность через VPN выкладывай плиз и на ютуб. Я в Германии и буду смотреть. И таких как я очень много",
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 2
-                )
-            }
+            onCommentsAvailable()
         } else {
             Row(
                 modifier = Modifier.padding(top = 8.dp),

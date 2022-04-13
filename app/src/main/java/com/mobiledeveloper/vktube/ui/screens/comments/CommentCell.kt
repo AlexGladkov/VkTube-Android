@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.mobiledeveloper.vktube.R
 import com.mobiledeveloper.vktube.ui.theme.Fronton
+import com.mobiledeveloper.vktube.utils.DateUtil
 import com.vk.sdk.api.wall.dto.WallWallComment
 
 data class CommentCellModel(
@@ -24,16 +25,14 @@ data class CommentCellModel(
     val text: String
 )
 
-fun WallWallComment.mapToCommentCellModel(): CommentCellModel {
-    return CommentCellModel(
-        messageId = id,
-        userId = fromId.value,
-        text = text,
-        userName = "Unowned user",
-        dateAdded = "Unowned date",
-        avatar = ""
-    )
-}
+fun WallWallComment.mapToCommentCellModel(dateUtil: DateUtil): CommentCellModel = CommentCellModel(
+    messageId = id,
+    userId = fromId.value,
+    text = text,
+    userName = "Unowned user",
+    dateAdded = dateUtil.getTimeAgo(this.date),
+    avatar = ""
+)
 
 @Composable
 fun CommentCell(model: CommentCellModel) {

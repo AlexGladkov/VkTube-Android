@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -36,7 +35,11 @@ data class VideoCellModel(
     val likesByMe: Boolean,
     val videoUrl: String,
     val ownerId: Long,
-    val groupInfo: VideoCellGroupInfo
+    val groupInfo: VideoCellGroupInfo,
+    val formattedVideoInfo: String,
+    val videoText: String,
+    val subscribersText: String,
+    val viewsCountFormatted: String
 ) {
     val id = "${ownerId}_${videoId}"
 }
@@ -51,32 +54,92 @@ data class VideoCellGroupInfo(
 fun VideoVideoFull.mapToVideoCellModel(
     userImage: String,
     userName: String,
-    subscribers: Int
+    subscribers: Int,
+    dateUtil: DateUtil,
+    numberUtil: NumberUtil,
 ): VideoCellModel? {
     val videoId = id ?: return null
     val ownerId = ownerId ?: return null
 
     val maxQualityImage = image?.reversed()?.firstOrNull()
 
+    val groupInfo = VideoCellGroupInfo(
+        id = ownerId.value,
+        userImage = userImage,
+        userName = userName,
+        subscribers = subscribers
+    )
+    val dateAdded = addingDate ?: 0
+
+    val viewsCount = views ?: 0
 
     return VideoCellModel(
         videoId = videoId.toLong(),
         title = title.orEmpty(),
         previewUrl = maxQualityImage?.url.orEmpty(),
-        viewsCount = views ?: 0,
-        dateAdded = addingDate ?: 0,
+        viewsCount = viewsCount,
+        dateAdded = dateAdded,
         likes = likes?.count ?: 0,
         likesByMe = likes?.userLikes?.value == 1,
         videoUrl = player.orEmpty(),
         ownerId = ownerId.value,
-        groupInfo = VideoCellGroupInfo(
-            id = ownerId.value,
-            userImage = userImage,
-            userName = userName,
-            subscribers = subscribers
-        )
+        groupInfo = groupInfo,
+        formattedVideoInfo = getFormattedVideoInfo(dateUtil, numberUtil, viewsCount, dateAdded, userName),
+        videoText = getVideoText(dateUtil, numberUtil, viewsCount, dateAdded),
+        subscribersText = getVideoSubscribers(numberUtil, subscribers),
+        viewsCountFormatted = getViewsCountFormatted(numberUtil, viewsCount)
     )
 }
+
+fun getViewsCountFormatted(
+    numberUtil: NumberUtil,
+    viewsCount: Int
+): String = numberUtil.formatNumberShort(
+    number = viewsCount,
+    idFormat = R.plurals.number_short_format,
+    idDescriptor = R.plurals.views
+)
+
+private fun getFormattedVideoInfo(
+    dateUtil: DateUtil,
+    numberUtil: NumberUtil,
+    viewsCount: Int,
+    dateAdded: Int,
+    userName: String
+): String {
+    val views = numberUtil.formatNumberShort(
+        number = viewsCount,
+        idFormat = R.plurals.number_short_format,
+        idDescriptor = R.plurals.views
+    )
+
+    val date = dateUtil.getTimeAgo(dateAdded)
+    return "$userName • $views • $date"
+}
+
+private fun getVideoText(
+    dateUtil: DateUtil,
+    numberUtil: NumberUtil,
+    viewsCount: Int,
+    dateAdded: Int,
+): String {
+    val views = numberUtil.formatNumberShort(
+        number = viewsCount,
+        idFormat = R.plurals.number_short_format,
+        idDescriptor = R.plurals.views
+    )
+    val date = dateUtil.getTimeAgo(dateAdded)
+    return "$views • $date"
+}
+
+private fun getVideoSubscribers(
+    numberUtil: NumberUtil,
+    subscribers: Int,
+): String = numberUtil.formatNumberShort(
+    number = subscribers,
+    idFormat = R.plurals.number_short_format,
+    idDescriptor = R.plurals.subscribers
+)
 
 @Composable
 fun VideoCell(model: VideoCellModel, previewSize: Size, onVideoClick: () -> Unit) {
@@ -111,7 +174,6 @@ private fun VideoImageView(previewUrl: String, previewSize: Size) {
 
 @Composable
 private fun VideoDataView(model: VideoCellModel) {
-    val context = LocalContext.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -128,16 +190,7 @@ private fun VideoDataView(model: VideoCellModel) {
         )
 
         val text = remember(model.groupInfo.userName, model.dateAdded, model.viewsCount) {
-            val views =
-                NumberUtil.formatNumberShort(
-                    model.viewsCount,
-                    context,
-                    R.plurals.number_short_format,
-                    R.plurals.views
-                )
-
-            val date = DateUtil.getTimeAgo(model.dateAdded, context)
-            "${model.groupInfo.userName} • $views • $date"
+            model.formattedVideoInfo
         }
 
         Column(
