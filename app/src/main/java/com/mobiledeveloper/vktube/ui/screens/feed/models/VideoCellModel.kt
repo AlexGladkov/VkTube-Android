@@ -13,7 +13,11 @@ data class VideoCellModel(
     val videoUrl: String,
     val ownerId: Long,
     val groupInfo: VideoCellGroupInfo,
-    val groupOrder:Int
+    val groupOrder:Int,
+    val formattedVideoInfo: String,
+    val videoText: String,
+    val subscribersText: String,
+    val viewsCountFormatted: String
 ) {
     val id = "${ownerId}_${videoId}"
 }
