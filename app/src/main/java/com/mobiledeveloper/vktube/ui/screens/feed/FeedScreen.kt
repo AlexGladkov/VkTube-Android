@@ -8,6 +8,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.SnackbarDuration
+import androidx.compose.material.SnackbarResult
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -15,13 +17,14 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.accompanist.insets.systemBarsPadding
 import com.mobiledeveloper.vktube.navigation.NavigationTree
+import com.mobiledeveloper.vktube.ui.common.LocalSnackbarHostState
 import com.mobiledeveloper.vktube.ui.common.cell.Size
 import com.mobiledeveloper.vktube.ui.common.cell.VideoCell
-import com.mobiledeveloper.vktube.ui.common.cell.VideoCellModel
 import com.mobiledeveloper.vktube.ui.common.cell.VideoGrayCell
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedAction
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedEvent
 import com.mobiledeveloper.vktube.ui.screens.feed.models.FeedState
+import com.mobiledeveloper.vktube.ui.screens.feed.models.VideoCellModel
 import com.mobiledeveloper.vktube.ui.theme.Fronton
 
 @Composable
@@ -31,11 +34,10 @@ fun FeedScreen(
 ) {
     val viewState by feedViewModel.viewStates().collectAsState()
     val viewAction by feedViewModel.viewActions().collectAsState(initial = null)
-
+    val snackbarHostState = LocalSnackbarHostState.current
     Box(
         modifier = Modifier
             .systemBarsPadding()
-            .background(color = Fronton.color.backgroundPrimary)
     ) {
         FeedView(
             viewState = viewState,
@@ -54,10 +56,23 @@ fun FeedScreen(
     }
 
     LaunchedEffect(key1 = viewAction, block = {
-        feedViewModel.obtainEvent(FeedEvent.ClearAction)
-        when (viewAction) {
+        when (val action = viewAction) {
             is FeedAction.OpenVideoDetail -> {
+                feedViewModel.obtainEvent(FeedEvent.ClearAction)
                 navController.navigate("${NavigationTree.Root.Detail.name}/${(viewAction as FeedAction.OpenVideoDetail).videoId}")
+            }
+            is FeedAction.LoadError -> {
+                when (snackbarHostState.showSnackbar(
+                    message = action.message,
+                    actionLabel = "Retry",
+                    duration = SnackbarDuration.Indefinite
+                )) {
+                    SnackbarResult.Dismissed -> {}
+                    SnackbarResult.ActionPerformed -> {
+                        feedViewModel.obtainEvent(FeedEvent.RetryLoadClicked)
+                    }
+                }
+                feedViewModel.obtainEvent(FeedEvent.ClearAction)
             }
             null -> {
                 // ignore

@@ -19,30 +19,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.mobiledeveloper.vktube.R
+import com.mobiledeveloper.vktube.ui.screens.feed.models.VideoCellModel
 import com.mobiledeveloper.vktube.ui.theme.Fronton
 import com.mobiledeveloper.vktube.utils.DateUtil
 import com.mobiledeveloper.vktube.utils.NumberUtil
 import com.valentinilk.shimmer.shimmer
 import com.vk.sdk.api.video.dto.VideoVideoFull
 
-data class VideoCellModel(
-    val videoId: Long,
-    val title: String,
-    val previewUrl: String,
-    val viewsCount: Int,
-    val dateAdded: Int,
-    val likes: Int,
-    val likesByMe: Boolean,
-    val videoUrl: String,
-    val ownerId: Long,
-    val groupInfo: VideoCellGroupInfo,
-    val formattedVideoInfo: String,
-    val videoText: String,
-    val subscribersText: String,
-    val viewsCountFormatted: String
-) {
-    val id = "${ownerId}_${videoId}"
-}
+
 
 data class VideoCellGroupInfo(
     val id: Long,
@@ -52,6 +36,7 @@ data class VideoCellGroupInfo(
 )
 
 fun VideoVideoFull.mapToVideoCellModel(
+    groupOrder: Int,
     userImage: String,
     userName: String,
     subscribers: Int,
@@ -74,6 +59,7 @@ fun VideoVideoFull.mapToVideoCellModel(
     val viewsCount = views ?: 0
 
     return VideoCellModel(
+        groupOrder = groupOrder,
         videoId = videoId.toLong(),
         title = title.orEmpty(),
         previewUrl = maxQualityImage?.url.orEmpty(),
