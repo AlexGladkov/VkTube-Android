@@ -14,13 +14,13 @@ import com.mobiledeveloper.vktube.data.cache.InMemoryCache
 import com.mobiledeveloper.vktube.data.comments.CommentsRepository
 import com.mobiledeveloper.vktube.data.like.LikeRepository
 import com.mobiledeveloper.vktube.data.user.UserRepository
-import com.mobiledeveloper.vktube.ui.screens.feed.models.VideoCellModel
 import com.mobiledeveloper.vktube.ui.screens.feed.models.CommentCellModel
+import com.mobiledeveloper.vktube.ui.screens.feed.models.VideoCellModel
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoAction
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoEvent
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoViewState
-import com.vk.sdk.api.wall.dto.WallWallComment
 import com.mobiledeveloper.vktube.utils.DateUtil
+import com.vk.sdk.api.wall.dto.WallWallComment
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -96,7 +96,7 @@ class VideoViewModel @Inject constructor(
                         super.onPageFinished(view, url)
                     }
                 }
-                webChromeClient = object : WebChromeClient() {
+                webChromeClient = object : WebChromeClient(){
 
                 }
                 loadData(data, "text/html", "utf-8")
@@ -209,16 +209,14 @@ class VideoViewModel @Inject constructor(
         }
     }
 
-    fun WallWallComment.mapToCommentCellModel(): CommentCellModel {
-        return CommentCellModel(
-            messageId = id,
-            userId = fromId.value,
-            text = text,
-            userName = "Unowned user",
-            dateAdded = "Unowned date",
-            avatar = ""
-        )
-    }
+    private fun WallWallComment.mapToCommentCellModel(dateUtil: DateUtil): CommentCellModel = CommentCellModel(
+        messageId = id,
+        userId = fromId.value,
+        text = text,
+        userName = "Unowned user",
+        dateAdded = dateUtil.getTimeAgo(this.date),
+        avatar = ""
+    )
 
     private fun showComments() {
         viewModelScope.launch {

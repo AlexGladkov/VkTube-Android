@@ -26,25 +26,6 @@ import com.mobiledeveloper.vktube.utils.NumberUtil
 import com.valentinilk.shimmer.shimmer
 import com.vk.sdk.api.video.dto.VideoVideoFull
 
-data class VideoCellModel(
-    val videoId: Long,
-    val title: String,
-    val previewUrl: String,
-    val viewsCount: Int,
-    val dateAdded: Int,
-    val likes: Int,
-    val likesByMe: Boolean,
-    val videoUrl: String,
-    val ownerId: Long,
-    val groupInfo: VideoCellGroupInfo,
-    val formattedVideoInfo: String,
-    val videoText: String,
-    val subscribersText: String,
-    val viewsCountFormatted: String
-) {
-    val id = "${ownerId}_${videoId}"
-}
-
 data class VideoCellGroupInfo(
     val id: Long,
     val userImage: String,

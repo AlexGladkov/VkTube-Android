@@ -21,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import kotlin.math.absoluteValue
 
 @HiltViewModel
 class FeedViewModel @Inject constructor(
@@ -106,11 +107,11 @@ class FeedViewModel @Inject constructor(
                             userName = group?.name.orEmpty(),
                             userImage = group?.photo100.orEmpty(),
                             subscribers = group?.membersCount ?: 0,
-                                    dateUtil = dateUtil,
-                                    numberUtil = numberUtil
-                                )
-                            }
-                        }.flatten().sortedWith(comparator)
+                            dateUtil = dateUtil,
+                            numberUtil = numberUtil
+                        )
+                    }
+                }.flatten().sortedWith(comparator)
         }
 
 

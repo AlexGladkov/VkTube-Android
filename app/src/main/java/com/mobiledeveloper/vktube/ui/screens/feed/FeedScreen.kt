@@ -38,7 +38,6 @@ fun FeedScreen(
     Box(
         modifier = Modifier
             .systemBarsPadding()
-
     ) {
         FeedView(
             viewState = viewState,
