@@ -32,9 +32,11 @@ fun FeedScreen(
     val viewState by feedViewModel.viewStates().collectAsState()
     val viewAction by feedViewModel.viewActions().collectAsState(initial = null)
 
-    Box(modifier = Modifier
+    Box(
+        modifier = Modifier
             .systemBarsPadding()
-        .background(color = Fronton.color.backgroundPrimary)) {
+            .background(color = Fronton.color.backgroundPrimary)
+    ) {
         FeedView(
             viewState = viewState,
             onVideoClick = {
@@ -84,11 +86,11 @@ private fun FeedView(
         }
     }
     if (viewState.loading) {
-            LoadingView(previewSize)
+        LoadingView(previewSize)
     } else {
-            DataView(viewState, previewSize, onVideoClick, onScroll)
-        }
+        DataView(viewState, previewSize, onVideoClick, onScroll)
     }
+}
 
 @Composable
 private fun DataView(

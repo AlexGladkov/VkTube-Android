@@ -39,6 +39,12 @@ import com.mobiledeveloper.vktube.ui.screens.video.models.VideoAction
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoEvent
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoViewState
 import com.mobiledeveloper.vktube.ui.theme.Fronton
+import com.mobiledeveloper.vktube.utils.Constants.PADDING_16
+import com.mobiledeveloper.vktube.utils.Constants.PADDING_4
+import com.mobiledeveloper.vktube.utils.Constants.PADDING_8
+import com.mobiledeveloper.vktube.utils.Constants.SCREEN_HEIGHT_CENTER_COEF
+import com.mobiledeveloper.vktube.utils.Constants.SCREEN_HEIGHT_MULTIPLIER
+import com.mobiledeveloper.vktube.utils.Constants.SCREEN_WIDTH_DIVIDER
 import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -168,7 +174,8 @@ fun VideoScreen(
 private fun getBottomSheetPeekHeight(configuration: Configuration): Dp {
     val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
-    return (screenHeight - (screenWidth / 16) * 9).coerceAtLeast(screenHeight / 2)
+    return (screenHeight - (screenWidth / SCREEN_WIDTH_DIVIDER) * SCREEN_HEIGHT_MULTIPLIER)
+        .coerceAtLeast(screenHeight / SCREEN_HEIGHT_CENTER_COEF)
 }
 
 private fun setBarsVisible(systemUiController: SystemUiController, visible: Boolean) {
@@ -209,7 +216,7 @@ fun VideoScreenView(
 
         item {
             Text(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                modifier = Modifier.padding(horizontal = PADDING_16.dp, vertical = PADDING_4.dp),
                 text = video.videoText,
                 color = Fronton.color.textSecondary,
                 style = Fronton.typography.body.medium.short,
@@ -288,9 +295,9 @@ private fun VideoUserRow(video: VideoCellModel) {
             contentScale = ContentScale.Crop
         )
 
-        Column(modifier = Modifier.padding(start = 16.dp)) {
+        Column(modifier = Modifier.padding(start = PADDING_16.dp)) {
             Text(
-                text =  video.groupInfo.userName,
+                text = video.groupInfo.userName,
                 color = Fronton.color.textPrimary,
                 style = Fronton.typography.body.medium.long
             )
@@ -314,7 +321,7 @@ private fun VideoCommentsView(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp, top = 4.dp)
+            .padding(start = PADDING_16.dp, end = PADDING_16.dp, bottom = PADDING_16.dp, top = PADDING_4.dp)
     ) {
         Row {
             Text(
@@ -337,7 +344,7 @@ private fun VideoCommentsView(
             onCommentsAvailable()
         } else {
             Row(
-                modifier = Modifier.padding(top = 8.dp),
+                modifier = Modifier.padding(top = PADDING_8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 AsyncImage(
