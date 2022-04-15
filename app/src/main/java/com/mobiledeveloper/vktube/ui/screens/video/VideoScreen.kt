@@ -31,10 +31,10 @@ import com.google.accompanist.insets.systemBarsPadding
 import com.google.accompanist.systemuicontroller.SystemUiController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.mobiledeveloper.vktube.R
-import com.mobiledeveloper.vktube.ui.common.cell.VideoCellModel
 import com.mobiledeveloper.vktube.ui.common.views.VideoActionView
-import com.mobiledeveloper.vktube.ui.screens.comments.CommentCellModel
 import com.mobiledeveloper.vktube.ui.screens.comments.CommentsScreen
+import com.mobiledeveloper.vktube.ui.screens.feed.models.CommentCellModel
+import com.mobiledeveloper.vktube.ui.screens.feed.models.VideoCellModel
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoAction
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoEvent
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoViewState

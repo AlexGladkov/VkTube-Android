@@ -42,7 +42,6 @@ fun LoginScreen(
     Surface(
         modifier = Modifier
             .systemBarsPadding()
-            .background(Fronton.color.backgroundPrimary)
             .fillMaxSize()
     ) {
 

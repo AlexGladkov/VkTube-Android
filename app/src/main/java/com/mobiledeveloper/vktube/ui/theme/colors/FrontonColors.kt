@@ -1,5 +1,8 @@
 package com.mobiledeveloper.vktube.ui.theme.colors
 
+import androidx.compose.material.Colors
+import androidx.compose.material.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
@@ -76,7 +79,24 @@ data class FrontonColors(
 
     val secondaryWhite: Color,
     val secondaryBlack: Color
-)
+) {
+@Composable
+    fun toMaterialColors(): Colors = Colors(
+        primary = controlPrimary,
+        primaryVariant = pressedPrimary,
+        secondary = controlSecondary,
+        secondaryVariant = pressedSecondary,
+        background = backgroundPrimary,
+        surface = backgroundPrimary,
+        error = attentionPrimary,
+        onPrimary = MaterialTheme.colors.onPrimary,
+        onSecondary = MaterialTheme.colors.onSecondary,
+        onBackground = MaterialTheme.colors.onBackground,
+        onSurface = MaterialTheme.colors.onSurface,
+        onError = MaterialTheme.colors.onError,
+        isLight
+    )
+}
 
 val LocalFrontonColors = staticCompositionLocalOf<FrontonColors> {
     error("No colors provided")

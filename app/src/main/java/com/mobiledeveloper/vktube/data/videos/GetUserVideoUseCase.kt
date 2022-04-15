@@ -24,7 +24,9 @@ class GetUserVideoUseCase @Inject constructor(
             userRepository.fetchLocalUser().userId
         }
 
-        val localClubsIds = clubsLocalDataSource.loadClubsIds()
+        val ignoreList = clubsLocalDataSource.loadIgnoreList()
+
+        val localClubsIds = clubsLocalDataSource.loadClubsIds().filter { it !in ignoreList }
         val rawVideosJob = async {
             if (localClubsIds.any())
                 videosRepository.fetchVideos(
@@ -35,7 +37,7 @@ class GetUserVideoUseCase @Inject constructor(
                 emptyList()
         }
 
-        val clubsInfo = fetchClubs(userId)
+        val clubsInfo = fetchClubs(userId, ignoreList)
 
         val newClubsRawVideosJob = async {
             if (clubsInfo.newSubscribedClubsIds.any())
@@ -57,8 +59,8 @@ class GetUserVideoUseCase @Inject constructor(
     }
 
 
-    private suspend fun fetchClubs(userId: Long): ClubsInfo {
-        val clubs = clubsRepository.fetchClubs(userId)
+    private suspend fun fetchClubs(userId: Long, ignoreList: List<Long>): ClubsInfo {
+        val clubs = clubsRepository.fetchClubs(userId).filter { it.id.value !in ignoreList }
         val cachedClubIds = clubsLocalDataSource.loadClubsIds()
         return withContext(Dispatchers.Default) {
             val onlineClubIds = clubs.map { it.id.value }

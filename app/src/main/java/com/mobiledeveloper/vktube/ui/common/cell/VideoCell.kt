@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.mobiledeveloper.vktube.R
+import com.mobiledeveloper.vktube.ui.screens.feed.models.VideoCellModel
 import com.mobiledeveloper.vktube.ui.theme.Fronton
 import com.mobiledeveloper.vktube.utils.DateUtil
 import com.mobiledeveloper.vktube.utils.NumberUtil
@@ -52,6 +53,7 @@ data class VideoCellGroupInfo(
 )
 
 fun VideoVideoFull.mapToVideoCellModel(
+    groupOrder: Int,
     userImage: String,
     userName: String,
     subscribers: Int,
@@ -74,6 +76,7 @@ fun VideoVideoFull.mapToVideoCellModel(
     val viewsCount = views ?: 0
 
     return VideoCellModel(
+        groupOrder = groupOrder,
         videoId = videoId.toLong(),
         title = title.orEmpty(),
         previewUrl = maxQualityImage?.url.orEmpty(),
