@@ -111,13 +111,13 @@ class VideoViewModel @Inject constructor(
     private fun performVideoLoading() {
         viewModelScope.launch {
             delay(500)
-            updateLoading(viewState.isLoadingVideo)?.let { loading ->
+            toggleLoading(viewState.isLoadingVideo)?.let { loading ->
                 viewState = viewState.copy(isLoadingVideo = loading)
             }
         }
     }
 
-    private fun updateLoading(loading: Boolean?): Boolean? = when (loading) {
+    private fun toggleLoading(loading: Boolean?): Boolean? = when (loading) {
         true -> false
         false -> null
         null -> true

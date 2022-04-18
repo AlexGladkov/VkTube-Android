@@ -10,10 +10,6 @@ import javax.inject.Inject
 class DateUtil @Inject constructor(
     private val stringsProvider: StringsProvider
 ) {
-   private companion object{
-        const val UI_DATE_FORMAT = "dd MMM yyyy"
-    }
-
     private val dateFormat by lazy {
         SimpleDateFormat(UI_DATE_FORMAT, Locale.getDefault())
     }
@@ -36,12 +32,15 @@ class DateUtil @Inject constructor(
         return stringsProvider.getQuantityString(R.plurals.seconds, seconds, seconds)
     }
 
-
     private fun getDate(milliSeconds: Long): String {
         val calendar: Calendar = Calendar.getInstance()
 
         calendar.timeInMillis = milliSeconds
 
         return dateFormat.format(calendar.time)
+    }
+
+    private companion object {
+        const val UI_DATE_FORMAT = "dd MMM yyyy"
     }
 }
