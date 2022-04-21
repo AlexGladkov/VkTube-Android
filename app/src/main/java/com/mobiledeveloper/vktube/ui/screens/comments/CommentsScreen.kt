@@ -13,6 +13,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.mobiledeveloper.vktube.R
@@ -23,7 +24,8 @@ import com.mobiledeveloper.vktube.ui.theme.Fronton
 fun CommentsScreen(
     viewState: VideoViewState,
     onCloseClick: () -> Unit,
-    onSendClick: (String) -> Unit
+    onSendClick: (String) -> Unit,
+    commentsHeight: Dp
 ) {
     Column {
         CommentsHeaderView(count = viewState.video?.viewsCountFormatted.orEmpty()) {
@@ -31,13 +33,15 @@ fun CommentsScreen(
         }
         CommentsAddView(viewState, onSendClick)
         Divider(thickness = 1.dp, color = Fronton.color.controlMinor)
-        CommentsList(viewState)
+        CommentsList(viewState, commentsHeight)
     }
 }
 
 @Composable
-private fun CommentsHeaderView(count: String,
-                               onCloseClick: () -> Unit,) {
+private fun CommentsHeaderView(
+    count: String,
+    onCloseClick: () -> Unit,
+) {
     Column(
         modifier = Modifier
             .background(Fronton.color.backgroundSecondary)
@@ -122,11 +126,12 @@ private fun CommentsAddView(viewState: VideoViewState, onSendClick: (String) -> 
 }
 
 @Composable
-fun CommentsList(viewState: VideoViewState) {
-    LazyColumn {
-        viewState.comments.forEach {
-            item {
-                CommentCell(it)
+fun CommentsList(viewState: VideoViewState, commentsHeight: Dp) {
+    val comments = viewState.comments
+    if (comments.isNotEmpty()) {
+        LazyColumn(modifier = Modifier.height(commentsHeight)) {
+            comments.forEach {
+                item { CommentCell(it) }
             }
         }
     }

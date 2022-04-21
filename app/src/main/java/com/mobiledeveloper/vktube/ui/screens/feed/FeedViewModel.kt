@@ -111,7 +111,8 @@ class FeedViewModel @Inject constructor(
                             numberUtil = numberUtil
                         )
                     }
-                }.flatten().sortedWith(comparator)
+                }.flatten()
+                .sortedWith(comparator)
         }
 
 

@@ -33,7 +33,6 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.mobiledeveloper.vktube.R
 import com.mobiledeveloper.vktube.ui.common.views.VideoActionView
 import com.mobiledeveloper.vktube.ui.screens.comments.CommentsScreen
-import com.mobiledeveloper.vktube.ui.screens.feed.models.CommentCellModel
 import com.mobiledeveloper.vktube.ui.screens.feed.models.VideoCellModel
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoAction
 import com.mobiledeveloper.vktube.ui.screens.video.models.VideoEvent
@@ -42,13 +41,13 @@ import com.mobiledeveloper.vktube.ui.theme.Fronton
 import com.mobiledeveloper.vktube.utils.Constants.PADDING_16
 import com.mobiledeveloper.vktube.utils.Constants.PADDING_4
 import com.mobiledeveloper.vktube.utils.Constants.PADDING_8
+import com.mobiledeveloper.vktube.utils.Constants.SCREEN_COMMENTS_BOTTOM_PADDING
 import com.mobiledeveloper.vktube.utils.Constants.SCREEN_HEIGHT_CENTER_COEF
 import com.mobiledeveloper.vktube.utils.Constants.SCREEN_HEIGHT_MULTIPLIER
 import com.mobiledeveloper.vktube.utils.Constants.SCREEN_WIDTH_DIVIDER
 import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-
 
 @OptIn(
     ExperimentalFoundationApi::class, ExperimentalMaterialApi::class,
@@ -68,6 +67,8 @@ fun VideoScreen(
     val systemUiController = rememberSystemUiController()
 
     val bottomSheetPeekHeight = getBottomSheetPeekHeight(configuration)
+
+    val commentsHeight = getCommentsListHeight(configuration, bottomSheetPeekHeight)
 
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed)
@@ -105,12 +106,12 @@ fun VideoScreen(
             modifier = Modifier.systemBarsPadding(),
             scaffoldState = bottomSheetScaffoldState,
             sheetContent = {
-                CommentsScreen(viewState = viewState,
-                    onSendClick = {
-                        videoViewModel.obtainEvent(VideoEvent.SendComment(it))
-                    }, onCloseClick = {
-                        videoViewModel.obtainEvent(VideoEvent.CloseCommentsClick)
-                    })
+                CommentsScreen(
+                    viewState = viewState,
+                    onSendClick = { videoViewModel.obtainEvent(VideoEvent.SendComment(it)) },
+                    onCloseClick = { videoViewModel.obtainEvent(VideoEvent.CloseCommentsClick) },
+                    commentsHeight = commentsHeight
+                )
             },
             sheetPeekHeight = bottomSheetHeight
         ) {
@@ -176,6 +177,11 @@ private fun getBottomSheetPeekHeight(configuration: Configuration): Dp {
     val screenHeight = configuration.screenHeightDp.dp
     return (screenHeight - (screenWidth / SCREEN_WIDTH_DIVIDER) * SCREEN_HEIGHT_MULTIPLIER)
         .coerceAtLeast(screenHeight / SCREEN_HEIGHT_CENTER_COEF)
+}
+
+private fun getCommentsListHeight(configuration: Configuration, bottomSheetPeekHeight: Dp): Dp {
+    val bottomSheetScreenSize = configuration.screenHeightDp.dp - bottomSheetPeekHeight
+    return (bottomSheetScreenSize * 2) - SCREEN_COMMENTS_BOTTOM_PADDING.dp
 }
 
 private fun setBarsVisible(systemUiController: SystemUiController, visible: Boolean) {
@@ -251,7 +257,7 @@ fun VideoScreenView(
         }
 
         item {
-            VideoCommentsView(viewState.comments, viewState, onCommentsAvailable)
+            VideoCommentsView(viewState, onCommentsAvailable)
         }
     }
 }
@@ -311,13 +317,9 @@ private fun VideoUserRow(video: VideoCellModel) {
 }
 
 @Composable
-private fun VideoCommentsView(
-    comments: List<CommentCellModel>,
-    viewState: VideoViewState,
-    onCommentsAvailable: () -> Unit
-) {
-    val hasComments = comments.count() > 0
-
+private fun VideoCommentsView(viewState: VideoViewState, onCommentsAvailable: () -> Unit) {
+    val comments = viewState.comments
+    val hasComments = comments.isNotEmpty()
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -333,7 +335,7 @@ private fun VideoCommentsView(
             if (hasComments) {
                 Text(
                     modifier = Modifier.padding(start = 8.dp),
-                    text = comments.count().toString(),
+                    text = comments.size.toString(),
                     color = Fronton.color.textPrimary,
                     style = Fronton.typography.body.small.short
                 )
