@@ -1,10 +1,12 @@
 package com.mobiledeveloper.vktube.ui.screens.subscriptions
 
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.mobiledeveloper.vktube.base.BaseViewModel
 import com.mobiledeveloper.vktube.data.clubs.ClubsLocalDataSource
 import com.mobiledeveloper.vktube.data.clubs.ClubsRepository
 import com.mobiledeveloper.vktube.data.user.UserRepository
+import com.mobiledeveloper.vktube.navigation.items
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionCellModel
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsListAction
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsListEvent
@@ -27,6 +29,7 @@ class SubscriptionsListViewModel @Inject constructor(
             SubscriptionsListEvent.ClearAction -> clearAction()
             is SubscriptionsListEvent.Back -> goBack()
             is SubscriptionsListEvent.GroupClick -> toggleIgnored(viewEvent.item)
+            SubscriptionsListEvent.ToggleAll -> toggleAll()
         }
     }
 
@@ -35,27 +38,52 @@ class SubscriptionsListViewModel @Inject constructor(
         viewAction = SubscriptionsListAction.BackToFeed
     }
 
-    private fun remove(id: Long) {
+    private fun remove(id: List<Long>) {
         viewModelScope.launch {
             val ignoreList = groupsLocalDataSource.loadIgnoreList() as MutableList
-            ignoreList.remove(id)
+            id.forEach { ignoreList.remove(it) }
             groupsLocalDataSource.saveIgnoreList(ignoreList)
         }
     }
 
-    private fun add(id: Long) {
+    private fun add(id: List<Long>) {
         viewModelScope.launch {
             val ignoreList = groupsLocalDataSource.loadIgnoreList() as MutableList
-            ignoreList.add(id)
+            id.forEach { ignoreList.add(it) }
             groupsLocalDataSource.saveIgnoreList(ignoreList)
         }
     }
 
     private fun toggleIgnored(item:SubscriptionCellModel) {
-        if (item.isIgnored) remove(item.groupId) else add(item.groupId)
+        if (item.isIgnored) remove(listOf(item.groupId)) else add(listOf(item.groupId))
+        val updatedItems =
+            viewState.items.map { if (it.groupId == item.groupId) item.copy(isIgnored = !item.isIgnored) else it }
         viewState = viewState.copy(
-            items = viewState.items.map { if (it.groupId == item.groupId) item.copy(isIgnored = !item.isIgnored) else it }
+            items = updatedItems,
+            ignoreAll = areAllIgnored(updatedItems)
         )
+    }
+
+    private fun toggleAll() {
+        val allIgnored = areAllIgnored(viewState.items)
+        viewState = viewState.copy(
+            items = if (allIgnored) watchAll() else ignoreAll(),
+            ignoreAll = !allIgnored
+        )
+    }
+
+    private fun watchAll(): List<SubscriptionCellModel> {
+        remove(viewState.items.map { it.groupId })
+        return viewState.items.map { it.copy(isIgnored = false) }
+    }
+
+    private fun ignoreAll(): List<SubscriptionCellModel> {
+        add(viewState.items.map { it.groupId })
+        return viewState.items.map { it.copy(isIgnored = true) }
+    }
+
+    private fun areAllIgnored(items: List<SubscriptionCellModel>): Boolean{
+        return items.all { it.isIgnored }
     }
 
     private fun clearAction() {
@@ -90,7 +118,8 @@ class SubscriptionsListViewModel @Inject constructor(
 
                 viewState = viewState.copy(
                     items = groups,
-                    loading = false
+                    loading = false,
+                    ignoreAll = areAllIgnored(groups)
                 )
 
             } catch (ex: Exception) {

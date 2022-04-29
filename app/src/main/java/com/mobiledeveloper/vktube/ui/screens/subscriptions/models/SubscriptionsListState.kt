@@ -5,5 +5,6 @@ import javax.annotation.concurrent.Immutable
 @Immutable
 data class SubscriptionsListState(
     val items: List<SubscriptionCellModel> = emptyList(),
+    val ignoreAll :Boolean = true,
     val loading: Boolean = true
 )
