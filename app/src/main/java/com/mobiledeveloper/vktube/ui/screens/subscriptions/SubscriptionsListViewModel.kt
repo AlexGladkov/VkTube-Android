@@ -23,6 +23,14 @@ class SubscriptionsListViewModel @Inject constructor(
     private val userRepository: UserRepository
 ) : BaseViewModel<SubscriptionsListState, SubscriptionsListAction, SubscriptionsListEvent>(initialState = SubscriptionsListState()) {
 
+    private var sortBy:SortBy = SortBy.NameAndIgnored
+
+    sealed class SortBy(){
+        object Name: SortBy()
+        object Ignored: SortBy()
+        object NameAndIgnored: SortBy()
+    }
+
     override fun obtainEvent(viewEvent: SubscriptionsListEvent) {
         when (viewEvent) {
             SubscriptionsListEvent.ScreenShown -> onScreenShown()
@@ -58,8 +66,9 @@ class SubscriptionsListViewModel @Inject constructor(
         if (item.isIgnored) remove(listOf(item.groupId)) else add(listOf(item.groupId))
         val updatedItems =
             viewState.items.map { if (it.groupId == item.groupId) item.copy(isIgnored = !item.isIgnored) else it }
+
         viewState = viewState.copy(
-            items = updatedItems,
+            items = sort(updatedItems),
             ignoreAll = areAllIgnored(updatedItems)
         )
     }
@@ -67,7 +76,7 @@ class SubscriptionsListViewModel @Inject constructor(
     private fun toggleAll() {
         val allIgnored = areAllIgnored(viewState.items)
         viewState = viewState.copy(
-            items = if (allIgnored) watchAll() else ignoreAll(),
+            items = sort(if (allIgnored) watchAll() else ignoreAll()),
             ignoreAll = !allIgnored
         )
     }
@@ -84,6 +93,14 @@ class SubscriptionsListViewModel @Inject constructor(
 
     private fun areAllIgnored(items: List<SubscriptionCellModel>): Boolean{
         return items.all { it.isIgnored }
+    }
+
+    private fun sort(items: List<SubscriptionCellModel>): List<SubscriptionCellModel> {
+        return when(sortBy){
+            is SortBy.Name -> items.sortedBy { it.groupName }
+            is SortBy.Ignored -> items.sortedBy { it.isIgnored }
+            is SortBy.NameAndIgnored -> items.sortedWith(compareBy({ it.isIgnored }, { it.groupName }))
+        }
     }
 
     private fun clearAction() {
@@ -117,7 +134,7 @@ class SubscriptionsListViewModel @Inject constructor(
                 }
 
                 viewState = viewState.copy(
-                    items = groups,
+                    items = sort(groups),
                     loading = false,
                     ignoreAll = areAllIgnored(groups)
                 )
