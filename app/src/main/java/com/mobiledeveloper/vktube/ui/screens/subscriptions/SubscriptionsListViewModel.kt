@@ -1,12 +1,10 @@
 package com.mobiledeveloper.vktube.ui.screens.subscriptions
 
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.mobiledeveloper.vktube.base.BaseViewModel
 import com.mobiledeveloper.vktube.data.clubs.ClubsLocalDataSource
 import com.mobiledeveloper.vktube.data.clubs.ClubsRepository
 import com.mobiledeveloper.vktube.data.user.UserRepository
-import com.mobiledeveloper.vktube.navigation.items
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionCellModel
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsListAction
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsListEvent

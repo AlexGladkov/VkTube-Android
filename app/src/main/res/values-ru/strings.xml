@@ -8,6 +8,7 @@
     <string name="video_action_icon">Иконка действия под видео</string>
     <string name="send_comment_icon">Иконка отправки комментария</string>
 
+    <string name="search">Поиск</string>
     <string name="comments">Комментарии</string>
     <string name="enter_comment_text">Введите текст комментария</string>
     <string name="login_to_vk">Вход через ВК</string>
