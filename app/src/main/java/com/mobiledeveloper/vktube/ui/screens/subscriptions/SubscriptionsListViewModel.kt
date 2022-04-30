@@ -68,6 +68,12 @@ class SubscriptionsListViewModel @Inject constructor(
         }
     }
 
+    private fun addAll() {
+        viewModelScope.launch {
+            groupsLocalDataSource.saveIgnoreList(viewState.items.map { it.groupId })
+        }
+    }
+
     private fun toggleIgnored(item:SubscriptionCellModel) {
         if (item.isIgnored) remove(listOf(item.groupId)) else add(listOf(item.groupId))
         val updatedItems =
@@ -93,7 +99,7 @@ class SubscriptionsListViewModel @Inject constructor(
     }
 
     private fun ignoreAll(): List<SubscriptionCellModel> {
-        add(viewState.items.map { it.groupId })
+        addAll()
         return viewState.items.map { it.copy(isIgnored = true) }
     }
 
