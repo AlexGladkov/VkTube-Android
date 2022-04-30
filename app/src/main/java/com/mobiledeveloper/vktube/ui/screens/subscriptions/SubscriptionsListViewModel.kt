@@ -54,6 +54,12 @@ class SubscriptionsListViewModel @Inject constructor(
         }
     }
 
+    private fun removeAll() {
+        viewModelScope.launch {
+            groupsLocalDataSource.saveIgnoreList(listOf())
+        }
+    }
+
     private fun add(id: List<Long>) {
         viewModelScope.launch {
             val ignoreList = groupsLocalDataSource.loadIgnoreList() as MutableList
@@ -82,7 +88,7 @@ class SubscriptionsListViewModel @Inject constructor(
     }
 
     private fun watchAll(): List<SubscriptionCellModel> {
-        remove(viewState.items.map { it.groupId })
+        removeAll()
         return viewState.items.map { it.copy(isIgnored = false) }
     }
 
