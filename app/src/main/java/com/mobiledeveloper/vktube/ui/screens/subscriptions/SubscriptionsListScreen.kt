@@ -15,10 +15,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -31,6 +31,8 @@ import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParam
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.ignoreAllIconPaddingVert
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.ignoreIconPaddingHor
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.notAllIgnoredAlpha
+import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.nothingFoundFieldSize
+import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.nothingFoundTextSize
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.searchFieldPaddingHor
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.searchFieldPaddingVert
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.searchFieldWeight
@@ -51,6 +53,9 @@ private object SubscriptionListParameters{
     const val searchFieldPaddingVert = 4
     const val searchFieldPaddingHor = 16
     const val searchFieldWeight = 1f
+
+    const val nothingFoundFieldSize = 30
+    const val nothingFoundTextSize = 20
 
     const val ignoreAllIconPaddingVert = 16
     const val ignoreIconPaddingHor = 16
@@ -104,6 +109,7 @@ fun SubscriptionsListScreen(
 
     Column() {
         Row(modifier = Modifier
+            .padding(vertical = spaceBetween.dp)
             .fillMaxWidth()
             .background(color = Fronton.color.backgroundPrimary),
             verticalAlignment = Alignment.CenterVertically,
@@ -112,12 +118,15 @@ fun SubscriptionsListScreen(
 
             OutlinedTextField(
                 modifier = Modifier
-                    .padding(vertical = searchFieldPaddingVert.dp, horizontal = searchFieldPaddingHor.dp)
+                    .padding(
+                        vertical = searchFieldPaddingVert.dp,
+                        horizontal = searchFieldPaddingHor.dp
+                    )
                     .weight(searchFieldWeight),
                 label = { Text(LocalContext.current.resources.getString(R.string.search)) },
                 value = text,
                 onValueChange = { search(it) },
-                textStyle = TextStyle(color = Color.Black, fontSize = searchTextSize.sp),
+                textStyle = TextStyle(color = Fronton.color.textPrimary, fontSize = searchTextSize.sp),
             )
             Icon(
                 modifier = Modifier
@@ -136,6 +145,17 @@ fun SubscriptionsListScreen(
                 contentDescription = null
             )
         }
+
+        val nothingFoundFieldHeight = if (itemsLocal.isEmpty() && !viewState.loading) nothingFoundFieldSize else 0
+
+        Text(
+            text = LocalContext.current.resources.getString(R.string.nothing_found),
+            modifier = Modifier
+                .height(nothingFoundFieldHeight.dp)
+                .fillMaxWidth(),
+            style = TextStyle(color = Fronton.color.textPrimary, fontSize = nothingFoundTextSize.sp),
+            textAlign = TextAlign.Center
+        )
 
         Box(modifier = Modifier.background(color = Fronton.color.backgroundPrimary)) {
             SubscriptionsView(

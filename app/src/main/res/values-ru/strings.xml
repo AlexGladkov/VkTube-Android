@@ -8,6 +8,7 @@
     <string name="video_action_icon">Иконка действия под видео</string>
     <string name="send_comment_icon">Иконка отправки комментария</string>
 
+    <string name="nothing_found">Ничего не найдено</string>
     <string name="search">Поиск</string>
     <string name="comments">Комментарии</string>
     <string name="enter_comment_text">Введите текст комментария</string>
@@ -15,6 +16,7 @@
     <string name="logout_from_vk">Выйти из аккаунта ВК</string>
     <string name="subscribes">Список каналов</string>
     <string name="retry">Повторить</string>
+    <string name="loading">Загрузка</string>
 
     <plurals name="seconds">
         <item quantity="one">%1d секунду назад</item>
