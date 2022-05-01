@@ -37,7 +37,7 @@ private object SubscriptionItemParameters{
     const val textSize = 15
     const val ignoredAlpha = 0.4f
     const val eyeIgnoreAlpha = 0.0f
-    const val weight= 1f
+    const val weight = 1f
     const val leftMarginText = 10
     const val maxTextLines = 2
 }

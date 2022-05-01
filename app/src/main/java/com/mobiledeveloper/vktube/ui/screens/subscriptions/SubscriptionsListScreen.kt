@@ -19,8 +19,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -31,9 +29,11 @@ import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParam
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.countGreyCells
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.eyeIconSize
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.ignoreAllIconPaddingVert
-import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.margin
+import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.ignoreIconPaddingHor
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.notAllIgnoredAlpha
-import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.searchFieldPadding
+import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.searchFieldPaddingHor
+import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.searchFieldPaddingVert
+import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.searchFieldWeight
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.searchTextSize
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.spaceBetween
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionCellModel
@@ -45,14 +45,19 @@ import java.util.*
 
 private object SubscriptionListParameters{
     const val spaceBetween = 8
-    const val margin = 16
+
     const val countGreyCells = 30
-    const val searchFieldPadding = 4
+
+    const val searchFieldPaddingVert = 4
+    const val searchFieldPaddingHor = 16
+    const val searchFieldWeight = 1f
+
     const val ignoreAllIconPaddingVert = 16
+    const val ignoreIconPaddingHor = 16
     const val eyeIconSize = 18
     const val notAllIgnoredAlpha = 1f
     const val ignoreAllAlpha = 0.4f
-    const val searchTextSize = 15
+    const val searchTextSize = 17
 }
 
 @Composable
@@ -102,11 +107,13 @@ fun SubscriptionsListScreen(
             .fillMaxWidth()
             .background(color = Fronton.color.backgroundPrimary),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.End,
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
+
             OutlinedTextField(
                 modifier = Modifier
-                    .padding(vertical = searchFieldPadding.dp),
+                    .padding(vertical = searchFieldPaddingVert.dp, horizontal = searchFieldPaddingHor.dp)
+                    .weight(searchFieldWeight),
                 label = { Text(LocalContext.current.resources.getString(R.string.search)) },
                 value = text,
                 onValueChange = { search(it) },
@@ -115,7 +122,7 @@ fun SubscriptionsListScreen(
             Icon(
                 modifier = Modifier
                     .padding(
-                        horizontal = margin.dp,
+                        horizontal = ignoreIconPaddingHor.dp,
                         vertical = ignoreAllIconPaddingVert.dp
                     )
                     .clickable {
@@ -173,7 +180,7 @@ private fun SubscriptionView(
     groupClick: (SubscriptionCellModel) -> Unit
 ) {
      LazyColumn(
-         modifier = Modifier.padding(horizontal = margin.dp),
+         modifier = Modifier.padding(horizontal = ignoreIconPaddingHor.dp),
          verticalArrangement = Arrangement.spacedBy(spaceBetween.dp)
      ) {
         items(
