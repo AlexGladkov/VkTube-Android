@@ -29,7 +29,6 @@ class SettingsViewModel @Inject constructor(
     }
 
     private fun goToSubscribesList() {
-        VK.logout()
         viewAction = SettingsAction.NavigateSubscribes
     }
 
