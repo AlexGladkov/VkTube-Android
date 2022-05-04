@@ -41,7 +41,7 @@ class ClubsLocalDataSource @Inject constructor(
     }
 
     companion object {
-        private const val SEPARATOR=","
+        private const val SEPARATOR = ","
         private const val CLUBS_IDS_KEY = "clubs_key"
         private const val CLUBS_IGNORED_KEY = "ignored_key"
     }

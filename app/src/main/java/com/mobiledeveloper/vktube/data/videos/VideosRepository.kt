@@ -3,6 +3,7 @@
 package com.mobiledeveloper.vktube.data.videos
 
 import com.google.gson.*
+import com.mobiledeveloper.vktube.ui.screens.feed.models.VideoCellModel
 import com.vk.api.sdk.VK
 import com.vk.api.sdk.VKApiManager
 import com.vk.api.sdk.VKApiResponseParser
@@ -24,7 +25,7 @@ import java.lang.reflect.Type
 import javax.inject.Inject
 import kotlin.math.absoluteValue
 
-class VideosRepository @Inject constructor() {
+class VideosRepository @Inject constructor(val videoLocalDataSource: VideosLocalDataSource) {
     suspend fun fetchVideos(
         groupIds: List<Long>,
         count: Int
@@ -180,10 +181,24 @@ class VideosRepository @Inject constructor() {
             }
         }
 
+
         companion object {
             private const val CHUNK_LIMIT = 25
         }
     }
 
+    fun saveVideo(video: VideoCellModel){
+        val videos = videoLocalDataSource.loadVideos() as MutableList
+        videos.add(video)
+        videoLocalDataSource.saveVideos(videos)
+    }
+
+    fun loadVideos(): List<VideoCellModel> {
+        return videoLocalDataSource.loadVideos()
+    }
+
+    fun clearVideos() {
+        videoLocalDataSource.clearVideos()
+    }
     data class LoadSettings(val groupId: Long, val count: Int, val offset: Int = 0)
 }
