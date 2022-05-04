@@ -74,13 +74,6 @@ fun SubscriptionsListScreen(
     val viewAction by viewModel.viewActions().collectAsState(initial = null)
 
     var text by remember { mutableStateOf("") }
-    var itemsLocal by remember { mutableStateOf( viewState.items ) }
-    var oldItems by remember { mutableStateOf( viewState.items ) }
-
-    if (viewState.items != oldItems) {
-        itemsLocal = viewState.items
-        oldItems = viewState.items
-    }
 
     val eyeAlpha = when (viewState.ignoreAll) {
         true -> ignoreAllAlpha
@@ -97,10 +90,7 @@ fun SubscriptionsListScreen(
 
     val search = fun (searchBy: String) {
         text = searchBy
-        itemsLocal = viewState.items.filter {
-            it.groupName.lowercase(Locale.getDefault())
-                .contains(searchBy.lowercase(Locale.getDefault()))
-        }
+        viewModel.obtainEvent(SubscriptionsListEvent.Search(searchBy))
     }
 
     BackHandler(enabled = true){
@@ -146,7 +136,7 @@ fun SubscriptionsListScreen(
             )
         }
 
-        val nothingFoundFieldHeight = if (itemsLocal.isEmpty() && !viewState.loading) nothingFoundFieldSize else 0
+        val nothingFoundFieldHeight = if (viewState.items.isEmpty() && !viewState.loading) nothingFoundFieldSize else 0
 
         Text(
             text = LocalContext.current.resources.getString(R.string.nothing_found),
@@ -159,7 +149,7 @@ fun SubscriptionsListScreen(
 
         Box(modifier = Modifier.background(color = Fronton.color.backgroundPrimary)) {
             SubscriptionsView(
-                viewState = viewState.copy(items = itemsLocal),
+                viewState = viewState.copy(items = viewState.items),
                 groupClick
             )}
     }

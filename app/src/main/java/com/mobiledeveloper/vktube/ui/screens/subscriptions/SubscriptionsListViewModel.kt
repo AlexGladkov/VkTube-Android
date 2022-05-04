@@ -12,6 +12,7 @@ import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsL
 import com.vk.sdk.api.groups.dto.GroupsGroupFull
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,6 +21,8 @@ class SubscriptionsListViewModel @Inject constructor(
     private val groupsLocalDataSource: ClubsLocalDataSource,
     private val userRepository: UserRepository
 ) : BaseViewModel<SubscriptionsListState, SubscriptionsListAction, SubscriptionsListEvent>(initialState = SubscriptionsListState()) {
+
+    private var groups: List<SubscriptionCellModel> = emptyList()
 
     private var sortBy:SortBy = SortBy.NameAndIgnored
 
@@ -35,6 +38,7 @@ class SubscriptionsListViewModel @Inject constructor(
             SubscriptionsListEvent.ClearAction -> clearAction()
             is SubscriptionsListEvent.Back -> goBack()
             is SubscriptionsListEvent.GroupClick -> toggleIgnored(viewEvent.item)
+            is SubscriptionsListEvent.Search -> search(viewEvent.searchBy)
             SubscriptionsListEvent.ToggleAll -> toggleAll()
         }
     }
@@ -42,6 +46,15 @@ class SubscriptionsListViewModel @Inject constructor(
     private fun goBack() {
         clearAction()
         viewAction = SubscriptionsListAction.BackToFeed
+    }
+
+    private fun search(searchBy :String) {
+        viewState = viewState.copy(
+            items = sort( groups.filter {
+                it.groupName.lowercase(Locale.getDefault())
+                    .contains(searchBy.lowercase(Locale.getDefault()))
+            })
+        )
     }
 
     private fun remove(id: Long) {
@@ -143,6 +156,7 @@ class SubscriptionsListViewModel @Inject constructor(
                    mapToSubscriptionCellModel(it, ignoreList)
                 }
 
+                this@SubscriptionsListViewModel.groups = groups
                 viewState = viewState.copy(
                     items = sort(groups),
                     loading = false,
