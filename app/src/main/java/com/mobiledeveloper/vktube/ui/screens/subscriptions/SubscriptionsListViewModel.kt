@@ -44,10 +44,10 @@ class SubscriptionsListViewModel @Inject constructor(
         viewAction = SubscriptionsListAction.BackToFeed
     }
 
-    private fun remove(id: List<Long>) {
+    private fun remove(id: Long) {
         viewModelScope.launch {
             val ignoreList = groupsLocalDataSource.loadIgnoreList() as MutableList
-            id.forEach { ignoreList.remove(it) }
+            ignoreList.remove(id)
             groupsLocalDataSource.saveIgnoreList(ignoreList)
         }
     }
@@ -58,10 +58,10 @@ class SubscriptionsListViewModel @Inject constructor(
         }
     }
 
-    private fun add(id: List<Long>) {
+    private fun add(id: Long) {
         viewModelScope.launch {
             val ignoreList = groupsLocalDataSource.loadIgnoreList() as MutableList
-            id.forEach { ignoreList.add(it) }
+            ignoreList.add(id)
             groupsLocalDataSource.saveIgnoreList(ignoreList)
         }
     }
@@ -73,7 +73,7 @@ class SubscriptionsListViewModel @Inject constructor(
     }
 
     private fun toggleIgnored(item:SubscriptionCellModel) {
-        if (item.isIgnored) remove(listOf(item.groupId)) else add(listOf(item.groupId))
+        if (item.isIgnored) remove(item.groupId) else add(item.groupId)
         val updatedItems =
             viewState.items.map { if (it.groupId == item.groupId) item.copy(isIgnored = !item.isIgnored) else it }
 
