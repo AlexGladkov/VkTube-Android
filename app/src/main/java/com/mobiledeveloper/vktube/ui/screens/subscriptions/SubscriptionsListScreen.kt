@@ -28,13 +28,9 @@ import com.mobiledeveloper.vktube.ui.common.cell.*
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.ignoreAllAlpha
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.countGreyCells
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.eyeIconSize
-import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.ignoreAllIconPaddingVert
-import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.ignoreIconPaddingHor
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.notAllIgnoredAlpha
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.nothingFoundFieldSize
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.nothingFoundTextSize
-import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.searchFieldPaddingHor
-import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.searchFieldPaddingVert
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.searchFieldWeight
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.searchTextSize
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.spaceBetween
@@ -49,15 +45,11 @@ private object SubscriptionListParameters{
 
     const val countGreyCells = 30
 
-    const val searchFieldPaddingVert = 4
-    const val searchFieldPaddingHor = 16
     const val searchFieldWeight = 1f
 
     const val nothingFoundFieldSize = 30
     const val nothingFoundTextSize = 20
 
-    const val ignoreAllIconPaddingVert = 16
-    const val ignoreIconPaddingHor = 16
     const val eyeIconSize = 18
     const val notAllIgnoredAlpha = 1f
     const val ignoreAllAlpha = 0.4f
@@ -108,8 +100,8 @@ fun SubscriptionsListScreen(
             OutlinedTextField(
                 modifier = Modifier
                     .padding(
-                        vertical = searchFieldPaddingVert.dp,
-                        horizontal = searchFieldPaddingHor.dp
+                        vertical = 4.dp,
+                        horizontal = 16.dp
                     )
                     .weight(searchFieldWeight),
                 label = { Text(LocalContext.current.resources.getString(R.string.search)) },
@@ -120,8 +112,8 @@ fun SubscriptionsListScreen(
             Icon(
                 modifier = Modifier
                     .padding(
-                        horizontal = ignoreIconPaddingHor.dp,
-                        vertical = ignoreAllIconPaddingVert.dp
+                        horizontal = 16.dp,
+                        vertical = 16.dp
                     )
                     .clickable {
                         toggleAll()
@@ -189,7 +181,7 @@ private fun SubscriptionView(
     groupClick: (SubscriptionCellModel) -> Unit
 ) {
      LazyColumn(
-         modifier = Modifier.padding(horizontal = ignoreIconPaddingHor.dp),
+         modifier = Modifier.padding(horizontal = 16.dp),
          verticalArrangement = Arrangement.spacedBy(spaceBetween.dp)
      ) {
         items(

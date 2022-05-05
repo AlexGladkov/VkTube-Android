@@ -108,7 +108,6 @@ fun VideoScreen(
                 Box(Modifier.fillMaxHeight()) {
                     CommentsScreen(viewState = viewState,
                         onSendClick = {
-
                             videoViewModel.obtainEvent(VideoEvent.SendComment(it))
                         }, onCloseClick = {
                             videoViewModel.obtainEvent(VideoEvent.CloseCommentsClick)
