@@ -80,11 +80,11 @@ fun SubscriptionsListScreen(
     }
 
     val groupClick = fun (item: SubscriptionCellModel) {
-        viewModel.obtainEvent(SubscriptionsListEvent.GroupClick(item))
+        viewModel.obtainEvent(SubscriptionsListEvent.GroupClicked(item))
     }
 
     val toggleAll = fun () {
-        viewModel.obtainEvent(SubscriptionsListEvent.ToggleAll)
+        viewModel.obtainEvent(SubscriptionsListEvent.ToggleAllisClicked)
     }
 
     val search = fun (searchBy: String) {
