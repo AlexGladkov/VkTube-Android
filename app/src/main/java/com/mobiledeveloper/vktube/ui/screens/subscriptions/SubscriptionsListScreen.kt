@@ -28,10 +28,10 @@ import com.mobiledeveloper.vktube.ui.common.cell.*
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.ignoreAllAlpha
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.countGreyCells
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.eyeIconSize
+import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.eyeIconSizePaddingVert
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.notAllIgnoredAlpha
-import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.nothingFoundFieldSize
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.nothingFoundTextSize
-import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.searchFieldWeight
+import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.searchFieldWidth
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.searchTextSize
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.spaceBetween
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionCellModel
@@ -45,12 +45,12 @@ private object SubscriptionListParameters{
 
     const val countGreyCells = 30
 
-    const val searchFieldWeight = 1f
+    const val searchFieldWidth = 150
 
-    const val nothingFoundFieldSize = 30
     const val nothingFoundTextSize = 20
 
-    const val eyeIconSize = 18
+    const val eyeIconSize = 24
+    const val eyeIconSizePaddingVert = 16
     const val notAllIgnoredAlpha = 1f
     const val ignoreAllAlpha = 0.4f
     const val searchTextSize = 17
@@ -88,7 +88,7 @@ fun SubscriptionsListScreen(
         viewModel.obtainEvent(SubscriptionsListEvent.Back)
     }
 
-    Column() {
+    Column(modifier = Modifier.fillMaxHeight()) {
         Row(modifier = Modifier
             .padding(vertical = spaceBetween.dp)
             .fillMaxWidth()
@@ -97,13 +97,11 @@ fun SubscriptionsListScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
 
+            Spacer(modifier = Modifier.width(eyeIconSize.dp + (2 * eyeIconSizePaddingVert).dp))
+
             OutlinedTextField(
                 modifier = Modifier
-                    .padding(
-                        vertical = 4.dp,
-                        horizontal = 16.dp
-                    )
-                    .weight(searchFieldWeight),
+                    .width(searchFieldWidth.dp),
                 label = { Text(LocalContext.current.resources.getString(R.string.search)) },
                 value = text,
                 onValueChange = { search(it) },
@@ -113,7 +111,7 @@ fun SubscriptionsListScreen(
                 modifier = Modifier
                     .padding(
                         horizontal = 16.dp,
-                        vertical = 16.dp
+                        vertical = eyeIconSizePaddingVert.dp
                     )
                     .clickable {
                         toggleAll()
@@ -127,22 +125,30 @@ fun SubscriptionsListScreen(
             )
         }
 
-        val nothingFoundFieldHeight = if (viewState.items.isEmpty() && !viewState.loading) nothingFoundFieldSize else 0
-
-        Text(
-            text = LocalContext.current.resources.getString(R.string.nothing_found),
-            modifier = Modifier
-                .height(nothingFoundFieldHeight.dp)
-                .fillMaxWidth(),
-            style = TextStyle(color = Fronton.color.textPrimary, fontSize = nothingFoundTextSize.sp),
-            textAlign = TextAlign.Center
-        )
-
-        Box(modifier = Modifier.background(color = Fronton.color.backgroundPrimary)) {
-            SubscriptionsView(
-                viewState = viewState,
-                groupClick
-            )}
+        if (viewState.items.isEmpty() && !viewState.loading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = LocalContext.current.resources.getString(R.string.nothing_found),
+                    modifier = Modifier.fillMaxWidth(),
+                    style = TextStyle(
+                        color = Fronton.color.textSecondary,
+                        fontSize = nothingFoundTextSize.sp
+                    ),
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+        else {
+            Box(modifier = Modifier.background(color = Fronton.color.backgroundPrimary)) {
+                SubscriptionsView(
+                    viewState = viewState,
+                    groupClick
+                )
+            }
+        }
     }
 
     LaunchedEffect(key1 = viewAction, block = {
