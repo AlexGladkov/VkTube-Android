@@ -50,7 +50,7 @@ class SubscriptionsListViewModel @Inject constructor(
         viewAction = SubscriptionsListAction.BackToFeed
     }
 
-    private fun search(searchBy :String) {
+    private fun search(searchBy: String) {
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
                 val ignoreList = groupsLocalDataSource.loadIgnoreList()
@@ -58,12 +58,13 @@ class SubscriptionsListViewModel @Inject constructor(
                     it.copy(isIgnored = ignoreList.contains(it.groupId))
                 }
                 val searchString = searchBy.lowercase(Locale.getDefault())
-
+                val items = sort(groups.filter {
+                    it.groupName.lowercase(Locale.getDefault())
+                        .contains(searchString)
+                })
                 viewState = viewState.copy(
-                    items = sort(groups.filter {
-                        it.groupName.lowercase(Locale.getDefault())
-                            .contains(searchString)
-                    })
+                    items = items,
+                    allAreIgnored = areAllIgnored(items)
                 )
             }
         }
@@ -94,7 +95,7 @@ class SubscriptionsListViewModel @Inject constructor(
 
         viewState = viewState.copy(
             items = sort(updatedItems),
-            ignoreAll = areAllIgnored(updatedItems)
+            allAreIgnored = areAllIgnored(updatedItems)
         )
     }
 
@@ -102,7 +103,7 @@ class SubscriptionsListViewModel @Inject constructor(
         val allIgnored = areAllIgnored(viewState.items)
         viewState = viewState.copy(
             items = sort(if (allIgnored) watchAll(viewState.items) else ignoreAll(viewState.items)),
-            ignoreAll = !allIgnored
+            allAreIgnored = !allIgnored
         )
     }
 
@@ -163,7 +164,7 @@ class SubscriptionsListViewModel @Inject constructor(
                     viewState = viewState.copy(
                         items = sort(groups),
                         loading = false,
-                        ignoreAll = areAllIgnored(groups)
+                        allAreIgnored = areAllIgnored(groups)
                     )
 
                 } catch (ex: Exception) {

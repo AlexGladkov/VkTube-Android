@@ -74,7 +74,7 @@ fun SubscriptionsListScreen(
 
     var text by remember { mutableStateOf("") }
 
-    val eyeAlpha = when (viewState.ignoreAll) {
+    val eyeAlpha = when (viewState.allAreIgnored) {
         true -> ignoreAllAlpha
         else -> notAllIgnoredAlpha
     }
