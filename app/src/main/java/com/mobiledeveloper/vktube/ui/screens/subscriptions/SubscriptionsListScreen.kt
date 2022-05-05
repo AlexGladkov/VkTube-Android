@@ -43,7 +43,6 @@ import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsL
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsListEvent
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsListState
 import com.mobiledeveloper.vktube.ui.theme.Fronton
-import java.util.*
 
 private object SubscriptionListParameters{
     const val spaceBetween = 8
@@ -90,7 +89,7 @@ fun SubscriptionsListScreen(
 
     val search = fun (searchBy: String) {
         text = searchBy
-        viewModel.obtainEvent(SubscriptionsListEvent.Search(searchBy))
+        viewModel.obtainEvent(SubscriptionsListEvent.SearchTextChanged(searchBy))
     }
 
     BackHandler(enabled = true){
@@ -149,7 +148,7 @@ fun SubscriptionsListScreen(
 
         Box(modifier = Modifier.background(color = Fronton.color.backgroundPrimary)) {
             SubscriptionsView(
-                viewState = viewState.copy(items = viewState.items),
+                viewState = viewState,
                 groupClick
             )}
     }

@@ -11,7 +11,9 @@ import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsL
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsListState
 import com.vk.sdk.api.groups.dto.GroupsGroupFull
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 import javax.inject.Inject
 
@@ -38,7 +40,7 @@ class SubscriptionsListViewModel @Inject constructor(
             SubscriptionsListEvent.ClearAction -> clearAction()
             is SubscriptionsListEvent.Back -> goBack()
             is SubscriptionsListEvent.GroupClick -> toggleIgnored(viewEvent.item)
-            is SubscriptionsListEvent.Search -> search(viewEvent.searchBy)
+            is SubscriptionsListEvent.SearchTextChanged -> search(viewEvent.searchBy)
             SubscriptionsListEvent.ToggleAll -> toggleAll()
         }
     }
@@ -49,39 +51,52 @@ class SubscriptionsListViewModel @Inject constructor(
     }
 
     private fun search(searchBy :String) {
-        viewState = viewState.copy(
-            items = sort( groups.filter {
-                it.groupName.lowercase(Locale.getDefault())
-                    .contains(searchBy.lowercase(Locale.getDefault()))
-            })
-        )
+        viewModelScope.launch {
+            withContext(Dispatchers.Default) {
+                val searchString = searchBy.lowercase(Locale.getDefault())
+                viewState = viewState.copy(
+                    items = sort(groups.filter {
+                        it.groupName.lowercase(Locale.getDefault())
+                            .contains(searchString)
+                    })
+                )
+            }
+        }
     }
 
     private fun remove(id: Long) {
         viewModelScope.launch {
-            val ignoreList = groupsLocalDataSource.loadIgnoreList() as MutableList
-            ignoreList.remove(id)
-            groupsLocalDataSource.saveIgnoreList(ignoreList)
+            withContext(Dispatchers.Default) {
+                val ignoreList = groupsLocalDataSource.loadIgnoreList() as MutableList
+                ignoreList.remove(id)
+                groupsLocalDataSource.saveIgnoreList(ignoreList)
+            }
         }
     }
 
     private fun removeAll() {
         viewModelScope.launch {
-            groupsLocalDataSource.saveIgnoreList(listOf())
+            withContext(Dispatchers.Default) {
+                groupsLocalDataSource.saveIgnoreList(listOf())
+            }
         }
     }
 
     private fun add(id: Long) {
         viewModelScope.launch {
-            val ignoreList = groupsLocalDataSource.loadIgnoreList() as MutableList
-            ignoreList.add(id)
-            groupsLocalDataSource.saveIgnoreList(ignoreList)
+            withContext(Dispatchers.Default) {
+                val ignoreList = groupsLocalDataSource.loadIgnoreList() as MutableList
+                ignoreList.add(id)
+                groupsLocalDataSource.saveIgnoreList(ignoreList)
+            }
         }
     }
 
     private fun addAll() {
         viewModelScope.launch {
-            groupsLocalDataSource.saveIgnoreList(viewState.items.map { it.groupId })
+            withContext(Dispatchers.Default) {
+                groupsLocalDataSource.saveIgnoreList(viewState.items.map { it.groupId })
+            }
         }
     }
 
@@ -139,34 +154,36 @@ class SubscriptionsListViewModel @Inject constructor(
 
     private fun fetchGroups() {
         viewModelScope.launch {
-            viewState = viewState.copy(
-                loading = true
-            )
-            try {
-                val userId = try {
-                    userRepository.fetchLocalUser().userId
-                } catch (e: Exception) {
-                    userRepository.fetchAndSaveUser()
-                    userRepository.fetchLocalUser().userId
-                }
-
-                val ignoreList = groupsLocalDataSource.loadIgnoreList()
-
-                val groups = groupsRepository.fetchClubs(userId).map {
-                   mapToSubscriptionCellModel(it, ignoreList)
-                }
-
-                this@SubscriptionsListViewModel.groups = groups
+            withContext(Dispatchers.Default) {
                 viewState = viewState.copy(
-                    items = sort(groups),
-                    loading = false,
-                    ignoreAll = areAllIgnored(groups)
+                    loading = true
                 )
+                try {
+                    val userId = try {
+                        userRepository.fetchLocalUser().userId
+                    } catch (e: Exception) {
+                        userRepository.fetchAndSaveUser()
+                        userRepository.fetchLocalUser().userId
+                    }
 
-            } catch (ex: Exception) {
-                viewState = viewState.copy(
-                    loading = false
-                )
+                    val ignoreList = groupsLocalDataSource.loadIgnoreList()
+
+                    val groups = groupsRepository.fetchClubs(userId).map {
+                        mapToSubscriptionCellModel(it, ignoreList)
+                    }
+
+                    this@SubscriptionsListViewModel.groups = groups
+                    viewState = viewState.copy(
+                        items = sort(groups),
+                        loading = false,
+                        ignoreAll = areAllIgnored(groups)
+                    )
+
+                } catch (ex: Exception) {
+                    viewState = viewState.copy(
+                        loading = false
+                    )
+                }
             }
         }
     }
