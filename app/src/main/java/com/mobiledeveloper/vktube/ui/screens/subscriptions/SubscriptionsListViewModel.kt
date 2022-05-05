@@ -26,9 +26,9 @@ class SubscriptionsListViewModel @Inject constructor(
 
     private var groups: List<SubscriptionCellModel> = emptyList()
 
-    private var sortBy:SortBy = SortBy.NameAndIgnored
+    private var sortBy: SortBy = SortBy.NameAndIgnored
 
-    sealed class SortBy(){
+    sealed class SortBy{
         object Name: SortBy()
         object Ignored: SortBy()
         object NameAndIgnored: SortBy()
@@ -53,7 +53,12 @@ class SubscriptionsListViewModel @Inject constructor(
     private fun search(searchBy :String) {
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
+                val ignoreList = groupsLocalDataSource.loadIgnoreList()
+                groups = groups.map {
+                    it.copy(isIgnored = ignoreList.contains(it.groupId))
+                }
                 val searchString = searchBy.lowercase(Locale.getDefault())
+
                 viewState = viewState.copy(
                     items = sort(groups.filter {
                         it.groupName.lowercase(Locale.getDefault())
