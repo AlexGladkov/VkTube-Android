@@ -67,7 +67,7 @@ class SubscriptionsListViewModel @Inject constructor(
     private fun remove(id: Long) {
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
-                val ignoreList = groupsLocalDataSource.loadIgnoreList() as MutableList
+                val ignoreList = groupsLocalDataSource.loadIgnoreList().toMutableList()
                 ignoreList.remove(id)
                 groupsLocalDataSource.saveIgnoreList(ignoreList)
             }
@@ -85,7 +85,7 @@ class SubscriptionsListViewModel @Inject constructor(
     private fun add(id: Long) {
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
-                val ignoreList = groupsLocalDataSource.loadIgnoreList() as MutableList
+                val ignoreList = groupsLocalDataSource.loadIgnoreList().toMutableList()
                 ignoreList.add(id)
                 groupsLocalDataSource.saveIgnoreList(ignoreList)
             }
