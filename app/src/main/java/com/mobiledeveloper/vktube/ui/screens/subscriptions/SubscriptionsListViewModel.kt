@@ -28,11 +28,7 @@ class SubscriptionsListViewModel @Inject constructor(
 
     private var sortBy: SortBy = SortBy.NameAndIgnored
 
-    sealed class SortBy {
-        object Name : SortBy()
-        object Ignored : SortBy()
-        object NameAndIgnored : SortBy()
-    }
+    enum class SortBy { Name, Ignored, NameAndIgnored }
 
     override fun obtainEvent(viewEvent: SubscriptionsListEvent) {
         when (viewEvent) {
@@ -119,9 +115,9 @@ class SubscriptionsListViewModel @Inject constructor(
 
     private fun sort(items: List<SubscriptionCellModel>): List<SubscriptionCellModel> {
         return when(sortBy){
-            is SortBy.Name -> items.sortedBy { it.groupName }
-            is SortBy.Ignored -> items.sortedBy { it.isIgnored }
-            is SortBy.NameAndIgnored -> items.sortedWith(compareBy({ it.isIgnored }, { it.groupName }))
+            SortBy.Name -> items.sortedBy { it.groupName }
+            SortBy.Ignored -> items.sortedBy { it.isIgnored }
+            SortBy.NameAndIgnored -> items.sortedWith(compareBy({ it.isIgnored }, { it.groupName }))
         }
     }
 
