@@ -1,20 +1,23 @@
 package com.mobiledeveloper.vktube.ui.screens.subscriptions
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Icon
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -45,7 +48,7 @@ private object SubscriptionListParameters{
 
     const val countGreyCells = 30
 
-    const val searchFieldWidth = 150
+    const val searchFieldWidth = 250
 
     const val nothingFoundTextSize = 20
 
@@ -99,14 +102,26 @@ fun SubscriptionsListScreen(
 
             Spacer(modifier = Modifier.width(eyeIconSize.dp + (2 * eyeIconSizePaddingVert).dp))
 
-            OutlinedTextField(
-                modifier = Modifier
-                    .width(searchFieldWidth.dp),
-                label = { Text(LocalContext.current.resources.getString(R.string.search)) },
-                value = text,
-                onValueChange = { search(it) },
-                textStyle = TextStyle(color = Fronton.color.textPrimary, fontSize = searchTextSize.sp),
-            )
+            Box(contentAlignment = Alignment.Center) {
+                BasicTextField(
+                    modifier = Modifier
+                        .width(searchFieldWidth.dp)
+                        .border(
+                            BorderStroke(2.dp, Fronton.color.textPrimary),
+                            shape = RoundedCornerShape(percent = 10)
+                        )
+                        .padding(horizontal = 10.dp, vertical = 5.dp),
+                    value = text,
+                    onValueChange = { search(it) },
+                    textStyle = TextStyle(color = Fronton.color.textPrimary, fontSize = searchTextSize.sp),
+                )
+                if(text.isBlank()){
+                    Text(
+                        text = LocalContext.current.resources.getString(R.string.search),
+                        color = Fronton.color.textSecondary
+                    )
+                }
+            }
             Icon(
                 modifier = Modifier
                     .padding(

@@ -18,7 +18,7 @@ fun SplashScreen(
 
     LaunchedEffect(key1 = viewAction, block = {
         when (viewAction) {
-            SplashAction.OpenLogin -> navController.navigate(NavigationTree.Root.Auth.name)
+            SplashAction.OpenLogin -> navController.navigate(NavigationTree.Root.SubscriptionsList.name)
             SplashAction.OpenMain -> navController.navigate(NavigationTree.Root.Main.name)
         }
     })
