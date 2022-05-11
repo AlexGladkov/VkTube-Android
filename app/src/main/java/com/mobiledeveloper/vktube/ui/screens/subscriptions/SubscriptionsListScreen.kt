@@ -94,17 +94,13 @@ fun SubscriptionsListScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
 
-            Spacer(
-                modifier = Modifier
-                    .width(eyeIconSize.dp + (2 * eyeIconSizePaddingVert).dp)
-                    .weight(1f)
-            )
+            Spacer(modifier = Modifier.width(eyeIconSize.dp + (2 * eyeIconSizePaddingVert).dp))
 
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.weight(3f)) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.weight(1f)) {
                 BasicTextField(
                     modifier = Modifier
                         .border(
-                            BorderStroke(2.dp, Fronton.color.textPrimary),
+                            BorderStroke(1.dp, Fronton.color.textPrimary),
                             shape = RoundedCornerShape(percent = 10)
                         )
                         .padding(horizontal = 10.dp, vertical = 5.dp)
@@ -131,8 +127,7 @@ fun SubscriptionsListScreen(
                     }
                     .size(eyeIconSize.dp)
                     .clip(CircleShape)
-                    .alpha(eyeAlpha)
-                    .weight(1f),
+                    .alpha(eyeAlpha),
                 painter = painterResource(id = com.mobiledeveloper.vktube.R.drawable.ic_ignore_all),
                 tint = Fronton.color.textPrimary,
                 contentDescription = null
