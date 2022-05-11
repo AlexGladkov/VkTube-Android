@@ -34,7 +34,6 @@ import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParam
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.eyeIconSizePaddingVert
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.notAllIgnoredAlpha
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.nothingFoundTextSize
-import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.searchFieldWidth
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.searchTextSize
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.SubscriptionListParameters.spaceBetween
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionCellModel
@@ -45,13 +44,8 @@ import com.mobiledeveloper.vktube.ui.theme.Fronton
 
 private object SubscriptionListParameters{
     const val spaceBetween = 8
-
     const val countGreyCells = 30
-
-    const val searchFieldWidth = 250
-
     const val nothingFoundTextSize = 20
-
     const val eyeIconSize = 24
     const val eyeIconSizePaddingVert = 16
     const val notAllIgnoredAlpha = 1f
@@ -100,7 +94,11 @@ fun SubscriptionsListScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
 
-            Spacer(modifier = Modifier.width(eyeIconSize.dp + (2 * eyeIconSizePaddingVert).dp).weight(1f))
+            Spacer(
+                modifier = Modifier
+                    .width(eyeIconSize.dp + (2 * eyeIconSizePaddingVert).dp)
+                    .weight(1f)
+            )
 
             Box(contentAlignment = Alignment.Center, modifier = Modifier.weight(3f)) {
                 BasicTextField(
