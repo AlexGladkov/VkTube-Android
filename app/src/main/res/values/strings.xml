@@ -9,12 +9,15 @@
     <string name="video_action_icon">Video action icon</string>
     <string name="send_comment_icon">Send comment icon</string>
 
+    <string name="nothing_found">Nothing found</string>
+    <string name="search">Search</string>
     <string name="comments">Comments</string>
     <string name="enter_comment_text">Enter comment text</string>
     <string name="login_to_vk">Sign up VK</string>
     <string name="logout_from_vk">Logout from VK</string>
     <string name="subscribes">Channels list</string>
     <string name="retry">Retry</string>
+    <string name="loading">Loading</string>
 
     <plurals name="seconds">
         <item quantity="one">%1d second ago</item>

@@ -105,12 +105,14 @@ fun VideoScreen(
             modifier = Modifier.systemBarsPadding(),
             scaffoldState = bottomSheetScaffoldState,
             sheetContent = {
-                CommentsScreen(viewState = viewState,
-                    onSendClick = {
-                        videoViewModel.obtainEvent(VideoEvent.SendComment(it))
-                    }, onCloseClick = {
-                        videoViewModel.obtainEvent(VideoEvent.CloseCommentsClick)
-                    })
+                Box(Modifier.fillMaxHeight()) {
+                    CommentsScreen(viewState = viewState,
+                        onSendClick = {
+                            videoViewModel.obtainEvent(VideoEvent.SendComment(it))
+                        }, onCloseClick = {
+                            videoViewModel.obtainEvent(VideoEvent.CloseCommentsClick)
+                        })
+                }
             },
             sheetPeekHeight = bottomSheetHeight
         ) {
@@ -148,7 +150,6 @@ fun VideoScreen(
                 }
             }
             null -> {
-                // ignore
             }
         }
     })

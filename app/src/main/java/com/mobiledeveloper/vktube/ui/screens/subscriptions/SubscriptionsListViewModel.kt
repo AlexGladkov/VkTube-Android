@@ -11,7 +11,9 @@ import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsL
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsListState
 import com.vk.sdk.api.groups.dto.GroupsGroupFull
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -21,12 +23,20 @@ class SubscriptionsListViewModel @Inject constructor(
     private val userRepository: UserRepository
 ) : BaseViewModel<SubscriptionsListState, SubscriptionsListAction, SubscriptionsListEvent>(initialState = SubscriptionsListState()) {
 
+    private var groups: List<SubscriptionCellModel> = emptyList()
+
+    private var sortBy: SortBy = SortBy.NameAndIgnored
+
+    enum class SortBy { Name, Ignored, NameAndIgnored }
+
     override fun obtainEvent(viewEvent: SubscriptionsListEvent) {
         when (viewEvent) {
             SubscriptionsListEvent.ScreenShown -> onScreenShown()
             SubscriptionsListEvent.ClearAction -> clearAction()
             is SubscriptionsListEvent.Back -> goBack()
-            is SubscriptionsListEvent.GroupClick -> toggleIgnored(viewEvent.item)
+            is SubscriptionsListEvent.GroupClicked -> toggleIgnored(viewEvent.item)
+            is SubscriptionsListEvent.SearchTextChanged -> search(viewEvent.searchBy)
+            SubscriptionsListEvent.ToggleAllisClicked -> toggleAll()
         }
     }
 
@@ -35,27 +45,79 @@ class SubscriptionsListViewModel @Inject constructor(
         viewAction = SubscriptionsListAction.BackToFeed
     }
 
-    private fun remove(id: Long) {
-        viewModelScope.launch {
-            val ignoreList = groupsLocalDataSource.loadIgnoreList() as MutableList
-            ignoreList.remove(id)
+    private fun search(searchBy: String) {
+        viewModelScope.launch(Dispatchers.Default) {
+            val ignoreList = groupsLocalDataSource.loadIgnoreList()
+            groups = groups.map {
+                it.copy(isIgnored = ignoreList.contains(it.groupId))
+            }
+            val searchString = searchBy.lowercase(Locale.getDefault())
+            val items = sort(groups.filter {
+                it.groupName.lowercase(Locale.getDefault())
+                    .contains(searchString)
+            })
+            viewState = viewState.copy(
+                items = items,
+                allAreIgnored = areAllIgnored(items)
+            )
+        }
+    }
+
+    private fun remove(ids: List<Long>) {
+        viewModelScope.launch(Dispatchers.Default) {
+            val ignoreList = groupsLocalDataSource.loadIgnoreList() - ids
             groupsLocalDataSource.saveIgnoreList(ignoreList)
         }
     }
 
-    private fun add(id: Long) {
-        viewModelScope.launch {
-            val ignoreList = groupsLocalDataSource.loadIgnoreList() as MutableList
-            ignoreList.add(id)
+    private fun add(ids: List<Long>) {
+        viewModelScope.launch(Dispatchers.Default) {
+            val ignoreList = groupsLocalDataSource.loadIgnoreList() + ids
             groupsLocalDataSource.saveIgnoreList(ignoreList)
         }
     }
 
     private fun toggleIgnored(item:SubscriptionCellModel) {
-        if (item.isIgnored) remove(item.groupId) else add(item.groupId)
+        if (item.isIgnored) remove(listOf(item.groupId)) else add(listOf(item.groupId))
+        val updatedItems =
+            viewState.items.map { if (it.groupId == item.groupId) item.copy(isIgnored = !item.isIgnored) else it }
+
         viewState = viewState.copy(
-            items = viewState.items.map { if (it.groupId == item.groupId) item.copy(isIgnored = !item.isIgnored) else it }
+            items = sort(updatedItems),
+            allAreIgnored = areAllIgnored(updatedItems)
         )
+    }
+
+    private fun toggleAll() {
+        viewModelScope.launch(Dispatchers.Default) {
+            val allIgnored = areAllIgnored(viewState.items)
+            viewState = viewState.copy(
+                items = sort(if (allIgnored) watchAll(viewState.items) else ignoreAll(viewState.items)),
+                allAreIgnored = !allIgnored
+            )
+        }
+    }
+
+    private fun watchAll(items: List<SubscriptionCellModel>): List<SubscriptionCellModel> {
+        remove(items.map { it.groupId })
+        return viewState.items.map { it.copy(isIgnored = false) }
+    }
+
+    private fun ignoreAll(items: List<SubscriptionCellModel>): List<SubscriptionCellModel> {
+        add(items.map { it.groupId })
+        return viewState.items.map { it.copy(isIgnored = true) }
+    }
+
+    private fun areAllIgnored(items: List<SubscriptionCellModel>): Boolean{
+        return items.all { it.isIgnored }
+    }
+
+    private fun sort(items: List<SubscriptionCellModel>): List<SubscriptionCellModel> {
+        return when(sortBy){
+            SortBy.Name -> items.sortedBy { it.groupName }
+            SortBy.Ignored -> items.sortedBy { it.isIgnored }
+            SortBy.NameAndIgnored -> items.sortedWith(compareBy({ it.isIgnored }, { it.groupName }))
+        }
     }
 
     private fun clearAction() {
@@ -70,10 +132,8 @@ class SubscriptionsListViewModel @Inject constructor(
     }
 
     private fun fetchGroups() {
-        viewModelScope.launch {
-            viewState = viewState.copy(
-                loading = true
-            )
+        viewModelScope.launch(Dispatchers.Default) {
+            viewState = viewState.copy(loading = true)
             try {
                 val userId = try {
                     userRepository.fetchLocalUser().userId
@@ -85,19 +145,20 @@ class SubscriptionsListViewModel @Inject constructor(
                 val ignoreList = groupsLocalDataSource.loadIgnoreList()
 
                 val groups = groupsRepository.fetchClubs(userId).map {
-                   mapToSubscriptionCellModel(it, ignoreList)
+                    mapToSubscriptionCellModel(it, ignoreList)
                 }
 
+                this@SubscriptionsListViewModel.groups = groups
                 viewState = viewState.copy(
-                    items = groups,
-                    loading = false
+                    items = sort(groups),
+                    loading = false,
+                    allAreIgnored = areAllIgnored(groups)
                 )
 
             } catch (ex: Exception) {
-                viewState = viewState.copy(
-                    loading = false
-                )
+                viewState = viewState.copy(loading = false)
             }
+
         }
     }
 
