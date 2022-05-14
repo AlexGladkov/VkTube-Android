@@ -17,6 +17,7 @@
     <string name="logout_from_vk">Logout from VK</string>
     <string name="subscribes">Channels list</string>
     <string name="retry">Retry</string>
+    <string name="loading">Loading</string>
     <string name="db_videos_history_name" translatable="false">db_videos_history</string>
 
     <plurals name="seconds">
