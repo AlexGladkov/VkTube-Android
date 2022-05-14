@@ -3,6 +3,7 @@
 package com.mobiledeveloper.vktube.data.videos
 
 import com.google.gson.*
+import com.mobiledeveloper.vktube.ui.screens.feed.models.VideoCellModel
 import com.vk.api.sdk.VK
 import com.vk.api.sdk.VKApiManager
 import com.vk.api.sdk.VKApiResponseParser
@@ -19,12 +20,13 @@ import com.vk.sdk.api.video.VideoService
 import com.vk.sdk.api.video.dto.VideoGetResponse
 import com.vk.sdk.api.video.dto.VideoVideoFull
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import java.lang.reflect.Type
 import javax.inject.Inject
 import kotlin.math.absoluteValue
 
-class VideosRepository @Inject constructor() {
+class VideosRepository @Inject constructor(private val videosDao : VideosDatabase) {
     suspend fun fetchVideos(
         groupIds: List<Long>,
         count: Int
@@ -183,6 +185,26 @@ class VideosRepository @Inject constructor() {
         companion object {
             private const val CHUNK_LIMIT = 25
         }
+    }
+
+    fun saveVideo(videoCellModel: VideoCellModel){
+        videosDao.videosDao().addVideo(VideoHistory.fromVideoCellModel(videoCellModel))
+    }
+
+    fun saveVideos(videoCellModel: List<VideoCellModel>){
+        videosDao.videosDao().insertVideos(videoCellModel.map { VideoHistory.fromVideoCellModel(it) })
+    }
+
+    fun getVideo(id: Int): Flow<VideoHistory> {
+        return videosDao.videosDao().getVideoById(id)
+    }
+
+    fun getAllVideos(): Flow<List<VideoHistory>> {
+        return videosDao.videosDao().getVideos()
+    }
+
+    fun clearVideos() {
+        videosDao.videosDao().resetTable()
     }
 
     data class LoadSettings(val groupId: Long, val count: Int, val offset: Int = 0)
