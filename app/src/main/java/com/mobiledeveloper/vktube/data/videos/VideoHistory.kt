@@ -1,9 +1,9 @@
 package com.mobiledeveloper.vktube.data.videos
 
-import com.mobiledeveloper.vktube.ui.common.cell.VideoCellGroupInfo
-import com.mobiledeveloper.vktube.ui.screens.feed.models.VideoCellModel
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.mobiledeveloper.vktube.ui.common.cell.VideoCellGroupInfo
+import com.mobiledeveloper.vktube.ui.screens.feed.models.VideoCellModel
 
 @Entity
 data class VideoHistory(
@@ -22,8 +22,26 @@ data class VideoHistory(
     val groupUserImage: String,
     val groupUserName: String,
     val groupSubscribers: Int
-){
+) {
 
+    fun toVideoCellModel(): VideoCellModel = VideoCellModel(
+        videoId = this.videoId,
+        title = this.title,
+        previewUrl = this.previewUrl,
+        viewsCount = this.viewsCount,
+        dateAdded = this.dateAdded,
+        likes = this.likes,
+        likesByMe = this.likesByMe,
+        videoUrl = this.videoUrl,
+        ownerId = this.ownerId,
+        groupInfo = VideoCellGroupInfo(
+            id = this.groupId,
+            userImage = this.groupUserImage,
+            userName = this.groupUserName,
+            subscribers = this.groupSubscribers
+        ),
+        groupOrder = this.groupOrder
+    )
 
     companion object {
         fun fromVideoCellModel(videoCellModel: VideoCellModel): VideoHistory = VideoHistory(
@@ -43,21 +61,4 @@ data class VideoHistory(
             groupOrder = videoCellModel.groupOrder
         )
     }
-
-    fun toVideoCellModel(): VideoCellModel = VideoCellModel(
-        videoId = this.videoId,
-        title = this.title,
-        previewUrl = this.previewUrl,
-        viewsCount = this.viewsCount,
-        dateAdded = this.dateAdded,
-        likes = this.likes,
-        likesByMe = this.likesByMe,
-        videoUrl = this.videoUrl,
-        ownerId = this.ownerId,
-        groupInfo = VideoCellGroupInfo(
-            id = this.groupId,
-            userImage = this.groupUserImage,
-            userName = this.groupUserName,
-            subscribers = this.groupSubscribers),
-        groupOrder = this.groupOrder)
 }

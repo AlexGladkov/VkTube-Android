@@ -12,7 +12,9 @@ abstract class VideosDatabase : RoomDatabase() {
     abstract fun videosDao(): VideosDao
 
     companion object {
-        @Volatile
+
+        const val HISTORY_DB_NAME = "db_videos_history"
+
         private var INSTANCE: VideosDatabase? = null
 
         fun getDatabase(context: Context): VideosDatabase {
@@ -24,7 +26,7 @@ abstract class VideosDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     VideosDatabase::class.java,
-                    context.getString(R.string.db_videos_history_name)
+                    HISTORY_DB_NAME
                 ).setJournalMode(JournalMode.TRUNCATE).build()
 
                 INSTANCE = instance
