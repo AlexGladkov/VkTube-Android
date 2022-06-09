@@ -1,5 +1,6 @@
 package com.mobiledeveloper.vktube.ui.screens.subscriptions
 
+import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -17,11 +18,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -41,6 +42,7 @@ import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsL
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsListEvent
 import com.mobiledeveloper.vktube.ui.screens.subscriptions.models.SubscriptionsListState
 import com.mobiledeveloper.vktube.ui.theme.Fronton
+import com.mobiledeveloper.vktube.ui.theme.FrontonTheme
 
 private object SubscriptionListParameters{
     const val spaceBetween = 8
@@ -85,6 +87,125 @@ fun SubscriptionsListScreen(
         viewModel.obtainEvent(SubscriptionsListEvent.Back)
     }
 
+    SubscriptionsListLayout(
+        text = text,
+        toggleAll = toggleAll,
+        search = search,
+        groupClick = groupClick,
+        eyeAlpha = eyeAlpha,
+        viewState = viewState
+    )
+
+    LaunchedEffect(key1 = viewAction, block = {
+        viewModel.obtainEvent(SubscriptionsListEvent.ClearAction)
+        when (viewAction) {
+            is SubscriptionsListAction.BackToFeed -> {
+                navController.navigate(NavigationTree.Root.Main.name)
+            }
+            null -> {
+                // ignore
+            }
+        }
+    })
+
+    LaunchedEffect(key1 = Unit, block = {
+        viewModel.obtainEvent(SubscriptionsListEvent.ScreenShown)
+    })
+
+}
+
+@Preview(
+    uiMode = Configuration.UI_MODE_NIGHT_NO,
+    showBackground = true,
+    name = "Light Mode"
+)
+@Composable
+private fun PreviewSubscriptionsScreen(){
+    FrontonTheme {
+        SubscriptionsListLayout(
+            text = "",
+            toggleAll = { },
+            search = { },
+            groupClick = { },
+            eyeAlpha = 1f,
+            viewState = SubscriptionsListState(
+                items = listOf(
+                    SubscriptionCellModel(
+                        groupId = 1L,
+                        groupIcon = "",
+                        groupName = "Group 1",
+                        isIgnored = false
+                    ),
+                    SubscriptionCellModel(
+                        groupId = 2L,
+                        groupIcon = "",
+                        groupName = "Group 2",
+                        isIgnored = true
+                    )
+                ),
+                loading = false,
+                allAreIgnored = false
+            )
+        )
+    }
+}
+
+@Preview(
+    uiMode = Configuration.UI_MODE_NIGHT_NO,
+    showBackground = true,
+    name = "Light Mode"
+)
+@Composable
+private fun PreviewSubscriptionsScreenLoading(){
+    FrontonTheme {
+        SubscriptionsListLayout(
+            text = "",
+            toggleAll = { },
+            search = { },
+            groupClick = { },
+            eyeAlpha = 1f,
+            viewState = SubscriptionsListState(
+                items = listOf(),
+                loading = true,
+                allAreIgnored = false
+            )
+        )
+    }
+}
+
+
+@Preview(
+    uiMode = Configuration.UI_MODE_NIGHT_NO,
+    showBackground = true,
+    name = "Light Mode"
+)
+@Composable
+private fun PreviewSubscriptionsScreenEmpty(){
+    FrontonTheme {
+        SubscriptionsListLayout(
+            text = "",
+            toggleAll = { },
+            search = { },
+            groupClick = { },
+            eyeAlpha = 1f,
+            viewState = SubscriptionsListState(
+                items = listOf(),
+                loading = false,
+                allAreIgnored = false
+            )
+        )
+    }
+}
+
+@Composable
+private fun SubscriptionsListLayout(
+    text: String,
+    toggleAll: () -> Unit,
+    search: (String) -> Unit,
+    groupClick:(SubscriptionCellModel) -> Unit,
+    eyeAlpha: Float,
+    viewState: SubscriptionsListState
+) {
     Column(modifier = Modifier.fillMaxHeight()) {
         Row(modifier = Modifier
             .padding(vertical = spaceBetween.dp)
@@ -128,7 +249,7 @@ fun SubscriptionsListScreen(
                     .size(eyeIconSize.dp)
                     .clip(CircleShape)
                     .alpha(eyeAlpha),
-                painter = painterResource(id = com.mobiledeveloper.vktube.R.drawable.ic_ignore_all),
+                painter = painterResource(id = R.drawable.ic_ignore_all),
                 tint = Fronton.color.textPrimary,
                 contentDescription = null
             )
@@ -159,23 +280,6 @@ fun SubscriptionsListScreen(
             }
         }
     }
-
-    LaunchedEffect(key1 = viewAction, block = {
-        viewModel.obtainEvent(SubscriptionsListEvent.ClearAction)
-        when (viewAction) {
-            is SubscriptionsListAction.BackToFeed -> {
-                navController.navigate(NavigationTree.Root.Main.name)
-            }
-            null -> {
-                // ignore
-            }
-        }
-    })
-
-    LaunchedEffect(key1 = Unit, block = {
-        viewModel.obtainEvent(SubscriptionsListEvent.ScreenShown)
-    })
-
 }
 
 @Composable
