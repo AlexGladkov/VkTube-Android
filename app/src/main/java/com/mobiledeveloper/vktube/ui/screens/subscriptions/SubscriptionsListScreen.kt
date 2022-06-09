@@ -132,13 +132,13 @@ private fun PreviewSubscriptionsScreen(){
                 items = listOf(
                     SubscriptionCellModel(
                         groupId = 1L,
-                        groupIcon = "https://stock.adobe.com/ru/images/group-icon-partnership-icon-vector/378405187?as_campaign=ftmigration2&as_channel=dpcft&as_campclass=brand&as_source=ft_web&as_camptype=acquisition&as_audience=users&as_content=closure_asset-detail-page",
+                        groupIcon = "",
                         groupName = "Group 1",
                         isIgnored = false
                     ),
                     SubscriptionCellModel(
                         groupId = 2L,
-                        groupIcon = "https://stock.adobe.com/ru/images/group-icon-partnership-icon-vector/378405187?as_campaign=ftmigration2&as_channel=dpcft&as_campclass=brand&as_source=ft_web&as_camptype=acquisition&as_audience=users&as_content=closure_asset-detail-page",
+                        groupIcon = "",
                         groupName = "Group 2",
                         isIgnored = true
                     )
