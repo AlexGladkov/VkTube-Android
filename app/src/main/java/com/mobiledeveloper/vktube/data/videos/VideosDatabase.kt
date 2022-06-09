@@ -13,25 +13,14 @@ abstract class VideosDatabase : RoomDatabase() {
 
     companion object {
 
-        const val HISTORY_DB_NAME = "db_videos_history"
-
-        private var INSTANCE: VideosDatabase? = null
+        private const val HISTORY_DB_NAME = "db_videos_history"
 
         fun getDatabase(context: Context): VideosDatabase {
-            val tempInstance = INSTANCE
-            if (tempInstance != null) {
-                return tempInstance
-            }
-            synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    VideosDatabase::class.java,
-                    HISTORY_DB_NAME
-                ).setJournalMode(JournalMode.TRUNCATE).build()
-
-                INSTANCE = instance
-                return instance
-            }
+            return Room.databaseBuilder(
+                context.applicationContext,
+                VideosDatabase::class.java,
+                HISTORY_DB_NAME
+            ).setJournalMode(JournalMode.TRUNCATE).build()
         }
     }
 }
