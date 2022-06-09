@@ -5,7 +5,6 @@ import com.mobiledeveloper.vktube.ui.common.cell.VideoCellGroupInfo
 import com.mobiledeveloper.vktube.ui.screens.feed.models.VideoCellModel
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
@@ -33,7 +32,7 @@ class VideoHistoryRepositoryTest {
     lateinit var repo: VideosRepository
 
     @Test
-    fun test1() {
+    fun testGetVideo() {
         repo.clearVideos()
 
         val video = VideoCellModel(
@@ -58,13 +57,13 @@ class VideoHistoryRepositoryTest {
         repo.saveVideo(video)
 
         val videoLoaded: VideoCellModel
-        runBlocking { videoLoaded = repo.getVideo(1).first().toVideoCellModel() }
+        runBlocking { videoLoaded = repo.getVideo(1).toVideoCellModel() }
 
         assert(videoLoaded == video)
     }
 
     @Test
-    fun test2() {
+    fun testGetAllVideos() {
         repo.clearVideos()
 
         val video1 = VideoCellModel(
@@ -110,7 +109,7 @@ class VideoHistoryRepositoryTest {
         val videoLoaded: List<VideoCellModel>
 
         runBlocking {
-            videoLoaded = repo.getAllVideos().first().map { it.toVideoCellModel() }
+            videoLoaded = repo.getAllVideos().map { it.toVideoCellModel() }
         }
 
         assert(videoLoaded.size == 2)

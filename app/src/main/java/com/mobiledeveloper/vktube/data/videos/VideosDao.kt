@@ -1,7 +1,6 @@
 package com.mobiledeveloper.vktube.data.videos
 
 import androidx.room.*
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface VideosDao {
@@ -22,9 +21,9 @@ interface VideosDao {
     fun resetTable( )
 
     @Query("SELECT * FROM VideoHistory Where VideoHistory.videoId Like :id")
-    fun getVideoById(id: Int): Flow<VideoHistory>
+    fun getVideoById(id: Int): VideoHistory
 
     @Query("SELECT * FROM VideoHistory")
-    fun getVideos(): Flow<List<VideoHistory>>
+    fun getVideos(): List<VideoHistory>
 
 }
